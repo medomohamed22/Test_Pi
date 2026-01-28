@@ -370,6 +370,7 @@ const saveMsg = $("saveMsg");
 
 const btnRefreshMyShops = $("btnRefreshMyShops");
 const myShopsList = $("myShopsList");
+let myShopsCount = 0;
 
 // Tabs
 tUser.addEventListener("click", ()=>{
@@ -850,10 +851,12 @@ async function loadMyShops(){
   }
 
   if(!data || !data.length){
+    myShopsCount = 0;
     myShopsList.innerHTML = `<div class="muted">لا توجد محلات مضافة بعد.</div>`;
     return;
   }
 
+  myShopsCount = data.length;
   myShopsList.innerHTML = "";
   data.forEach(s=>{
     const img = s.image_url || `https://picsum.photos/200?seed=${encodeURIComponent(s.id)}`;
