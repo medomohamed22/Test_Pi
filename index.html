@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -287,6 +286,12 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <div id="subscriptionMsg" class="muted" style="margin-top:6px"></div>
       <div class="muted">بعد الاشتراك يمكنك إضافة حتى 3 محلات فقط.</div>
 
+      <!-- ✅ زر يدوي لحل أي دفعة معلّقة -->
+      <button id="btnResolvePending" class="secondary" type="button" style="display:none;margin-top:10px">
+        🔁 حاول تكمل الدفعة المعلّقة
+      </button>
+      <div id="pendingMsg" class="muted" style="margin-top:6px"></div>
+
       <hr class="sep">
 
       <input id="mName" placeholder="اسم المتجر">
@@ -329,8 +334,9 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
 const SUPA_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
 const SUPA_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
 const PI_SANDBOX = false;
-if(window.Pi){
+if (window.Pi) {
   Pi.init({ version: "2.0", sandbox: PI_SANDBOX });
 }
 
@@ -360,6 +366,10 @@ const walletInput = $("walletInput");
 const btnSaveWallet = $("btnSaveWallet");
 const btnSubscribe = $("btnSubscribe");
 const subscriptionMsg = $("subscriptionMsg");
+
+const btnResolvePending = $("btnResolvePending");
+const pendingMsg = $("pendingMsg");
+
 const mName = $("mName");
 const mDesc = $("mDesc");
 const mAddr = $("mAddr");
@@ -424,7 +434,6 @@ async function generateFingerprint(){
     (navigator.platform || "") + "|" +
     screen.width + "x" + screen.height + "|" +
     (Intl.DateTimeFormat().resolvedOptions().timeZone || "");
-
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
   return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,"0")).join("");
 }
@@ -460,7 +469,13 @@ async function loadNearbyShops(){
     return;
   }
 
+  if(!userLoc){
+    shopsList.innerHTML = `<div class="card"><b>حدد موقعك أولاً</b><div class="muted">اضغط على “تحديد موقعي”.</div></div>`;
+    return;
+  }
+
   const arr = (data||[])
+    .filter(s => typeof s.lat === "number" && typeof s.lng === "number")
     .map(s => ({...s, dist_km: haversine(userLoc.lat, userLoc.lng, s.lat, s.lng)}))
     .sort((a,b)=>a.dist_km - b.dist_km);
 
@@ -521,7 +536,6 @@ window.setStars = (shopId, n)=>{
 
 window.submitReview = async (shopId)=>{
   try{
-    // get stars
     const wrap = document.querySelector(`.stars[data-shop="${shopId}"]`);
     const stars = Number(wrap?.dataset?.value || 0);
     if(!stars) return alert("اختر عدد النجوم أولاً ⭐");
@@ -569,6 +583,9 @@ let hasSubscription = false;
 let shopLoc = null;
 let editShopId = null;
 
+// ✅ قفل لمنع تكرار إنشاء دفع
+let payLock = false;
+
 async function checkAuth(){
   if(piUser){
     authBox.style.display = "none";
@@ -576,6 +593,7 @@ async function checkAuth(){
     await refreshMerchantProfile();
     await refreshSubscription();
     await loadMyShops();
+    await showPendingHintIfAny();
   }else{
     authBox.style.display = "block";
     shopForm.style.display = "none";
@@ -656,12 +674,14 @@ btnPiLogin.addEventListener("click", async ()=>{
     const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
     piUser = auth.user;
     piAccessToken = auth.accessToken;
+
     const wallet = await fetchPiWalletAddress();
     if(wallet){
       await upsertMerchantProfile(wallet);
     }else{
       await upsertMerchantProfile(walletInput.value.trim());
     }
+
     authMsg.textContent = "تم تسجيل الدخول ✅";
     await checkAuth();
   }catch(e){
@@ -675,6 +695,8 @@ btnLogout.addEventListener("click", async ()=>{
   piAccessToken = null;
   merchantProfile = null;
   hasSubscription = false;
+  payLock = false;
+  localStorage.removeItem("last_payment_id");
   await checkAuth();
 });
 
@@ -686,54 +708,7 @@ btnSaveWallet.addEventListener("click", async ()=>{
   alert("تم تحديث المحفظة ✅");
 });
 
-btnSubscribe.addEventListener("click", async ()=>{
-  if(!piUser) return alert("سجّل الدخول أولاً.");
-  if(!window.Pi) return alert("Pi SDK غير متاح.");
-  subscriptionMsg.textContent = "جاري إنشاء عملية الدفع...";
-  try{
-    await Pi.createPayment({
-      amount: 1,
-      memo: "اشتراك تاجر - أقرب المحلات (3 محلات)",
-      metadata: { purpose: "MERCHANT_SUBSCRIPTION", username: piUser.username }
-    }, {
-      onReadyForServerApproval: async (paymentId) => {
-        subscriptionMsg.textContent = "جاري اعتماد الدفع...";
-        const r = await fetch("/api/pi/approve", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ paymentId })
-        });
-        const j = await r.json().catch(()=> ({}));
-        if(!r.ok || !j.ok) throw new Error("approve_failed");
-        subscriptionMsg.textContent = "تم اعتماد الدفع ✅";
-      },
-      onReadyForServerCompletion: async (paymentId, txid) => {
-        subscriptionMsg.textContent = "جاري تفعيل الاشتراك...";
-        const r = await fetch("/api/pi/complete", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ paymentId, txid })
-        });
-        const j = await r.json().catch(()=> ({}));
-        if(!r.ok || !j.ok) throw new Error("complete_failed");
-        subscriptionMsg.textContent = "تم الاشتراك ✅ يمكنك إضافة المحلات.";
-        await refreshSubscription();
-      },
-      onCancel: async (paymentId) => {
-        subscriptionMsg.textContent = "تم إلغاء الدفع.";
-        await recordPayment(paymentId, "canceled", null);
-      },
-      onError: async (error, payment) => {
-        if(payment?.identifier){
-          await recordPayment(payment.identifier, "error", null, error?.message);
-        }
-      }
-    });
-  }catch(e){
-    subscriptionMsg.textContent = "تعذر إنشاء الدفع عبر Pi.";
-  }
-});
-
+// ✅ سجل أي حالة دفع في DB
 async function recordPayment(paymentId, status, txid, errorMessage) {
   const uname = piUser?.username || "unknown";
   await supa.from("merchant_payments").insert({
@@ -745,13 +720,140 @@ async function recordPayment(paymentId, status, txid, errorMessage) {
   });
 }
 
+// ✅ لو فيه paymentId محفوظ من قبل، نعرض زر يساعد المستخدم يحلّها
+async function showPendingHintIfAny(){
+  const last = localStorage.getItem("last_payment_id");
+  if(last){
+    btnResolvePending.style.display = "block";
+    pendingMsg.textContent = `فيه دفعة سابقة ممكن تكون معلّقة (ID: ${last.slice(0,8)}...) — جرب تكملها.`;
+  }else{
+    btnResolvePending.style.display = "none";
+    pendingMsg.textContent = "";
+  }
+}
+
+btnResolvePending.addEventListener("click", async ()=>{
+  const paymentId = localStorage.getItem("last_payment_id");
+  if(!paymentId) return alert("مفيش دفعة محفوظة.");
+
+  pendingMsg.textContent = "بحاول أعتمد الدفعة وأفتحها…";
+  try{
+    // approve
+    const ar = await fetch("/api/pi/approve", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ paymentId })
+    });
+    const aj = await ar.json().catch(()=> ({}));
+    if(!ar.ok || !aj.ok){
+      pendingMsg.textContent = "Approve فشل. راجع السيرفر.";
+      await recordPayment(paymentId, "approve_failed_manual", null, aj?.error || "approve_failed");
+      return;
+    }
+
+    // open payment screen in Pi
+    if (typeof Pi?.openPayment === "function") {
+      await Pi.openPayment(paymentId);
+      pendingMsg.textContent = "فتحت شاشة الدفعة. كمّلها من Pi ✅";
+    } else if (typeof Pi?.openPaymentRequest === "function") {
+      await Pi.openPaymentRequest(paymentId);
+      pendingMsg.textContent = "فتحت شاشة الدفعة. كمّلها من Pi ✅";
+    } else {
+      pendingMsg.textContent = "الـ SDK لا يدعم فتح الدفعة تلقائيًا — افتحها من سجل المدفوعات في Pi.";
+    }
+
+    await recordPayment(paymentId, "pending_opened_manual", null, null);
+  }catch(e){
+    pendingMsg.textContent = "حصل خطأ أثناء محاولة فتح الدفعة.";
+    await recordPayment(paymentId, "error_manual", null, String(e));
+  }
+});
+
+btnSubscribe.addEventListener("click", async ()=>{
+  if(!piUser) return alert("سجّل الدخول أولاً.");
+  if(!window.Pi) return alert("Pi SDK غير متاح.");
+
+  if(payLock) return; // ✅ منع تكرار الضغط
+  payLock = true;
+  btnSubscribe.disabled = true;
+
+  subscriptionMsg.textContent = "جاري إنشاء عملية الدفع...";
+  try{
+    await Pi.createPayment({
+      amount: 1,
+      memo: "اشتراك تاجر - أقرب المحلات (3 محلات)",
+      metadata: { purpose: "MERCHANT_SUBSCRIPTION", username: piUser.username }
+    }, {
+      onReadyForServerApproval: async (paymentId) => {
+        // ✅ خزّن آخر paymentId (عشان لو وقف عند approve)
+        localStorage.setItem("last_payment_id", paymentId);
+        await showPendingHintIfAny();
+
+        subscriptionMsg.textContent = "جاري اعتماد الدفع...";
+        const r = await fetch("/api/pi/approve", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ paymentId })
+        });
+        const j = await r.json().catch(()=> ({}));
+        if(!r.ok || !j.ok) throw new Error(j?.error || "approve_failed");
+        subscriptionMsg.textContent = "تم اعتماد الدفع ✅";
+        await recordPayment(paymentId, "approved", null, null);
+      },
+
+      onReadyForServerCompletion: async (paymentId, txid) => {
+        subscriptionMsg.textContent = "جاري تفعيل الاشتراك...";
+        const r = await fetch("/api/pi/complete", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ paymentId, txid })
+        });
+        const j = await r.json().catch(()=> ({}));
+        if(!r.ok || !j.ok) throw new Error(j?.error || "complete_failed");
+
+        subscriptionMsg.textContent = "تم الاشتراك ✅ يمكنك إضافة المحلات.";
+        await recordPayment(paymentId, "completed", txid, null);
+
+        // ✅ الدفعة اكتملت، شيل آخر paymentId
+        localStorage.removeItem("last_payment_id");
+        await showPendingHintIfAny();
+
+        await refreshSubscription();
+      },
+
+      onCancel: async (paymentId) => {
+        subscriptionMsg.textContent = "تم إلغاء الدفع.";
+        await recordPayment(paymentId, "canceled", null, null);
+        // نسيب last_payment_id عشان ممكن المستخدم يرجع يكملها من سجل Pi
+      },
+
+      onError: async (error, payment) => {
+        const pid = payment?.identifier || payment?.id || localStorage.getItem("last_payment_id") || "unknown";
+        subscriptionMsg.textContent = "حصل خطأ في الدفع.";
+        await recordPayment(pid, "error", null, error?.message || String(error));
+      }
+    });
+
+  }catch(e){
+    // الرسالة الشهيرة: pending payment needs action from developer
+    subscriptionMsg.textContent = "تعذر إنشاء الدفع. لو ظهر Pending Payment، لازم تكمل/تعمل Complete للدفعة القديمة من السيرفر.";
+  }finally{
+    payLock = false;
+    btnSubscribe.disabled = hasSubscription; // لو بقى مشترك هتفضل disabled
+  }
+});
+
 // ✅ هتشتغل لو Pi لقى دفعة معلّقة أثناء تسجيل الدخول
 async function onIncompletePaymentFound(payment) {
   const paymentId = payment?.identifier || payment?.paymentId || payment?.id;
   if (!paymentId) return;
-  
+
+  // خزّنها عشان يبان زر "حل المعلّق"
+  localStorage.setItem("last_payment_id", paymentId);
+  await showPendingHintIfAny();
+
   authMsg.textContent = "لقيت دفعة معلّقة.. بجرب أعتمدها (Approve) وبعدين أفتحها ✅";
-  
+
   try {
     // 1) Approve من السيرفر
     const ar = await fetch("/api/pi/approve", {
@@ -760,16 +862,16 @@ async function onIncompletePaymentFound(payment) {
       body: JSON.stringify({ paymentId })
     });
     const aj = await ar.json().catch(() => ({}));
-    
+
     if (!ar.ok || !aj.ok) {
       await recordPayment(paymentId, "approve_failed", null, aj?.error || "approve_failed");
       authMsg.textContent = "الدفع المعلّق محتاج موافقة من السيرفر، لكن approve فشل ❌";
       return;
     }
-    
-    // 2) افتح الدفع داخل Pi
+
+    // 2) افتح الدفع داخل Pi (المستخدم يكمله)
     authMsg.textContent = "تم اعتماد الدفع ✅ بفتح الدفع المعلّق الآن…";
-    
+
     if (typeof Pi?.openPayment === "function") {
       await Pi.openPayment(paymentId);
     } else if (typeof Pi?.openPaymentRequest === "function") {
@@ -777,9 +879,9 @@ async function onIncompletePaymentFound(payment) {
     } else {
       authMsg.textContent = "SDK لا يدعم فتح الدفع تلقائيًا. افتحه من سجل المدفوعات داخل Pi.";
     }
-    
-    await recordPayment(paymentId, "incomplete_opened", null);
-    
+
+    await recordPayment(paymentId, "incomplete_opened", null, null);
+
   } catch (e) {
     await recordPayment(paymentId, "error", null, String(e));
     authMsg.textContent = "حصل خطأ أثناء محاولة حل الدفع المعلّق.";
@@ -827,7 +929,6 @@ btnSave.addEventListener("click", async ()=>{
 
     saveMsg.textContent = "جاري الحفظ...";
 
-    // optional image
     let imageUrl = null;
     if(mImg.files && mImg.files[0]){
       imageUrl = await uploadShopImage(mImg.files[0]);
@@ -841,7 +942,7 @@ btnSave.addEventListener("click", async ()=>{
       lat: shopLoc.lat,
       lng: shopLoc.lng
     };
-    if(imageUrl) payload.image_url = imageUrl; // لو ما رفعش صورة جديدة، ما نغيرش القديمة
+    if(imageUrl) payload.image_url = imageUrl;
 
     let res;
     if(editShopId){
