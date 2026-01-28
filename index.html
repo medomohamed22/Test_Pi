@@ -284,7 +284,6 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
 
       <button id="btnSubscribe" type="button">💳 اشترك بـ 1 Pi</button>
       <div id="subscriptionMsg" class="muted" style="margin-top:6px"></div>
-      <div class="muted">بعد الاشتراك يمكنك إضافة حتى 3 محلات فقط.</div>
 
       <hr class="sep">
 
@@ -640,8 +639,8 @@ function updateSubscriptionUI(){
   btnSubscribe.disabled = hasSubscription;
   btnSave.disabled = !hasSubscription;
   subscriptionMsg.textContent = hasSubscription
-    ? "اشتراكك مفعل ويمكنك إضافة حتى 3 محلات."
-    : "يلزم الاشتراك بـ 1 Pi قبل إضافة بيانات المحل (3 محلات كحد أقصى).";
+    ? "اشتراكك مفعل ويمكنك إضافة المحلات."
+    : "يلزم الاشتراك بـ 1 Pi قبل إضافة بيانات المحل.";
 }
 
 btnPiLogin.addEventListener("click", async ()=>{
@@ -692,20 +691,17 @@ btnSubscribe.addEventListener("click", async ()=>{
   try{
     const payment = await Pi.createPayment({
       amount: 1,
-      memo: "اشتراك تاجر - أقرب المحلات (3 محلات)",
-      metadata: { purpose: "MERCHANT_SUBSCRIPTION", username: piUser.username }
+      memo: "اشتراك تاجر - أقرب المحلات",
+      metadata: { pi_username: piUser.username }
     }, {
       onReadyForServerApproval: async (paymentId) => {
-        await approvePayment(paymentId);
+        await recordPayment(paymentId, "pending", null);
       },
       onReadyForServerCompletion: async (paymentId, txid) => {
-        const ok = await completePayment(paymentId, txid);
-        if(ok){
-          await refreshSubscription();
-        }
+        await recordPayment(paymentId, "completed", txid);
+        await activateSubscription(paymentId);
       },
       onCancel: async (paymentId) => {
-        subscriptionMsg.textContent = "تم إلغاء الدفع.";
         await recordPayment(paymentId, "canceled", null);
       },
       onError: async (error, payment) => {
@@ -732,33 +728,19 @@ async function recordPayment(paymentId, status, txid, errorMessage){
   });
 }
 
-async function approvePayment(paymentId){
-  const r = await fetch("/api/pi/approve", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ paymentId })
-  });
-  const data = await r.json().catch(() => ({}));
-  if(!r.ok || !data.ok){
-    subscriptionMsg.textContent = "تعذر اعتماد الدفع من السيرفر.";
-    throw new Error("Approval failed");
+async function activateSubscription(paymentId){
+  const { error } = await supa.from("merchant_subscriptions").upsert({
+    pi_username: piUser.username,
+    payment_id: paymentId,
+    status: "active"
+  }, { onConflict: "pi_username" });
+  if(error){
+    subscriptionMsg.textContent = "تم الدفع لكن حدث خطأ في التفعيل.";
+    return;
   }
-  subscriptionMsg.textContent = "تم اعتماد الدفع. انتظر الإكمال...";
-}
-
-async function completePayment(paymentId, txid){
-  const r = await fetch("/api/pi/complete", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ paymentId, txid })
-  });
-  const data = await r.json().catch(() => ({}));
-  if(!r.ok || !data.ok){
-    subscriptionMsg.textContent = "تعذر إكمال الدفع.";
-    return false;
-  }
+  hasSubscription = true;
+  updateSubscriptionUI();
   subscriptionMsg.textContent = "تم الاشتراك ✅ يمكنك إضافة المحلات.";
-  return true;
 }
 
 function onIncompletePaymentFound(payment){
@@ -800,7 +782,6 @@ btnSave.addEventListener("click", async ()=>{
   try{
     if(!piUser) return alert("لازم تسجل دخول كتاجر أولاً");
     if(!hasSubscription) return alert("لازم تشترك بـ 1 Pi قبل إضافة المحلات.");
-    if(!editShopId && myShopsCount >= 3) return alert("الحد الأقصى 3 محلات لكل تاجر.");
     if(!shopLoc) return alert("حدد موقع المتجر أولاً");
 
     const name = mName.value.trim();
