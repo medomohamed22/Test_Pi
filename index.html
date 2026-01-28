@@ -733,9 +733,10 @@ btnSubscribe.addEventListener("click", async ()=>{
   }
 });
 
-async function recordPayment(paymentId, status, txid, errorMessage){
+async function recordPayment(paymentId, status, txid, errorMessage) {
+  const uname = piUser?.username || "unknown";
   await supa.from("merchant_payments").insert({
-    pi_username: piUser.username,
+    pi_username: uname,
     payment_id: paymentId,
     status,
     txid: txid || null,
@@ -743,9 +744,29 @@ async function recordPayment(paymentId, status, txid, errorMessage){
   });
 }
 
-function onIncompletePaymentFound(payment){
-  if(payment?.identifier){
-    recordPayment(payment.identifier, "incomplete", null);
+// ✅ هتشتغل لو Pi لقى دفعة معلّقة أثناء تسجيل الدخول
+async function onIncompletePaymentFound(payment) {
+  try {
+    const paymentId = payment?.identifier || payment?.id;
+    if (!paymentId) return;
+    
+    authMsg.textContent = "لقيت عملية دفع معلّقة.. بنحاول نكملها الآن ✅";
+    
+    if (window.Pi?.openPayment) {
+      await Pi.openPayment(paymentId);
+    } else if (window.Pi?.openPaymentRequest) {
+      await Pi.openPaymentRequest(paymentId);
+    } else {
+      await recordPayment(paymentId, "incomplete", null);
+      authMsg.textContent = "في دفعة معلّقة، افتحها من سجل المدفوعات داخل Pi.";
+      return;
+    }
+    
+    await recordPayment(paymentId, "incomplete_opened", null);
+    
+  } catch (e) {
+    await recordPayment(payment?.identifier || "unknown", "error", null, String(e));
+    authMsg.textContent = "حصل خطأ أثناء محاولة إكمال الدفع المعلّق.";
   }
 }
 
