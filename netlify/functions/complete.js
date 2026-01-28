@@ -1,50 +1,74 @@
 import { createClient } from "@supabase/supabase-js";
 
-const REQUIRED_PURPOSE = "MERCHANT_SUBSCRIPTION";
-const REQUIRED_AMOUNT = 1;
-
 export const handler = async (event) => {
+  // CORS (اختياري لو بتستدعي من متصفح)
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+      },
+      body: "",
+    };
+  }
+
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
   try {
     const { paymentId, txid } = JSON.parse(event.body || "{}");
-    if (!paymentId) return { statusCode: 400, body: JSON.stringify({ error: "Missing paymentId" }) };
-
-    const PI_SECRET_KEY = process.env.PI_SECRET_KEY;
-    const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
-
-    if (!PI_SECRET_KEY) return { statusCode: 500, body: JSON.stringify({ error: "Missing PI_SECRET_KEY" }) };
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE) {
-      return { statusCode: 500, body: JSON.stringify({ error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE" }) };
+    if (!paymentId) {
+      return { statusCode: 400, body: JSON.stringify({ error: "Missing paymentId" }) };
     }
 
-    const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE);
+    const PI_SECRET_KEY = process.env.PI_SECRET_KEY;
 
+    // انت قلت: "خليه موجود عادي دول بس"
+    const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
+
+    if (!PI_SECRET_KEY) {
+      return { statusCode: 500, body: JSON.stringify({ error: "Missing PI_SECRET_KEY" }) };
+    }
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      return { statusCode: 500, body: JSON.stringify({ error: "Missing Supabase URL or key" }) };
+    }
+
+    // ✅ هنا استخدمنا publishable/anon
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    // 1) Get payment info from Pi
     const pr = await fetch(`https://api.minepi.com/v2/payments/${encodeURIComponent(paymentId)}`, {
       headers: { Authorization: `Key ${PI_SECRET_KEY}` },
     });
 
     const p = await pr.json().catch(() => null);
-    if (!pr.ok || !p) return { statusCode: pr.status || 500, body: JSON.stringify({ error: "Failed to fetch payment", raw: p }) };
+    if (!pr.ok || !p) {
+      return {
+        statusCode: pr.status || 500,
+        body: JSON.stringify({ error: "Failed to fetch payment", raw: p }),
+      };
+    }
 
+    // Expected fields from front metadata
     const meta = p.metadata || {};
     const purpose = String(p.purpose || meta.purpose || "");
     const amount = Number(p.amount);
+
+    const adId = meta.adId || meta.ad_id;
     const username = String(meta.username || "");
 
-    if (purpose !== REQUIRED_PURPOSE) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Invalid purpose", purpose }) };
-    }
-    if (amount !== REQUIRED_AMOUNT) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Invalid amount", amount }) };
-    }
-    if (!username) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Missing username in metadata" }) };
-    }
+    if (!adId) return { statusCode: 400, body: JSON.stringify({ error: "Missing adId in payment metadata" }) };
+    if (purpose !== "PROMOTE_AD") return { statusCode: 400, body: JSON.stringify({ error: "Invalid purpose", purpose }) };
+    if (amount !== 5) return { statusCode: 400, body: JSON.stringify({ error: "Invalid amount", amount }) };
+    if (!username) return { statusCode: 400, body: JSON.stringify({ error: "Missing username in metadata" }) };
 
+    // 2) Complete
     const cr = await fetch(`https://api.minepi.com/v2/payments/${encodeURIComponent(paymentId)}/complete`, {
       method: "POST",
       headers: {
@@ -55,39 +79,70 @@ export const handler = async (event) => {
     });
 
     const cdata = await cr.json().catch(() => ({}));
+
+    // لو complete فشل: نحاول نسجل failed (ده محتاج RLS يسمح insert/upsert)
     if (!cr.ok) {
-      await sb.from("merchant_payments").upsert([{
-        payment_id: paymentId,
-        pi_username: username,
-        amount,
-        purpose,
-        status: "failed",
-        txid: txid || null,
-        raw: { payment: p, complete: cdata }
-      }], { onConflict: "payment_id" });
+      await sb.from("pi_payments").upsert(
+        [{
+          payment_id: paymentId,
+          txid: txid || null,
+          ad_id: adId,
+          username,
+          amount,
+          purpose,
+          status: "failed",
+          raw: { payment: p, complete: cdata },
+        }],
+        { onConflict: "payment_id" }
+      );
 
       return { statusCode: cr.status, body: JSON.stringify({ ok: false, error: "Complete failed", data: cdata }) };
     }
 
-    await sb.from("merchant_subscriptions").upsert([{
-      pi_username: username,
-      payment_id: paymentId,
-      status: "active"
-    }], { onConflict: "pi_username" });
+    // 3) Verify ad belongs to this seller
+    const { data: ad, error: adErr } = await sb
+      .from("ads")
+      .select("id,seller_username")
+      .eq("id", adId)
+      .single();
 
-    await sb.from("merchant_payments").upsert([{
-      payment_id: paymentId,
-      pi_username: username,
-      amount,
-      purpose,
-      status: "completed",
-      txid: txid || cdata.txid || p.txid || null,
-      approved_at: new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-      raw: { payment: p, complete: cdata }
-    }], { onConflict: "payment_id" });
+    if (adErr || !ad) return { statusCode: 404, body: JSON.stringify({ error: "Ad not found" }) };
+    if (ad.seller_username !== username) return { statusCode: 403, body: JSON.stringify({ error: "Not ad owner" }) };
 
-    return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+    // 4) Set promoted for 3 days
+    const promotedUntil = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+    const { error: upErr } = await sb
+      .from("ads")
+      .update({ promoted_until: promotedUntil, promoted_by: username })
+      .eq("id", adId);
+
+    if (upErr) {
+      return { statusCode: 500, body: JSON.stringify({ error: "Failed to update ad", details: upErr.message }) };
+    }
+
+    // 5) Save payment record
+    await sb.from("pi_payments").upsert(
+      [{
+        payment_id: paymentId,
+        txid: txid || cdata.txid || p.txid || null,
+        ad_id: adId,
+        username,
+        amount,
+        purpose,
+        status: "completed",
+        approved_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+        raw: { payment: p, complete: cdata },
+      }],
+      { onConflict: "payment_id" }
+    );
+
+    return {
+      statusCode: 200,
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ ok: true, promoted_until: promotedUntil }),
+    };
   } catch (e) {
     return { statusCode: 500, body: JSON.stringify({ error: "Server error", details: String(e) }) };
   }
