@@ -1,0 +1,112 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+#app {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+}
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+h1 {
+    color: #674894;
+    font-size: 1.8rem;
+}
+#user-info {
+    font-size: 0.9rem;
+    color: #666;
+}
+.donation-card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+    text-align: center;
+}
+.amount-selector {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+.amount-btn {
+    padding: 10px 20px;
+    border: 2px solid #674894;
+    background: white;
+    color: #674894;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.amount-btn:hover {
+    background: #674894;
+    color: white;
+}
+.input-group {
+    margin-bottom: 20px;
+}
+input[type="number"] {
+    padding: 10px;
+    width: 60%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+#donate-btn {
+    width: 100%;
+    padding: 15px;
+    background: #674894;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+#donate-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+.leaderboard {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+}
+ul {
+    list-style: none;
+    padding: 0;
+}
+li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+li:last-child {
+    border-bottom: none;
+}
+.hidden {
+    display: none;
+}
+#toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    z-index: 1000;
+}
