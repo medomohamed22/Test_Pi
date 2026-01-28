@@ -746,27 +746,42 @@ async function recordPayment(paymentId, status, txid, errorMessage) {
 
 // ✅ هتشتغل لو Pi لقى دفعة معلّقة أثناء تسجيل الدخول
 async function onIncompletePaymentFound(payment) {
+  const paymentId = payment?.identifier || payment?.paymentId || payment?.id;
+  if (!paymentId) return;
+  
+  authMsg.textContent = "لقيت دفعة معلّقة.. بجرب أعتمدها (Approve) وبعدين أفتحها ✅";
+  
   try {
-    const paymentId = payment?.identifier || payment?.id;
-    if (!paymentId) return;
+    // 1) Approve من السيرفر
+    const ar = await fetch("/api/pi/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentId })
+    });
+    const aj = await ar.json().catch(() => ({}));
     
-    authMsg.textContent = "لقيت عملية دفع معلّقة.. بنحاول نكملها الآن ✅";
+    if (!ar.ok || !aj.ok) {
+      await recordPayment(paymentId, "approve_failed", null, aj?.error || "approve_failed");
+      authMsg.textContent = "الدفع المعلّق محتاج موافقة من السيرفر، لكن approve فشل ❌";
+      return;
+    }
     
-    if (window.Pi?.openPayment) {
+    // 2) افتح الدفع داخل Pi
+    authMsg.textContent = "تم اعتماد الدفع ✅ بفتح الدفع المعلّق الآن…";
+    
+    if (typeof Pi?.openPayment === "function") {
       await Pi.openPayment(paymentId);
-    } else if (window.Pi?.openPaymentRequest) {
+    } else if (typeof Pi?.openPaymentRequest === "function") {
       await Pi.openPaymentRequest(paymentId);
     } else {
-      await recordPayment(paymentId, "incomplete", null);
-      authMsg.textContent = "في دفعة معلّقة، افتحها من سجل المدفوعات داخل Pi.";
-      return;
+      authMsg.textContent = "SDK لا يدعم فتح الدفع تلقائيًا. افتحه من سجل المدفوعات داخل Pi.";
     }
     
     await recordPayment(paymentId, "incomplete_opened", null);
     
   } catch (e) {
-    await recordPayment(payment?.identifier || "unknown", "error", null, String(e));
-    authMsg.textContent = "حصل خطأ أثناء محاولة إكمال الدفع المعلّق.";
+    await recordPayment(paymentId, "error", null, String(e));
+    authMsg.textContent = "حصل خطأ أثناء محاولة حل الدفع المعلّق.";
   }
 }
 
