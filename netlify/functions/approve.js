@@ -1,31 +1,33 @@
-
-export const handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
+  const { paymentId } = JSON.parse(event.body);
+
+  if (!paymentId) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Missing paymentId' }) };
+  }
+
+  const PI_SECRET_KEY = process.env.PI_SECRET_KEY;
+  const PI_API_BASE = 'https://api.minepi.com/v2';
+
   try {
-    const { paymentId } = JSON.parse(event.body || "{}");
-    if (!paymentId) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Missing paymentId" }) };
-    }
-
-    const PI_SECRET_KEY = process.env.PI_SECRET_KEY;
-    if (!PI_SECRET_KEY) {
-      return { statusCode: 500, body: JSON.stringify({ error: "Missing PI_SECRET_KEY" }) };
-    }
-
-    const r = await fetch(`https://api.minepi.com/v2/payments/${encodeURIComponent(paymentId)}/approve`, {
-      method: "POST",
+    const response = await fetch(`${PI_API_BASE}/payments/${paymentId}/approve`, {
+      method: 'POST',
       headers: {
-        Authorization: `Key ${PI_SECRET_KEY}`,
-        "Content-Type": "application/json",
+        'Authorization': `Key ${PI_SECRET_KEY}`,
+        'Content-Type': 'application/json',
       },
     });
 
-    const data = await r.json().catch(() => ({}));
-    return { statusCode: r.ok ? 200 : r.status, body: JSON.stringify({ ok: r.ok, data }) };
-  } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: "Server error", details: String(e) }) };
+    if (response.ok) {
+      return { statusCode: 200, body: JSON.stringify({ approved: true }) };
+    } else {
+      const error = await response.json();
+      return { statusCode: response.status, body: JSON.stringify({ error }) };
+    }
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
