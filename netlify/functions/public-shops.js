@@ -23,6 +23,7 @@ exports.handler = async (event) => {
     let query = supabase
       .from("active_shops_public")
       .select("*")
+.range(0, 200)
       .order("created_at", { ascending: false });
 
     if (limit) {
