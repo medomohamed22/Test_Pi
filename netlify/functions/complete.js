@@ -4,36 +4,35 @@ export default async (req) => {
     if (req.method !== "POST") {
       return json({ ok: true, note: "method_not_allowed_but_ok" }, 200);
     }
-
+    
     const { paymentId, txid } = await safeJson(req);
     if (!paymentId) return json({ ok: true, note: "missing_paymentId" }, 200);
-
+    
     const SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL;
-    const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
+    const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
     if (!SUPABASE_URL || !SERVICE_KEY) {
       // عشان الفرونت مايفشلش
       return json({ ok: true, note: "missing_env" }, 200);
     }
-
+    
     // 1) اقرأ payment من جدول merchant_payments لو موجود عشان نجيب pi_username
     const payRow = await sbSelectOne(SUPABASE_URL, SERVICE_KEY,
       "merchant_payments",
       `payment_id=eq.${encodeURIComponent(paymentId)}`
     );
-
+    
     const pi_username = payRow?.pi_username || "unknown";
-
+    
     // 2) upsert في merchant_payments: completed + txid
     await sbUpsert(SUPABASE_URL, SERVICE_KEY, "merchant_payments", {
-      payment_id,
-      pi_username,
-      status: "completed",
-      txid: txid || null,
-      error_message: null,
-      updated_at: new Date().toISOString(),
-    }, ["payment_id"]);
-
+  payment_id: paymentId,
+  pi_username,
+  status: "completed",
+  txid: txid || null,
+  error_message: null,
+  updated_at: new Date().toISOString(),
+}, ["payment_id"]);
     // 3) فعّل الاشتراك في merchant_subscriptions
     // (نضمن Row واحد active لكل تاجر)
     await sbUpsert(SUPABASE_URL, SERVICE_KEY, "merchant_subscriptions", {
@@ -42,7 +41,7 @@ export default async (req) => {
       activated_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }, ["pi_username"]);
-
+    
     // ✅ أهم حاجة للفرونت
     return json({ ok: true }, 200);
   } catch (e) {
