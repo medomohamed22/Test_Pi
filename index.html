@@ -510,6 +510,7 @@ const saveMsg = $("saveMsg");
 const btnRefreshMyShops = $("btnRefreshMyShops");
 const myShopsList = $("myShopsList");
 let myShopsCount = 0;
+let myShopsCache = [];
 
 // Tabs
 tUser.addEventListener("click", ()=>{
@@ -601,6 +602,7 @@ async function generateFingerprint(){
 // ================= USER =================
 let userLoc = null;
 let cachedNearby = [];
+let cachedPublicShops = [];
 let currentShopId = null;
 
 btnBackToGrid.addEventListener("click", ()=>{
@@ -631,9 +633,11 @@ btnUserGPS.addEventListener("click", async ()=>{
 async function loadNearbyShops(){
   shopsList.innerHTML = `<div class="card"><b>جاري تحميل المحلات...</b><div class="muted">لحظات…</div></div>`;
 
-  const { data, error } = await supa.from("shops").select("*");
-  if(error){
-    shopsList.innerHTML = `<div class="card"><b>خطأ</b><div class="muted">${error.message}</div></div>`;
+  let data = [];
+  try{
+    data = await fetchPublicShops();
+  }catch(e){
+    shopsList.innerHTML = `<div class="card"><b>خطأ</b><div class="muted">تعذر تحميل المحلات.</div></div>`;
     return;
   }
 
@@ -647,6 +651,7 @@ async function loadNearbyShops(){
     .map(s => ({...s, dist_km: haversine(userLoc.lat, userLoc.lng, s.lat, s.lng)}))
     .sort((a,b)=>a.dist_km - b.dist_km);
   cachedNearby = arr;
+  cachedPublicShops = data || [];
 
   if(!arr.length){
     shopsList.innerHTML = `<div class="card"><b>لا توجد محلات</b><div class="muted">اطلب من التاجر إضافة متجر.</div></div>`;
@@ -712,12 +717,19 @@ window.openShopDetails = async (shopId)=>{
   currentShopId = shopId;
   let shop = cachedNearby.find(s => String(s.id) === String(shopId));
   if(!shop){
-    const { data, error } = await supa.from("shops").select("*").eq("id", shopId).single();
-    if(error || !data){
+    let found = cachedPublicShops.find(s => String(s.id) === String(shopId));
+    if(!found){
+      try{
+        const latest = await fetchPublicShops();
+        cachedPublicShops = latest;
+        found = latest.find(s => String(s.id) === String(shopId));
+      }catch(e){}
+    }
+    if(!found){
       alert("تعذر تحميل تفاصيل المتجر.");
       return;
     }
-    shop = data;
+    shop = found;
     if(userLoc && typeof shop.lat === "number" && typeof shop.lng === "number"){
       shop.dist_km = haversine(userLoc.lat, userLoc.lng, shop.lat, shop.lng);
     }
@@ -914,18 +926,14 @@ function getActiveSubscription(){
 
 async function getActiveStoreCount(){
   if(!piUser) return 0;
-  const { count, error } = await supa
-    .from("shops")
-    .select("id", { count: "exact", head: true })
-    .or(`merchant_id.eq.${piUser.username},owner_username.eq.${piUser.username}`)
-    .eq("status", "active");
-  if(!error) return count || 0;
-
-  const fallback = await supa
-    .from("shops")
-    .select("id", { count: "exact", head: true })
-    .eq("owner_username", piUser.username);
-  return fallback.count || 0;
+  if(!myShopsCache.length){
+    try{
+      myShopsCache = await fetchMyShopsList();
+    }catch(e){
+      return 0;
+    }
+  }
+  return myShopsCache.filter((shop)=> (shop.status || "active") === "active").length;
 }
 
 async function updateSubscriptionUI(){
@@ -1267,6 +1275,41 @@ btnCancelEdit.addEventListener("click", ()=>{
 
 btnRefreshMyShops.addEventListener("click", loadMyShops);
 
+async function fetchPublicShops(limit){
+  const url = new URL("/.netlify/functions/public-shops", window.location.origin);
+  if(limit) url.searchParams.set("limit", String(limit));
+  const r = await fetch(url, { method: "GET" });
+  const data = await r.json().catch(()=> ({}));
+  if(!r.ok || !data.ok){
+    throw new Error(data?.error || "PUBLIC_SHOPS_FAILED");
+  }
+  return data.shops || [];
+}
+
+async function callMyShops(method, payload, query = ""){
+  if(!piAccessToken) throw new Error("MISSING_PI_TOKEN");
+  const headers = { Authorization: `Bearer ${piAccessToken}` };
+  if(payload) headers["Content-Type"] = "application/json";
+  const r = await fetch(`/.netlify/functions/my-shops${query}`, {
+    method,
+    headers,
+    body: payload ? JSON.stringify(payload) : undefined
+  });
+  const data = await r.json().catch(()=> ({}));
+  if(!r.ok || !data.ok){
+    const err = new Error(data?.error || "MY_SHOPS_FAILED");
+    err.status = r.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+async function fetchMyShopsList(){
+  const data = await callMyShops("GET");
+  return data.shops || [];
+}
+
 async function uploadShopImage(file){
   const safeName = file.name.replace(/[^\w.\-]+/g,"_");
   const path = `${piUser.username}/${Date.now()}_${safeName}`;
@@ -1295,8 +1338,6 @@ btnSave.addEventListener("click", async ()=>{
     }
 
   const payload = {
-    owner_username: piUser.username,
-    merchant_id: piUser.username,
     name,
     description: mDesc.value.trim() || null,
     address: mAddr.value.trim() || null,
@@ -1307,17 +1348,11 @@ btnSave.addEventListener("click", async ()=>{
     if(imageUrl) payload.image_url = imageUrl;
 
     const shopPayload = editShopId ? { ...payload, id: editShopId } : payload;
-    const r = await fetch("/.netlify/functions/shop-upsert", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        merchant_id: piUser.username,
-        shop: shopPayload
-      })
-    });
-    const data = await r.json().catch(()=> ({}));
-    if(!r.ok || !data.ok){
-      const errCode = data?.error || "SHOP_UPSERT_FAILED";
+    let data = null;
+    try{
+      data = await callMyShops(editShopId ? "PUT" : "POST", shopPayload);
+    }catch(err){
+      const errCode = err?.message || "SHOP_UPSERT_FAILED";
       if(errCode === "SUBSCRIPTION_REQUIRED"){
         showSubscriptionGate("لا يوجد اشتراك نشط — اشترك لمدة 30 يوم.");
         return;
@@ -1327,7 +1362,7 @@ btnSave.addEventListener("click", async ()=>{
         return;
       }
       saveMsg.textContent = "خطأ: تعذر حفظ المتجر.";
-      console.error("shop-upsert failed", { status: r.status, data });
+      console.error("my-shops failed", { error: errCode });
       return;
     }
 
@@ -1353,36 +1388,28 @@ function resetForm(){
 async function loadMyShops(){
   myShopsList.innerHTML = `<div class="muted">جاري تحميل محلاتك...</div>`;
 
-  let { data, error } = await supa
-    .from("shops")
-    .select("*")
-    .or(`merchant_id.eq.${piUser.username},owner_username.eq.${piUser.username}`)
-    .eq("status", "active")
-    .order("created_at", { ascending: false });
-  if(error && String(error.message || "").includes("merchant_id")){
-    ({ data, error } = await supa
-      .from("shops")
-      .select("*")
-      .eq("owner_username", piUser.username)
-      .order("created_at", { ascending: false }));
-  }
-
-  if(error){
-    myShopsList.innerHTML = `<div class="muted">خطأ: ${error.message}</div>`;
+  let data = [];
+  try{
+    data = await fetchMyShopsList();
+  }catch(e){
+    myShopsList.innerHTML = `<div class="muted">خطأ: تعذر تحميل محلاتك.</div>`;
     await updateSubscriptionUI();
     return;
   }
 
-  if(!data || !data.length){
+  myShopsCache = data || [];
+  const activeShops = (data || []).filter((shop)=> (shop.status || "active") === "active");
+
+  if(!activeShops.length){
     myShopsCount = 0;
     myShopsList.innerHTML = `<div class="muted">لا توجد محلات مضافة بعد.</div>`;
     await updateSubscriptionUI();
     return;
   }
 
-  myShopsCount = data.length;
+  myShopsCount = activeShops.length;
   myShopsList.innerHTML = "";
-  data.forEach(s=>{
+  activeShops.forEach(s=>{
     const img = s.image_url || `https://picsum.photos/200?seed=${encodeURIComponent(s.id)}`;
     myShopsList.innerHTML += `
       <div class="card" style="padding:12px;margin-bottom:10px">
@@ -1406,16 +1433,22 @@ async function loadMyShops(){
 }
 
 window.startEditShop = async (id)=>{
-  const { data, error } = await supa.from("shops").select("*").eq("id", id).single();
-  if(error) return alert("خطأ: " + error.message);
+  let shop = myShopsCache.find((item)=> String(item.id) === String(id));
+  if(!shop){
+    try{
+      myShopsCache = await fetchMyShopsList();
+      shop = myShopsCache.find((item)=> String(item.id) === String(id));
+    }catch(e){}
+  }
+  if(!shop) return alert("خطأ: تعذر تحميل المتجر.");
 
-  editShopId = data.id;
+  editShopId = shop.id;
 
-  mName.value = data.name || "";
-  mDesc.value = data.description || "";
-  mAddr.value = data.address || "";
+  mName.value = shop.name || "";
+  mDesc.value = shop.description || "";
+  mAddr.value = shop.address || "";
 
-  shopLoc = { lat: data.lat, lng: data.lng };
+  shopLoc = { lat: shop.lat, lng: shop.lng };
   shopLocText.textContent = `موقع المتجر الحالي: ${shopLoc.lat.toFixed(5)}, ${shopLoc.lng.toFixed(5)}`;
 
   saveMsg.textContent = "وضع التعديل: عدّل ثم اضغط حفظ ✅";
@@ -1427,8 +1460,11 @@ window.deleteShop = async (id)=>{
   const ok = confirm("متأكد أنك تريد حذف المتجر؟");
   if(!ok) return;
 
-  const { error } = await supa.from("shops").delete().eq("id", id);
-  if(error) return alert("خطأ: " + error.message);
+  try{
+    await callMyShops("DELETE", null, `?id=${encodeURIComponent(id)}`);
+  }catch(e){
+    return alert("خطأ: تعذر حذف المتجر.");
+  }
 
   if(editShopId === id) resetForm();
   alert("تم الحذف ✅");
