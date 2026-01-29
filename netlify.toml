@@ -18,3 +18,6 @@ force = true
 
 [build.environment]
 SECRETS_SCAN_OMIT_KEYS = "PUBLIC_SUPABASE_URL"
+
+[functions."subscription-expire"]
+schedule = "0 * * * *"
