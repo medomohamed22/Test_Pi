@@ -8,32 +8,27 @@ export default async (req) => {
     const { paymentId, txid } = await safeJson(req);
     if (!paymentId) return json({ ok: true, note: "missing_paymentId" }, 200);
 
-    // ✅ Pi Secret Key (رجعناه)
     const PI_SECRET_KEY = process.env.PI_SECRET_KEY;
     if (!PI_SECRET_KEY) return json({ ok: true, note: "missing_PI_SECRET_KEY" }, 200);
 
-    // ✅ Supabase Service Role
-    const SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL;
-    const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY; // مهم: KEY مش ROLE
+    const SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL; // ✅ صح
+    const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!SUPABASE_URL || !SERVICE_KEY) {
-      // عشان الفرونت مايفشلش
       return json({ ok: true, note: "missing_env" }, 200);
     }
 
-    // 0) (اختياري لكن مفيد) هات تفاصيل الدفع من Pi عشان نجيب username من metadata لو مش موجود عندنا
+    // 0) Get payment from Pi (for metadata username)
     const pr = await fetch(
       `https://api.minepi.com/v2/payments/${encodeURIComponent(paymentId)}`,
       { headers: { Authorization: `Key ${PI_SECRET_KEY}` } }
     );
     const p = await pr.json().catch(() => null);
 
-    // استخرج username من metadata لو موجود
     const meta = (p && typeof p === "object") ? (p.metadata || {}) : {};
-    const metaUser =
-      String(meta.username || meta.pi_username || meta.user || "").trim();
+    const metaUser = String(meta.username || meta.pi_username || meta.user || "").trim();
 
-    // 1) اقرأ payment من جدول merchant_payments لو موجود عشان نجيب pi_username
+    // 1) read from merchant_payments
     const payRow = await sbSelectOne(
       SUPABASE_URL,
       SERVICE_KEY,
@@ -41,9 +36,9 @@ export default async (req) => {
       `payment_id=eq.${encodeURIComponent(paymentId)}`
     );
 
-    const pi_username = (payRow?.pi_username || metaUser || "unknown").trim() || "unknown";
+    const pi_username = String(payRow?.pi_username || metaUser || "unknown").trim() || "unknown";
 
-    // 2) Complete على Pi API
+    // 2) Complete on Pi
     const cr = await fetch(
       `https://api.minepi.com/v2/payments/${encodeURIComponent(paymentId)}/complete`,
       {
@@ -57,30 +52,27 @@ export default async (req) => {
     );
     const cdata = await cr.json().catch(() => ({}));
 
-    // 3) سجّل في merchant_payments (upsert)
-    // - لو Pi complete فشل: نخزن failed/complete_failed
-    // - لو نجح: نخزن completed
-    const status = cr.ok ? "completed" : "complete_failed";
+    const payStatus = cr.ok ? "completed" : "complete_failed";
 
-    await sbUpsert(
+    // 3) upsert merchant_payments (بدون raw)
+    await sbUpsertOrThrow(
       SUPABASE_URL,
       SERVICE_KEY,
       "merchant_payments",
       {
         payment_id: paymentId,
         pi_username,
-        status,
+        status: payStatus,
         txid: txid || cdata?.txid || p?.txid || null,
-        error_message: cr.ok ? null : (cdata?.error || cdata?.message || "pi_complete_failed"),
+        error_message: cr.ok ? null : String(cdata?.error || cdata?.message || "pi_complete_failed"),
         updated_at: new Date().toISOString(),
-        raw: { pi_payment: p, pi_complete: cdata }, // اختياري لو عندك عمود raw jsonb
       },
       ["payment_id"]
     );
 
-    // 4) فعّل الاشتراك فقط لو الـ complete نجح
+    // 4) activate subscription only if complete ok
     if (cr.ok) {
-      await sbUpsert(
+      await sbUpsertOrThrow(
         SUPABASE_URL,
         SERVICE_KEY,
         "merchant_subscriptions",
@@ -94,11 +86,8 @@ export default async (req) => {
       );
     }
 
-    // ✅ أهم حاجة: الفرونت
-    return json({ ok: true, pi_ok: !!cr.ok, status: cr.status }, 200);
-
+    return json({ ok: true, pi_ok: !!cr.ok, pi_status: cr.status }, 200);
   } catch (e) {
-    // ✅ حتى لو حصل خطأ… الفرونت مايفشلش
     return json({ ok: true, note: "complete_exception", error: String(e) }, 200);
   }
 };
@@ -114,7 +103,7 @@ async function safeJson(req) {
   try { return await req.json(); } catch { return {}; }
 }
 
-// -------- Supabase REST helpers (بدون مكتبة) --------
+// -------- Supabase REST helpers --------
 
 async function sbSelectOne(url, key, table, filterQuery) {
   const r = await fetch(`${url}/rest/v1/${table}?select=*&${filterQuery}&limit=1`, {
@@ -131,9 +120,9 @@ async function sbSelectOne(url, key, table, filterQuery) {
   return Array.isArray(j) ? (j[0] || null) : null;
 }
 
-async function sbUpsert(url, key, table, payload, onConflictCols = []) {
+async function sbUpsertOrThrow(url, key, table, payload, onConflictCols = []) {
   const onConflict = onConflictCols.length ? `?on_conflict=${onConflictCols.join(",")}` : "";
-  await fetch(`${url}/rest/v1/${table}${onConflict}`, {
+  const r = await fetch(`${url}/rest/v1/${table}${onConflict}`, {
     method: "POST",
     headers: {
       apikey: key,
@@ -143,4 +132,9 @@ async function sbUpsert(url, key, table, payload, onConflictCols = []) {
     },
     body: JSON.stringify(payload),
   });
+
+  if (!r.ok) {
+    const t = await r.text().catch(() => "");
+    throw new Error(`Supabase upsert failed (${table}) status=${r.status} body=${t}`);
+  }
 }
