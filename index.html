@@ -500,19 +500,31 @@ function tryOpenExternal(url){
   return !!win;
 }
 
+function openExternalUrl(url){
+  if (window.Pi?.openUrl) {
+    try {
+      window.Pi.openUrl(url);
+      return true;
+    } catch (e) {
+      // fallback
+    }
+  }
+  return tryOpenExternal(url);
+}
+
 function openGoogleMapsApp(lat, lng, name) {
   const safeName = encodeURIComponent(name || "");
   const intentUrl = `intent://maps.google.com/?daddr=${lat},${lng}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
   const geoUrl = `geo:${lat},${lng}?q=${lat},${lng}(${safeName})`;
   const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
-  if (tryOpenExternal(intentUrl)) return;
+  if (openExternalUrl(intentUrl)) return;
 
   setTimeout(() => {
-    if (tryOpenExternal(geoUrl)) return;
+    if (openExternalUrl(geoUrl)) return;
 
     setTimeout(() => {
-      if (!tryOpenExternal(webUrl)) {
+      if (!openExternalUrl(webUrl)) {
         window.location.href = webUrl;
       }
     }, 400);
