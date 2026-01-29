@@ -630,12 +630,24 @@ btnUserGPS.addEventListener("click", async ()=>{
   }
 });
 
+async function refreshPublicShopsCache(){
+  const data = await fetchPublicShops();
+  cachedPublicShops = data || [];
+  if(userLoc){
+    cachedNearby = (data || [])
+      .filter(s => typeof s.lat === "number" && typeof s.lng === "number")
+      .map(s => ({...s, dist_km: haversine(userLoc.lat, userLoc.lng, s.lat, s.lng)}))
+      .sort((a,b)=>a.dist_km - b.dist_km);
+  }
+  return data || [];
+}
+
 async function loadNearbyShops(){
   shopsList.innerHTML = `<div class="card"><b>جاري تحميل المحلات...</b><div class="muted">لحظات…</div></div>`;
 
   let data = [];
   try{
-    data = await fetchPublicShops();
+    data = await refreshPublicShopsCache();
   }catch(e){
     shopsList.innerHTML = `<div class="card"><b>خطأ</b><div class="muted">تعذر تحميل المحلات.</div></div>`;
     return;
@@ -646,12 +658,7 @@ async function loadNearbyShops(){
     return;
   }
 
-  const arr = (data||[])
-    .filter(s => typeof s.lat === "number" && typeof s.lng === "number")
-    .map(s => ({...s, dist_km: haversine(userLoc.lat, userLoc.lng, s.lat, s.lng)}))
-    .sort((a,b)=>a.dist_km - b.dist_km);
-  cachedNearby = arr;
-  cachedPublicShops = data || [];
+  const arr = cachedNearby;
 
   if(!arr.length){
     shopsList.innerHTML = `<div class="card"><b>لا توجد محلات</b><div class="muted">اطلب من التاجر إضافة متجر.</div></div>`;
@@ -713,15 +720,14 @@ function renderShopDetails(s){
   `;
 }
 
-window.openShopDetails = async (shopId)=>{
+window.openShopDetails = async (shopId, forceRefresh = false)=>{
   currentShopId = shopId;
   let shop = cachedNearby.find(s => String(s.id) === String(shopId));
-  if(!shop){
+  if(!shop || forceRefresh){
     let found = cachedPublicShops.find(s => String(s.id) === String(shopId));
-    if(!found){
+    if(!found || forceRefresh){
       try{
-        const latest = await fetchPublicShops();
-        cachedPublicShops = latest;
+        const latest = await refreshPublicShopsCache();
         found = latest.find(s => String(s.id) === String(shopId));
       }catch(e){}
     }
@@ -778,7 +784,7 @@ window.submitReview = async (shopId)=>{
     alert("تم إرسال التقييم ⭐");
     await loadNearbyShops();
     if(currentShopId){
-      await openShopDetails(currentShopId);
+      await openShopDetails(currentShopId, true);
     }
   }catch(e){
     alert("حدث خطأ أثناء إرسال التقييم.");
