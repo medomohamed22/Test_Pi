@@ -15,3 +15,6 @@ from = "/api/pi/complete"
 to = "/.netlify/functions/complete"
 status = 200
 force = true
+
+[build.environment]
+SECRETS_SCAN_OMIT_KEYS = "PUBLIC_SUPABASE_URL"
