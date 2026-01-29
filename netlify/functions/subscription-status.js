@@ -4,7 +4,7 @@ export async function handler(event) {
       return json(405, { ok: false, error: "Method not allowed" });
     }
 
-    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL;
     const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!SUPABASE_URL || !SERVICE_KEY) {
