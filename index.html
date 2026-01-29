@@ -425,6 +425,9 @@ const shopsList = $("shopsList");
 const shopDetailsView = $("shopDetailsView");
 const shopDetailsCard = $("shopDetailsCard");
 const btnBackToGrid = $("btnBackToGrid");
+const custMapLink = $("custMapLink");
+const custTrackMapLink = $("custTrackMapLink");
+const dMapLink = $("dMapLink");
 
 const authBox = $("authBox");
 const shopForm = $("shopForm");
@@ -498,6 +501,20 @@ function haversine(lat1, lon1, lat2, lon2){
 function tryOpenExternal(url){
   const win = window.open(url, "_blank");
   return !!win;
+}
+
+function openMapUrl(url) {
+  if (typeof Pi?.openUrlInSystemBrowser === "function") {
+    Pi.openUrlInSystemBrowser(url);
+    return false;
+  }
+  window.open(url, "_blank", "noopener");
+  return false;
+}
+
+function buildMapUrl(lat, lng) {
+  const destination = encodeURIComponent(`${lat},${lng}`);
+  return `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
 }
 
 function openGoogleMapsApp(lat, lng, name) {
@@ -612,6 +629,7 @@ function renderShopDetails(s){
   const avg = Number(s.avg_rating || 0).toFixed(1);
   const cnt = Number(s.rating_count || 0);
   const distance = typeof s.dist_km === "number" ? `${s.dist_km.toFixed(2)} كم` : "—";
+  const mapUrl = buildMapUrl(s.lat, s.lng);
   return `
     <div class="card">
       <img class="cover" src="${img}" alt="shop">
@@ -626,7 +644,7 @@ function renderShopDetails(s){
         <span class="badge">⭐ ${avg} (${cnt})</span>
       </div>
       <div class="detail-actions">
-        <button type="button" onclick="openGoogleMapsApp(${s.lat},${s.lng},'${escapeHtml(s.name)}')">Google Map</button>
+        <button type="button" onclick="return openMapUrl('${mapUrl}')">Google Map</button>
       </div>
       <hr class="sep">
       <b>قيّم المتجر</b>
@@ -712,6 +730,18 @@ function escapeHtml(str){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
+
+const wireMapLink = (link) => {
+  if (!link) return;
+  link.onclick = (e) => {
+    e.preventDefault();
+    return openMapUrl(link.href);
+  };
+};
+
+wireMapLink(custMapLink);
+wireMapLink(custTrackMapLink);
+wireMapLink(dMapLink);
 
 // ================= MERCHANT =================
 let piUser = null;
