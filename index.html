@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -295,39 +297,6 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
 }
 
 @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-/* ستايل التصنيفات */
-.cat-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 5px;
-  margin-bottom: 12px;
-  -webkit-overflow-scrolling: touch; 
-  scrollbar-width: none; 
-}
-.cat-scroll::-webkit-scrollbar { display: none; }
-
-.cat-btn {
-  white-space: nowrap;
-  padding: 8px 16px;
-  border-radius: 99px;
-  border: 1px solid rgba(127,92,255,.20);
-  background: rgba(255,255,255,.6);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 700;
-  transition: all 0.2s;
-  box-shadow: 0 4px 10px rgba(20,12,60,.05);
-  cursor: pointer;
-}
-.cat-btn.active {
-  background: linear-gradient(135deg, rgba(183,167,255,1), rgba(139,108,255,1));
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 6px 15px rgba(91,44,255,.25);
-}
-
 </style>
 </head>
 
@@ -341,6 +310,7 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
     <button id="tMer" type="button">التاجر</button>
   </div>
 
+  <!-- ================= USER ================= -->
   <div id="userView">
     <div class="card">
       <div class="row">
@@ -352,8 +322,6 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <div id="userLocText" class="muted" style="margin-top:8px"></div>
     </div>
 
-    <div class="cat-scroll" id="categoryFilters"></div>
-
     <div id="shopsList"></div>
     <div id="shopDetailsView" class="shop-details">
       <button id="btnBackToGrid" class="secondary" type="button">⬅️ رجوع للقائمة</button>
@@ -362,8 +330,10 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
     </div>
   </div>
 
+  <!-- ================= MERCHANT ================= -->
   <div id="merView" style="display:none">
 
+    <!-- Auth -->
     <div id="authBox" class="card">
       <div class="row">
         <b>حساب التاجر</b>
@@ -378,6 +348,7 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       </div>
     </div>
 
+    <!-- Merchant Dashboard -->
     <div id="shopForm" class="card" style="display:none">
       <div class="row">
         <b>لوحة التاجر</b>
@@ -433,6 +404,7 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
         </div>
       </div>
 
+      <!-- ✅ زر يدوي لحل أي دفعة معلّقة -->
       <button id="btnResolvePending" class="secondary" type="button" style="display:none;margin-top:10px">
         🔁 حاول تكمل الدفعة المعلّقة
       </button>
@@ -444,10 +416,6 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <div style="height:10px"></div>
 
       <textarea id="mDesc" placeholder="وصف المتجر"></textarea>
-      <div style="height:10px"></div>
-      
-      <label class="muted" style="font-size:12px;margin-bottom:4px;display:block">تصنيف المتجر:</label>
-      <select id="mCat"></select>
       <div style="height:10px"></div>
 
       <input id="mAddr" placeholder="العنوان">
@@ -490,28 +458,14 @@ if (window.Pi) {
   Pi.init({ version: "2.0", sandbox: PI_SANDBOX });
 }
 
-// === تعريفات التصنيفات ===
-const SHOP_CATEGORIES = [
-  { id: 'all', label: 'الكل', icon: '📍' }, 
-  { id: 'market', label: 'سوبر ماركت', icon: '🛒' },
-  { id: 'restaurant', label: 'مطعم', icon: '🍔' },
-  { id: 'cafe', label: 'كافيه', icon: '☕' },
-  { id: 'clothes', label: 'ملابس', icon: '👕' },
-  { id: 'shoes', label: 'أحذية', icon: '👟' },
-  { id: 'pharmacy', label: 'صيدلية', icon: '💊' },
-  { id: 'electronics', label: 'إلكترونيات', icon: '📱' },
-  { id: 'service', label: 'خدمات', icon: '🔧' },
-  { id: 'other', label: 'أخرى', icon: '🔖' }
-];
-
-let activeCategory = 'all';
-
-// === العناصر DOM ===
 const $ = (id) => document.getElementById(id);
+
+// Elements
 const tUser = $("tUser");
 const tMer  = $("tMer");
 const userView = $("userView");
 const merView  = $("merView");
+
 const gpsStatus = $("gpsStatus");
 const btnUserGPS = $("btnUserGPS");
 const userLocText = $("userLocText");
@@ -519,7 +473,9 @@ const shopsList = $("shopsList");
 const shopDetailsView = $("shopDetailsView");
 const shopDetailsCard = $("shopDetailsCard");
 const btnBackToGrid = $("btnBackToGrid");
-const categoryFilters = $("categoryFilters");
+const custMapLink = $("custMapLink");
+const custTrackMapLink = $("custTrackMapLink");
+const dMapLink = $("dMapLink");
 
 const authBox = $("authBox");
 const shopForm = $("shopForm");
@@ -544,7 +500,6 @@ const pendingMsg = $("pendingMsg");
 const mName = $("mName");
 const mDesc = $("mDesc");
 const mAddr = $("mAddr");
-const mCat = $("mCat"); 
 const mImg  = $("mImg");
 const btnShopGPS = $("btnShopGPS");
 const shopLocText = $("shopLocText");
@@ -554,34 +509,10 @@ const saveMsg = $("saveMsg");
 
 const btnRefreshMyShops = $("btnRefreshMyShops");
 const myShopsList = $("myShopsList");
+let myShopsCount = 0;
+let myShopsCache = [];
 
-// === تهيئة التصنيفات ===
-function initCategories() {
-  mCat.innerHTML = SHOP_CATEGORIES
-    .filter(c => c.id !== 'all')
-    .map(c => `<option value="${c.id}">${c.icon} ${c.label}</option>`)
-    .join("");
-
-  categoryFilters.innerHTML = SHOP_CATEGORIES
-    .map(c => `
-      <button 
-        class="cat-btn ${c.id === 'all' ? 'active' : ''}" 
-        onclick="setCategoryFilter('${c.id}', this)"
-      >
-        ${c.icon} ${c.label}
-      </button>
-    `).join("");
-}
-initCategories();
-
-window.setCategoryFilter = (catId, btnElement) => {
-  activeCategory = catId;
-  document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-  if(btnElement) btnElement.classList.add('active');
-  loadNearbyShops();
-};
-
-// === التبويبات ===
+// Tabs
 tUser.addEventListener("click", ()=>{
   userView.style.display="block";
   merView.style.display="none";
@@ -595,7 +526,7 @@ tMer.addEventListener("click", ()=>{
   tUser.classList.remove("active");
 });
 
-// === دوال مساعدة ===
+// GPS helper (fixed)
 function getGPS(){
   return new Promise((res, rej)=>{
     if(!navigator.geolocation) return rej(new Error("GPS غير مدعوم"));
@@ -607,6 +538,7 @@ function getGPS(){
   });
 }
 
+// Haversine distance
 function haversine(lat1, lon1, lat2, lon2){
   const R = 6371;
   const dLat = (lat2-lat1) * Math.PI/180;
@@ -623,41 +555,61 @@ function tryOpenExternal(url){
   return !!win;
 }
 
+function openMapUrl(url) {
+  if (typeof Pi?.openUrlInSystemBrowser === "function") {
+    Pi.openUrlInSystemBrowser(url);
+    return false;
+  }
+  window.open(url, "_blank", "noopener");
+  return false;
+}
+
 function buildMapUrl(lat, lng) {
-  return `https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}`;
+  const destination = encodeURIComponent(`${lat},${lng}`);
+  return `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
 }
 
 function openGoogleMapsApp(lat, lng, name) {
   const safeName = encodeURIComponent(name || "");
-  const intentUrl = `intent://maps.google.com/maps?q=${lat},${lng}(${safeName})#Intent;scheme=https;package=com.google.android.apps.maps;end`;
-  const webUrl = `http://maps.google.com/maps?q=${lat},${lng}`;
+  const intentUrl = `intent://maps.google.com/?daddr=${lat},${lng}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+  const geoUrl = `geo:${lat},${lng}?q=${lat},${lng}(${safeName})`;
+  const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   if (tryOpenExternal(intentUrl)) return;
+
   setTimeout(() => {
-    window.location.href = webUrl;
+    if (tryOpenExternal(geoUrl)) return;
+
+    setTimeout(() => {
+      if (!tryOpenExternal(webUrl)) {
+        window.location.href = webUrl;
+      }
+    }, 400);
   }, 400);
 }
-
-function escapeHtml(str){
-  return String(str)
-    .replaceAll("&","&")
-    .replaceAll("<","<")
-    .replaceAll(">",">")
-    .replaceAll('"',""")
-    .replaceAll("'","'");
-}
-
+// Fingerprint (SHA-256)
 async function generateFingerprint(){
-  const raw = navigator.userAgent + "|" + navigator.language + "|" + screen.width + "x" + screen.height;
+  const raw =
+    navigator.userAgent + "|" +
+    navigator.language + "|" +
+    (navigator.platform || "") + "|" +
+    screen.width + "x" + screen.height + "|" +
+    (Intl.DateTimeFormat().resolvedOptions().timeZone || "");
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
   return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 
-// ================= المستخدم =================
+// ================= USER =================
 let userLoc = null;
 let cachedNearby = [];
 let cachedPublicShops = [];
 let currentShopId = null;
+
+btnBackToGrid.addEventListener("click", ()=>{
+  shopDetailsView.style.display = "none";
+  shopsList.style.display = "block";
+  currentShopId = null;
+});
 
 btnUserGPS.addEventListener("click", async ()=>{
   try{
@@ -671,44 +623,45 @@ btnUserGPS.addEventListener("click", async ()=>{
     await loadNearbyShops();
   }catch(e){
     gpsStatus.textContent = "مرفوض";
-    alert("اسمح بالموقع (GPS).");
+    alert("من فضلك اسمح بالموقع (GPS) من إعدادات المتصفح/الهاتف.");
   }finally{
     btnUserGPS.disabled = false;
     btnUserGPS.textContent = "📍 تحديد موقعي";
   }
 });
 
-btnBackToGrid.addEventListener("click", ()=>{
-  shopDetailsView.style.display = "none";
-  shopsList.style.display = "block";
-  currentShopId = null;
-});
+async function refreshPublicShopsCache(){
+  const data = await fetchPublicShops();
+  cachedPublicShops = data || [];
+  if(userLoc){
+    cachedNearby = (data || [])
+      .filter(s => typeof s.lat === "number" && typeof s.lng === "number")
+      .map(s => ({...s, dist_km: haversine(userLoc.lat, userLoc.lng, s.lat, s.lng)}))
+      .sort((a,b)=>a.dist_km - b.dist_km);
+  }
+  return data || [];
+}
 
 async function loadNearbyShops(){
-  shopsList.innerHTML = `<div class="card"><b>جاري تحميل المحلات...</b></div>`;
+  shopsList.innerHTML = `<div class="card"><b>جاري تحميل المحلات...</b><div class="muted">لحظات…</div></div>`;
 
-  if(cachedPublicShops.length === 0) {
-    try { cachedPublicShops = await fetchPublicShops(); } catch(e) {}
-  }
-
-  if(!userLoc){
-    shopsList.innerHTML = `<div class="card"><b>حدد موقعك أولاً</b></div>`;
+  let data = [];
+  try{
+    data = await refreshPublicShopsCache();
+  }catch(e){
+    shopsList.innerHTML = `<div class="card"><b>خطأ</b><div class="muted">تعذر تحميل المحلات.</div></div>`;
     return;
   }
 
-  let arr = cachedPublicShops
-    .filter(s => typeof s.lat === "number" && typeof s.lng === "number")
-    .map(s => ({...s, dist_km: haversine(userLoc.lat, userLoc.lng, s.lat, s.lng)}))
-    .sort((a,b)=>a.dist_km - b.dist_km);
-  
-  cachedNearby = arr;
-
-  if(activeCategory !== 'all') {
-    arr = arr.filter(s => (s.category || 'other') === activeCategory);
+  if(!userLoc){
+    shopsList.innerHTML = `<div class="card"><b>حدد موقعك أولاً</b><div class="muted">اضغط على “تحديد موقعي”.</div></div>`;
+    return;
   }
 
+  const arr = cachedNearby;
+
   if(!arr.length){
-    shopsList.innerHTML = `<div class="card"><b>لا توجد محلات</b><div class="muted">لا توجد نتائج.</div></div>`;
+    shopsList.innerHTML = `<div class="card"><b>لا توجد محلات</b><div class="muted">اطلب من التاجر إضافة متجر.</div></div>`;
     return;
   }
 
@@ -721,13 +674,11 @@ function renderShopIcon(s){
   const img = s.image_url || `https://picsum.photos/300?seed=${encodeURIComponent(s.id)}`;
   const avg = Number(s.avg_rating || 0).toFixed(1);
   const cnt = Number(s.rating_count || 0);
-  const catObj = SHOP_CATEGORIES.find(c => c.id === (s.category || 'other')) || SHOP_CATEGORIES.find(c=>c.id==='other');
 
   return `
-    <div class="shop-icon" role="button" onclick="openShopDetails('${s.id}')">
+    <div class="shop-icon" role="button" tabindex="0" onclick="openShopDetails('${s.id}')" onkeypress="if(event.key==='Enter'){openShopDetails('${s.id}')}" aria-label="عرض تفاصيل ${escapeHtml(s.name)}">
       <img class="thumb" src="${img}" alt="shop">
       <div class="title">${escapeHtml(s.name)}</div>
-      <div class="meta"><span>${catObj.icon} ${catObj.label}</span></div>
       <div class="meta">
         <span>⭐ ${avg} (${cnt})</span>
         <span>📏 ${s.dist_km.toFixed(2)} كم</span>
@@ -736,89 +687,149 @@ function renderShopIcon(s){
   `;
 }
 
-async function fetchPublicShops(){
-  const url = new URL("/.netlify/functions/public-shops", window.location.origin);
-  const r = await fetch(url);
-  const data = await r.json();
-  return data.shops || [];
-}
-
-window.openShopDetails = async (shopId)=>{
-  currentShopId = shopId;
-  let shop = cachedNearby.find(s => String(s.id) === String(shopId));
-  if(!shop) shop = cachedPublicShops.find(s => String(s.id) === String(shopId));
-  
-  if(!shop) return alert("تعذر تحميل البيانات");
-  
-  shopDetailsCard.innerHTML = renderShopDetails(shop);
-  shopsList.style.display = "none";
-  shopDetailsView.style.display = "block";
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
-
 function renderShopDetails(s){
   const img = s.image_url || `https://picsum.photos/700?seed=${encodeURIComponent(s.id)}`;
   const avg = Number(s.avg_rating || 0).toFixed(1);
   const cnt = Number(s.rating_count || 0);
-  const distance = s.dist_km ? `${s.dist_km.toFixed(2)} كم` : "—";
-  
+  const distance = typeof s.dist_km === "number" ? `${s.dist_km.toFixed(2)} كم` : "—";
+  const mapUrl = buildMapUrl(s.lat, s.lng);
   return `
     <div class="card">
-      <img class="cover" src="${img}">
+      <img class="cover" src="${img}" alt="shop">
       <div style="height:10px"></div>
-      <div class="row"><b>${escapeHtml(s.name)}</b><span class="badge">📏 ${distance}</span></div>
+      <div class="row">
+        <b>${escapeHtml(s.name)}</b>
+        <span class="badge">📏 ${distance}</span>
+      </div>
       <div class="muted" style="margin-top:8px">${escapeHtml(s.address || "")}</div>
       <div class="muted" style="margin-top:8px">${escapeHtml(s.description || "")}</div>
-      <div class="row" style="margin-top:12px"><span class="badge">⭐ ${avg} (${cnt})</span></div>
+      <div class="row" style="margin-top:12px">
+        <span class="badge">⭐ ${avg} (${cnt})</span>
+      </div>
       <div class="detail-actions">
-        <button type="button" onclick="openGoogleMapsApp(${s.lat}, ${s.lng}, '${escapeHtml(s.name)}')">Google Map</button>
+        <button type="button" onclick="return openMapUrl('${mapUrl}')">Google Map</button>
       </div>
       <hr class="sep">
       <b>قيّم المتجر</b>
       <div class="stars" data-shop="${s.id}">
         ${[1,2,3,4,5].map(n=>`<button type="button" onclick="setStars('${s.id}',${n})">${n}⭐</button>`).join("")}
       </div>
-      <textarea id="c_${s.id}" placeholder="اكتب تعليق..." style="margin-top:10px"></textarea>
+      <textarea id="c_${s.id}" placeholder="اكتب تعليق (اختياري)..." style="margin-top:10px"></textarea>
       <button type="button" style="margin-top:10px" onclick="submitReview('${s.id}')">إرسال التقييم</button>
     </div>
   `;
 }
 
+window.openShopDetails = async (shopId, forceRefresh = false)=>{
+  currentShopId = shopId;
+  let shop = cachedNearby.find(s => String(s.id) === String(shopId));
+  if(!shop || forceRefresh){
+    let found = cachedPublicShops.find(s => String(s.id) === String(shopId));
+    if(!found || forceRefresh){
+      try{
+        const latest = await refreshPublicShopsCache();
+        found = latest.find(s => String(s.id) === String(shopId));
+      }catch(e){}
+    }
+    if(!found){
+      alert("تعذر تحميل تفاصيل المتجر.");
+      return;
+    }
+    shop = found;
+    if(userLoc && typeof shop.lat === "number" && typeof shop.lng === "number"){
+      shop.dist_km = haversine(userLoc.lat, userLoc.lng, shop.lat, shop.lng);
+    }
+  }
+
+  shopDetailsCard.innerHTML = renderShopDetails(shop);
+  shopsList.style.display = "none";
+  shopDetailsView.style.display = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
 window.setStars = (shopId, n)=>{
   const wrap = document.querySelector(`.stars[data-shop="${shopId}"]`);
-  if(wrap){
-    wrap.dataset.value = String(n);
-    [...wrap.querySelectorAll("button")].forEach((b, i)=> b.classList.toggle("active", (i+1) <= n));
-  }
+  if(!wrap) return;
+  wrap.dataset.value = String(n);
+  [...wrap.querySelectorAll("button")].forEach((b, i)=>{
+    b.classList.toggle("active", (i+1) <= n);
+  });
 };
 
 window.submitReview = async (shopId)=>{
   try{
     const wrap = document.querySelector(`.stars[data-shop="${shopId}"]`);
     const stars = Number(wrap?.dataset?.value || 0);
-    if(!stars) return alert("اختر عدد النجوم ⭐");
+    if(!stars) return alert("اختر عدد النجوم أولاً ⭐");
+
     const comment = (document.getElementById(`c_${shopId}`)?.value || "").trim();
     const fp = await generateFingerprint();
 
-    const { error } = await supa.from("reviews").insert({ shop_id: shopId, stars, comment, fingerprint: fp });
-    if(error) return alert("خطأ: " + error.message);
-    alert("تم التقييم ⭐");
-  }catch(e){ alert("خطأ في التقييم"); }
+    const { error } = await supa.from("reviews").insert({
+      shop_id: shopId,
+      stars,
+      comment: comment || null,
+      fingerprint: fp
+    });
+
+    if(error){
+      if(String(error.message||"").toLowerCase().includes("duplicate") || String(error.message||"").includes("unique")){
+        alert("لقد قمت بتقييم هذا المحل بالفعل من هذا الجهاز ✅");
+      }else{
+        alert("خطأ في التقييم: " + error.message);
+      }
+      return;
+    }
+
+    alert("تم إرسال التقييم ⭐");
+    await loadNearbyShops();
+    if(currentShopId){
+      await openShopDetails(currentShopId, true);
+    }
+  }catch(e){
+    alert("حدث خطأ أثناء إرسال التقييم.");
+  }
 };
 
-// ================= التاجر =================
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+const wireMapLink = (link) => {
+  if (!link) return;
+  link.onclick = (e) => {
+    e.preventDefault();
+    return openMapUrl(link.href);
+  };
+};
+
+wireMapLink(custMapLink);
+wireMapLink(custTrackMapLink);
+wireMapLink(dMapLink);
+
+// ================= MERCHANT =================
 let piUser = null;
 let piAccessToken = null;
+let merchantProfile = null;
 let currentSubscription = null;
 let shopLoc = null;
 let editShopId = null;
+
+// ✅ قفل لمنع تكرار إنشاء دفع
 let payLock = false;
 
+const SUBSCRIPTION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const PLANS = {
   basic: { plan_code: "basic", plan_name_ar: "الأساسية", store_limit: 1, price_pi: 1 },
   platinum: { plan_code: "platinum", plan_name_ar: "بلاتنيم", store_limit: 3, price_pi: 3 },
   premier: { plan_code: "premier", plan_name_ar: "بريمير", store_limit: 5, price_pi: 5 }
 };
+
 const getPlanByCode = (code) => PLANS[code] || null;
 
 async function checkAuth(){
@@ -835,250 +846,648 @@ async function checkAuth(){
   }
 }
 
-btnPiLogin.addEventListener("click", async ()=>{
-  if(!window.Pi) return authMsg.textContent = "Pi SDK غير متاح.";
-  authMsg.textContent = "جاري تسجيل الدخول...";
-  try{
-    const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
-    piUser = auth.user;
-    piAccessToken = auth.accessToken;
-    const wallet = window.Pi.getWalletAddress ? await window.Pi.getWalletAddress() : null;
-    await supa.from("merchants").upsert({ pi_username: piUser.username, pi_uid: piUser.uid, wallet_address: wallet }, { onConflict: "pi_username" });
-    authMsg.textContent = "تم الدخول ✅";
-    await checkAuth();
-  }catch(e){ authMsg.textContent = "فشل الدخول."; }
-});
-
-btnLogout.addEventListener("click", ()=>{
-  piUser = null;
-  piAccessToken = null;
-  checkAuth();
-});
+async function fetchPiWalletAddress(){
+  if(window.Pi?.getWalletAddress){
+    return await window.Pi.getWalletAddress();
+  }
+  return null;
+}
 
 async function refreshMerchantProfile(){
   if(!piUser) return;
-  const { data } = await supa.from("merchants").select("*").eq("pi_username", piUser.username).maybeSingle();
-  if(data){
-    merchantName.textContent = piUser.username;
-    merchantWallet.textContent = `محفظة: ${data.wallet_address || "غير متوفر"}`;
-  }
+  const { data } = await supa
+    .from("merchants")
+    .select("*")
+    .eq("pi_username", piUser.username)
+    .maybeSingle();
+
+  merchantProfile = data || null;
+  const wallet = merchantProfile?.wallet_address || "";
+  merchantName.textContent = piUser.username;
+  merchantWallet.textContent = `محفظة: ${wallet || "غير متوفر"}`;
 }
 
+async function upsertMerchantProfile(walletAddress){
+  if(!piUser) return;
+  const payload = {
+    pi_username: piUser.username,
+    pi_uid: piUser.uid,
+    wallet_address: walletAddress || null
+  };
+  const { data, error } = await supa
+    .from("merchants")
+    .upsert(payload, { onConflict: "pi_username" })
+    .select()
+    .single();
+  if(error){
+    authMsg.textContent = "خطأ في حفظ التاجر: " + error.message;
+    return;
+  }
+  merchantProfile = data;
+  merchantWallet.textContent = `محفظة: ${merchantProfile.wallet_address || "غير متوفر"}`;
+}
 async function refreshSubscription() {
   if (!piUser) return;
-  try {
-    const r = await fetch(`/.netlify/functions/subscription-status?merchant_id=${encodeURIComponent(piUser.username)}`);
-    const j = await r.json();
-    currentSubscription = j.ok ? j.subscription : null;
-    updateSubscriptionUI();
-  } catch(e) {}
+  
+  // بدل supa.from("merchant_subscriptions") ...
+  const r = await fetch(`/.netlify/functions/subscription-status?merchant_id=${encodeURIComponent(piUser.username)}`);
+  let j = {};
+  try { j = await r.json(); } catch {}
+  
+  if (!r.ok || !j.ok) {
+    currentSubscription = null;
+    subscriptionMsg.textContent = "تعذر تحميل الاشتراك (server).";
+    console.error("subscription-status failed:", r.status, j);
+    await updateSubscriptionUI();
+    return;
+  }
+  
+  currentSubscription = j.subscription || null;
+  await updateSubscriptionUI();
+}
+function getRemainingDays(expiresAt){
+  if(!expiresAt) return 0;
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
-function updateSubscriptionUI(){
-  const active = currentSubscription && currentSubscription.status === 'active';
-  const remainingDays = active ? Math.ceil((new Date(currentSubscription.expires_at) - Date.now()) / (86400000)) : 0;
-  
+async function expireSubscriptionIfNeeded(){
+  if(!currentSubscription) return;
+  if(currentSubscription.status !== "active") return;
+  const expired = new Date(currentSubscription.expires_at).getTime() <= Date.now();
+  if(!expired) return;
+  await supa
+    .from("merchant_subscriptions")
+    .update({ status: "expired", updated_at: new Date().toISOString() })
+    .eq("id", currentSubscription.id);
+  currentSubscription = { ...currentSubscription, status: "expired" };
+}
+
+function getActiveSubscription(){
+  if(!currentSubscription) return null;
+  if(currentSubscription.status !== "active") return null;
+  if(new Date(currentSubscription.expires_at).getTime() <= Date.now()) return null;
+  return currentSubscription;
+}
+
+async function getActiveStoreCount(){
+  if(!piUser) return 0;
+  if(!myShopsCache.length){
+    try{
+      myShopsCache = await fetchMyShopsList();
+    }catch(e){
+      return 0;
+    }
+  }
+  return myShopsCache.filter((shop)=> (shop.status || "active") === "active").length;
+}
+
+async function updateSubscriptionUI(){
+  const active = getActiveSubscription();
   if(active){
+    const remainingDays = getRemainingDays(active.expires_at);
+    const usedStores = await getActiveStoreCount();
     subscriptionBadge.textContent = "مشترك ✅";
-    subscriptionStatus.textContent = currentSubscription.plan_name_ar;
-    subscriptionMsg.textContent = `متبقي: ${remainingDays} يوم - حد المحلات: ${currentSubscription.store_limit}`;
-    btnSave.disabled = false;
+    subscriptionStatus.textContent = active.plan_name_ar || "نشط";
+    subscriptionMsg.textContent = `الخطة: ${active.plan_name_ar} — ${active.store_limit} محلات`;
+    subscriptionRemaining.textContent = `متبقي: ${remainingDays} يوم`;
+    subscriptionUsage.textContent = `المحلات: ${usedStores} / ${active.store_limit}`;
+    subscriptionHint.textContent = "يمكنك الترقية في أي وقت بخطة أعلى.";
     btnRenewPlan.style.display = "none";
-  } else {
+    btnSave.disabled = false;
+  }else{
     subscriptionBadge.textContent = "غير مشترك";
-    subscriptionStatus.textContent = "غير نشط";
-    subscriptionMsg.textContent = "اشترك لإضافة المحلات";
-    btnSave.disabled = true;
+    subscriptionStatus.textContent = currentSubscription?.status === "expired" ? "منتهي" : "غير نشط";
+    subscriptionMsg.textContent = currentSubscription?.plan_name_ar
+      ? `آخر خطة: ${currentSubscription.plan_name_ar} — انتهت صلاحيتها.`
+      : "لا يوجد اشتراك نشط — اشترك لمدة 30 يوم لإضافة المحلات.";
+    subscriptionRemaining.textContent = "مدة 30 يوم";
+    subscriptionUsage.textContent = "المحلات: 0 / 0";
+    subscriptionHint.textContent = "اختر خطة للاشتراك أو الترقية.";
     btnRenewPlan.style.display = "block";
+    btnSave.disabled = true;
+  }
+
+  document.querySelectorAll(".plan-btn").forEach((btn)=>{
+    const planCode = btn.dataset.plan;
+    if(active && planCode === active.plan_code){
+      btn.textContent = "الخطة الحالية";
+      btn.disabled = true;
+    }else{
+      btn.textContent = "اشترك / ترقية";
+      btn.disabled = false;
+    }
+  });
+}
+
+function showSubscriptionGate(message){
+  saveMsg.textContent = message;
+  subscriptionHint.textContent = message;
+  btnRenewPlan.textContent = "⬆️ ترقية / تجديد الاشتراك";
+  btnRenewPlan.style.display = "block";
+}
+
+async function canPublishStore(){
+  const active = getActiveSubscription();
+  if(!active){
+    showSubscriptionGate("لا يوجد اشتراك نشط — اشترك لمدة 30 يوم.");
+    return false;
+  }
+  const usedStores = await getActiveStoreCount();
+  if(usedStores >= active.store_limit){
+    showSubscriptionGate("وصلت للحد الأقصى للمحلات — قم بالترقية أو التجديد.");
+    return false;
+  }
+  return true;
+}
+
+btnPiLogin.addEventListener("click", async ()=>{
+  if(!window.Pi) {
+    authMsg.textContent = "Pi SDK غير متاح في هذا المتصفح.";
+    return;
+  }
+  authMsg.textContent = "جاري تسجيل الدخول عبر Pi...";
+  try{
+    const scopes = ["username", "payments"];
+    const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+    piUser = auth.user;
+    piAccessToken = auth.accessToken;
+
+    const wallet = await fetchPiWalletAddress();
+    await upsertMerchantProfile(wallet);
+
+    authMsg.textContent = "تم تسجيل الدخول ✅";
+    await checkAuth();
+  }catch(e){
+    authMsg.textContent = "تعذر تسجيل الدخول عبر Pi.";
+  }
+});
+
+btnLogout.addEventListener("click", async ()=>{
+  resetForm();
+  piUser = null;
+  piAccessToken = null;
+  merchantProfile = null;
+  currentSubscription = null;
+  payLock = false;
+  localStorage.removeItem("last_payment_id");
+  await checkAuth();
+});
+
+// ✅ سجل أي حالة دفع في DB
+async function recordPayment(paymentId, status, txid, errorMessage) {
+  const uname = piUser?.username || "unknown";
+  await supa.from("merchant_payments").insert({
+    pi_username: uname,
+    payment_id: paymentId,
+    status,
+    txid: txid || null,
+    error_message: errorMessage || null
+  });
+}
+
+// ✅ لو فيه paymentId محفوظ من قبل، نعرض زر يساعد المستخدم يحلّها
+async function showPendingHintIfAny(){
+  const last = localStorage.getItem("last_payment_id");
+  if(last){
+    btnResolvePending.style.display = "block";
+    pendingMsg.textContent = `فيه دفعة سابقة ممكن تكون معلّقة (ID: ${last.slice(0,8)}...) — جرب تكملها.`;
+  }else{
+    btnResolvePending.style.display = "none";
+    pendingMsg.textContent = "";
   }
 }
 
-// === الدفع ===
-document.querySelectorAll(".plan-btn").forEach(btn => {
-  btn.addEventListener("click", () => startPlanPayment(btn.dataset.plan));
+btnResolvePending.addEventListener("click", async ()=>{
+  const paymentId = localStorage.getItem("last_payment_id");
+  if(!paymentId) return alert("مفيش دفعة محفوظة.");
+
+  pendingMsg.textContent = "بحاول أعتمد الدفعة وأفتحها…";
+  try{
+    // approve
+    const ar = await fetch("/api/pi/approve", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ paymentId })
+    });
+    const aj = await ar.json().catch(()=> ({}));
+    if(!ar.ok || !aj.ok){
+      pendingMsg.textContent = "Approve فشل. راجع السيرفر.";
+      await recordPayment(paymentId, "approve_failed_manual", null, aj?.error || "approve_failed");
+      return;
+    }
+
+    // open payment screen in Pi
+    if (typeof Pi?.openPayment === "function") {
+      await Pi.openPayment(paymentId);
+      pendingMsg.textContent = "فتحت شاشة الدفعة. كمّلها من Pi ✅";
+    } else if (typeof Pi?.openPaymentRequest === "function") {
+      await Pi.openPaymentRequest(paymentId);
+      pendingMsg.textContent = "فتحت شاشة الدفعة. كمّلها من Pi ✅";
+    } else {
+      pendingMsg.textContent = "الـ SDK لا يدعم فتح الدفعة تلقائيًا — افتحها من سجل المدفوعات في Pi.";
+    }
+
+    await recordPayment(paymentId, "pending_opened_manual", null, null);
+  }catch(e){
+    pendingMsg.textContent = "حصل خطأ أثناء محاولة فتح الدفعة.";
+    await recordPayment(paymentId, "error_manual", null, String(e));
+  }
 });
 
-async function startPlanPayment(planCode){
-  if(!piUser || payLock) return;
-  const plan = getPlanByCode(planCode);
-  payLock = true;
-  subscriptionMsg.textContent = "جاري إنشاء عملية الدفع...";
+btnRenewPlan.addEventListener("click", ()=>{
+  plansGrid?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
 
-  try {
+document.querySelectorAll(".plan-btn").forEach((btn)=>{
+  btn.addEventListener("click", async ()=>{
+    const planCode = btn.dataset.plan;
+    await startPlanPayment(planCode);
+  });
+});
+
+async function callSubscriptionActivate(plan, paymentId, txid){
+  const payload = {
+    merchant_id: piUser.username,
+    plan_code: plan.plan_code,
+    plan_name_ar: plan.plan_name_ar,
+    store_limit: plan.store_limit,
+    price_pi: plan.price_pi,
+    payment_id: paymentId,
+    payment_txid: txid
+  };
+  const r = await fetch("/.netlify/functions/subscription-activate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = await r.json().catch(()=> ({}));
+  if(!r.ok || !data.ok){
+    console.error("subscription-activate failed", { status: r.status, data });
+    throw new Error(data?.error || "SUBSCRIPTION_ACTIVATE_FAILED");
+  }
+  return data.subscription || null;
+}
+
+async function startPlanPayment(planCode){
+  if(!piUser) return alert("سجّل الدخول أولاً.");
+  if(!window.Pi) return alert("Pi SDK غير متاح.");
+  const plan = getPlanByCode(planCode);
+  if(!plan) return alert("الخطة غير متاحة.");
+
+  if(payLock) return; // ✅ منع تكرار الضغط
+  payLock = true;
+
+  subscriptionMsg.textContent = "جاري إنشاء عملية الدفع...";
+  try{
     await Pi.createPayment({
       amount: plan.price_pi,
-      memo: `اشتراك - ${plan.plan_name_ar}`,
-      metadata: { plan_code: planCode, merchant: piUser.username }
+      memo: `اشتراك تاجر - ${plan.plan_name_ar} (${plan.store_limit} محلات)`,
+      metadata: {
+        purpose: "MERCHANT_SUBSCRIPTION",
+        username: piUser.username,
+        plan_code: plan.plan_code,
+        store_limit: plan.store_limit
+      }
     }, {
       onReadyForServerApproval: async (paymentId) => {
+        // ✅ خزّن آخر paymentId (عشان لو وقف عند approve)
         localStorage.setItem("last_payment_id", paymentId);
-        await fetch("/api/pi/approve", { method:"POST", body: JSON.stringify({ paymentId }) });
-      },
-      onReadyForServerCompletion: async (paymentId, txid) => {
-        await fetch("/api/pi/complete", { method:"POST", body: JSON.stringify({ paymentId, txid }) });
-        
-        await fetch("/.netlify/functions/subscription-activate", {
-          method: "POST",
-          body: JSON.stringify({
-            merchant_id: piUser.username,
-            plan_code: plan.plan_code,
-            store_limit: plan.store_limit,
-            payment_id: paymentId
-          })
+        await showPendingHintIfAny();
+
+        subscriptionMsg.textContent = "جاري اعتماد الدفع...";
+        const r = await fetch("/api/pi/approve", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ paymentId })
         });
-        
-        subscriptionMsg.textContent = "تم الاشتراك ✅";
+        const j = await r.json().catch(()=> ({}));
+        if(!r.ok || !j.ok) throw new Error(j?.error || "approve_failed");
+        subscriptionMsg.textContent = "تم اعتماد الدفع ✅";
+        await recordPayment(paymentId, "approved", null, null);
+      },
+
+      onReadyForServerCompletion: async (paymentId, txid) => {
+        subscriptionMsg.textContent = "جاري تفعيل الاشتراك...";
+        const r = await fetch("/api/pi/complete", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ paymentId, txid })
+        });
+        const j = await r.json().catch(()=> ({}));
+        if(!r.ok || !j.ok) throw new Error(j?.error || "complete_failed");
+
+        try{
+          await callSubscriptionActivate(plan, paymentId, txid);
+          subscriptionMsg.textContent = "تم الاشتراك ✅ يمكنك إضافة المحلات.";
+        }catch(err){
+          subscriptionMsg.textContent = "تمت الدفعة لكن تفعيل الاشتراك فشل — تواصل مع الدعم.";
+          console.error("Activation error", err);
+          throw err;
+        }
+        await recordPayment(paymentId, "completed", txid, null);
+
+        // ✅ الدفعة اكتملت، شيل آخر paymentId
         localStorage.removeItem("last_payment_id");
+        await showPendingHintIfAny();
+
         await refreshSubscription();
       },
-      onCancel: () => subscriptionMsg.textContent = "تم الإلغاء",
-      onError: (e) => subscriptionMsg.textContent = "خطأ: " + e.message
+
+      onCancel: async (paymentId) => {
+        subscriptionMsg.textContent = "تم إلغاء الدفع.";
+        await recordPayment(paymentId, "canceled", null, null);
+        // نسيب last_payment_id عشان ممكن المستخدم يرجع يكملها من سجل Pi
+      },
+
+      onError: async (error, payment) => {
+        const pid = payment?.identifier || payment?.id || localStorage.getItem("last_payment_id") || "unknown";
+        subscriptionMsg.textContent = "حصل خطأ في الدفع.";
+        await recordPayment(pid, "error", null, error?.message || String(error));
+      }
     });
-  } catch(e) {
-    subscriptionMsg.textContent = "فشل الدفع. إذا كان معلقاً استخدم زر الحل.";
-  } finally {
+
+  }catch(e){
+    // الرسالة الشهيرة: pending payment needs action from developer
+    subscriptionMsg.textContent = "تعذر إنشاء الدفع. لو ظهر Pending Payment، لازم تكمل/تعمل Complete للدفعة القديمة من السيرفر.";
+  }finally{
     payLock = false;
   }
 }
 
+// ✅ هتشتغل لو Pi لقى دفعة معلّقة أثناء تسجيل الدخول
 async function onIncompletePaymentFound(payment) {
-  const paymentId = payment.identifier;
-  localStorage.setItem("last_payment_id", paymentId);
-  showPendingHintIfAny();
-  
-  await fetch("/api/pi/approve", { method:"POST", body: JSON.stringify({ paymentId }) });
-  
-  if (Pi.openPayment) Pi.openPayment(paymentId);
-  else if (Pi.openPaymentRequest) Pi.openPaymentRequest(paymentId);
-}
+  const paymentId = payment?.identifier || payment?.paymentId || payment?.id;
+  if (!paymentId) return;
 
-function showPendingHintIfAny(){
-  if(localStorage.getItem("last_payment_id")){
-    btnResolvePending.style.display = "block";
-    pendingMsg.textContent = "يوجد دفعة معلقة";
+  // خزّنها عشان يبان زر "حل المعلّق"
+  localStorage.setItem("last_payment_id", paymentId);
+  await showPendingHintIfAny();
+
+  authMsg.textContent = "لقيت دفعة معلّقة.. بجرب أعتمدها (Approve) وبعدين أفتحها ✅";
+
+  try {
+    // 1) Approve من السيرفر
+    const ar = await fetch("/api/pi/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentId })
+    });
+    const aj = await ar.json().catch(() => ({}));
+
+    if (!ar.ok || !aj.ok) {
+      await recordPayment(paymentId, "approve_failed", null, aj?.error || "approve_failed");
+      authMsg.textContent = "الدفع المعلّق محتاج موافقة من السيرفر، لكن approve فشل ❌";
+      return;
+    }
+
+    // 2) افتح الدفع داخل Pi (المستخدم يكمله)
+    authMsg.textContent = "تم اعتماد الدفع ✅ بفتح الدفع المعلّق الآن…";
+
+    if (typeof Pi?.openPayment === "function") {
+      await Pi.openPayment(paymentId);
+    } else if (typeof Pi?.openPaymentRequest === "function") {
+      await Pi.openPaymentRequest(paymentId);
+    } else {
+      authMsg.textContent = "SDK لا يدعم فتح الدفع تلقائيًا. افتحه من سجل المدفوعات داخل Pi.";
+    }
+
+    await recordPayment(paymentId, "incomplete_opened", null, null);
+
+  } catch (e) {
+    await recordPayment(paymentId, "error", null, String(e));
+    authMsg.textContent = "حصل خطأ أثناء محاولة حل الدفع المعلّق.";
   }
 }
 
-btnResolvePending.addEventListener("click", async () => {
-  const pid = localStorage.getItem("last_payment_id");
-  if(pid && Pi.openPayment) Pi.openPayment(pid);
-});
-
-// === إدارة المحل ===
 btnShopGPS.addEventListener("click", async ()=>{
   try{
     btnShopGPS.disabled = true;
-    btnShopGPS.textContent = "⏳...";
+    btnShopGPS.textContent = "⏳ جاري تحديد الموقع...";
     shopLoc = await getGPS();
-    shopLocText.textContent = `الموقع: ${shopLoc.lat.toFixed(4)}, ${shopLoc.lng.toFixed(4)}`;
-  }catch(e){ alert("GPS مطلوب"); }
-  finally{ btnShopGPS.disabled = false; btnShopGPS.textContent = "📍 الموقع"; }
+    shopLocText.textContent = `موقع المتجر: ${shopLoc.lat.toFixed(5)}, ${shopLoc.lng.toFixed(5)}`;
+  }catch(e){
+    alert("من فضلك اسمح بالموقع للتاجر.");
+  }finally{
+    btnShopGPS.disabled = false;
+    btnShopGPS.textContent = "📍 تحديد موقع المتجر";
+  }
 });
 
-btnSave.addEventListener("click", async ()=>{
-  if(!piUser || !shopLoc) return alert("بيانات ناقصة");
-  const name = mName.value.trim();
-  if(!name) return alert("الاسم مطلوب");
-  
-  saveMsg.textContent = "جاري الحفظ...";
-  
-  let imageUrl = null;
-  if(mImg.files[0]){
-    const path = `${piUser.username}/${Date.now()}_${mImg.files[0].name.replace(/\W/g,'_')}`;
-    const up = await supa.storage.from("shop-images").upload(path, mImg.files[0]);
-    if(!up.error) imageUrl = supa.storage.from("shop-images").getPublicUrl(path).data.publicUrl;
+btnCancelEdit.addEventListener("click", ()=>{
+  resetForm();
+  saveMsg.textContent = "تم إلغاء التعديل.";
+});
+
+btnRefreshMyShops.addEventListener("click", loadMyShops);
+
+async function fetchPublicShops(limit){
+  const url = new URL("/.netlify/functions/public-shops", window.location.origin);
+  if(limit) url.searchParams.set("limit", String(limit));
+  const r = await fetch(url, { method: "GET" });
+  const data = await r.json().catch(()=> ({}));
+  if(!r.ok || !data.ok){
+    throw new Error(data?.error || "PUBLIC_SHOPS_FAILED");
   }
+  return data.shops || [];
+}
+
+async function callMyShops(method, payload, query = ""){
+  if(!piAccessToken) throw new Error("MISSING_PI_TOKEN");
+  const headers = { Authorization: `Bearer ${piAccessToken}` };
+  if(payload) headers["Content-Type"] = "application/json";
+  const r = await fetch(`/.netlify/functions/my-shops${query}`, {
+    method,
+    headers,
+    body: payload ? JSON.stringify(payload) : undefined
+  });
+  const data = await r.json().catch(()=> ({}));
+  if(!r.ok || !data.ok){
+    const err = new Error(data?.error || "MY_SHOPS_FAILED");
+    err.status = r.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+async function fetchMyShopsList(){
+  const data = await callMyShops("GET");
+  return data.shops || [];
+}
+
+async function uploadShopImage(file){
+  const safeName = file.name.replace(/[^\w.\-]+/g,"_");
+  const path = `${piUser.username}/${Date.now()}_${safeName}`;
+  const up = await supa.storage.from("shop-images").upload(path, file, { upsert: true });
+  if(up.error) throw up.error;
+  return supa.storage.from("shop-images").getPublicUrl(path).data.publicUrl;
+}
+
+btnSave.addEventListener("click", async ()=>{
+  try{
+    if(!piUser) return alert("لازم تسجل دخول كتاجر أولاً");
+    if(!editShopId){
+      const canPublish = await canPublishStore();
+      if(!canPublish) return;
+    }
+    if(!shopLoc) return alert("حدد موقع المتجر أولاً");
+
+    const name = mName.value.trim();
+    if(!name) return alert("اكتب اسم المتجر");
+
+    saveMsg.textContent = "جاري الحفظ...";
+
+    let imageUrl = null;
+    if(mImg.files && mImg.files[0]){
+      imageUrl = await uploadShopImage(mImg.files[0]);
+    }
 
   const payload = {
     name,
-    description: mDesc.value.trim(),
-    address: mAddr.value.trim(),
-    category: mCat.value,
+    description: mDesc.value.trim() || null,
+    address: mAddr.value.trim() || null,
     lat: shopLoc.lat,
     lng: shopLoc.lng,
-    image_url: imageUrl
+    status: "active"
   };
-  if(editShopId) payload.id = editShopId;
+    if(imageUrl) payload.image_url = imageUrl;
 
-  const r = await fetch("/.netlify/functions/my-shops", {
-    method: editShopId ? "PUT" : "POST",
-    headers: { "Authorization": `Bearer ${piAccessToken}` },
-    body: JSON.stringify(payload)
-  });
-  
-  const res = await r.json();
-  if(res.ok){
-    saveMsg.textContent = "تم الحفظ ✅";
+    const shopPayload = editShopId ? { ...payload, id: editShopId } : payload;
+    let data = null;
+    try{
+      data = await callMyShops(editShopId ? "PUT" : "POST", shopPayload);
+    }catch(err){
+      const errCode = err?.message || "SHOP_UPSERT_FAILED";
+      if(errCode === "SUBSCRIPTION_REQUIRED"){
+        showSubscriptionGate("لا يوجد اشتراك نشط — اشترك لمدة 30 يوم.");
+        return;
+      }
+      if(errCode === "STORE_LIMIT_REACHED"){
+        showSubscriptionGate("وصلت للحد الأقصى للمحلات — قم بالترقية أو التجديد.");
+        return;
+      }
+      saveMsg.textContent = "خطأ: تعذر حفظ المتجر.";
+      console.error("my-shops failed", { error: errCode });
+      return;
+    }
+
+    saveMsg.textContent = editShopId ? "تم تحديث المتجر ✅" : "تم إضافة المتجر ✅";
     resetForm();
-    loadMyShops();
-  } else {
-    saveMsg.textContent = "خطأ: " + res.error;
+    await loadMyShops();
+  }catch(e){
+    saveMsg.textContent = "خطأ: " + (e?.message || e);
   }
 });
 
+function resetForm(){
+  editShopId = null;
+  mName.value = "";
+  mDesc.value = "";
+  mAddr.value = "";
+  mImg.value = "";
+  shopLoc = null;
+  shopLocText.textContent = "";
+  btnCancelEdit.style.display = "none";
+}
+
 async function loadMyShops(){
-  const r = await fetch("/.netlify/functions/my-shops", { headers: { "Authorization": `Bearer ${piAccessToken}` } });
-  const d = await r.json();
-  myShopsList.innerHTML = "";
-  if(d.shops && d.shops.length){
-    d.shops.forEach(s => {
-      myShopsList.innerHTML += `
-        <div class="card">
-          <div class="shop-mini">
-            <img src="${s.image_url || 'https://picsum.photos/200'}">
-            <div class="meta"><b>${escapeHtml(s.name)}</b><div class="muted">${s.address}</div></div>
-          </div>
-          <div class="actions">
-            <button class="secondary" onclick="startEditShop('${s.id}')">تعديل</button>
-            <button class="danger" onclick="deleteShop('${s.id}')">حذف</button>
-          </div>
-        </div>`;
-    });
-  } else {
-    myShopsList.innerHTML = "<div class='muted'>لا توجد محلات</div>";
+  myShopsList.innerHTML = `<div class="muted">جاري تحميل محلاتك...</div>`;
+
+  let data = [];
+  try{
+    data = await fetchMyShopsList();
+  }catch(e){
+    myShopsList.innerHTML = `<div class="muted">خطأ: تعذر تحميل محلاتك.</div>`;
+    await updateSubscriptionUI();
+    return;
   }
+
+  myShopsCache = data || [];
+  const activeShops = (data || []).filter((shop)=> (shop.status || "active") === "active");
+
+  if(!activeShops.length){
+    myShopsCount = 0;
+    myShopsList.innerHTML = `<div class="muted">لا توجد محلات مضافة بعد.</div>`;
+    await updateSubscriptionUI();
+    return;
+  }
+
+  myShopsCount = activeShops.length;
+  myShopsList.innerHTML = "";
+  activeShops.forEach(s=>{
+    const img = s.image_url || `https://picsum.photos/200?seed=${encodeURIComponent(s.id)}`;
+    myShopsList.innerHTML += `
+      <div class="card" style="padding:12px;margin-bottom:10px">
+        <div class="shop-mini">
+          <img src="${img}" alt="shop">
+          <div class="meta">
+            <b>${escapeHtml(s.name)}</b>
+            <div class="muted">${escapeHtml(s.address || "")}</div>
+            <div class="muted">⭐ ${Number(s.avg_rating||0).toFixed(1)} (${Number(s.rating_count||0)})</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="secondary" type="button" onclick="startEditShop('${s.id}')">تعديل</button>
+          <button class="danger" type="button" onclick="deleteShop('${s.id}')">حذف</button>
+        </div>
+      </div>
+    `;
+  });
+  await updateSubscriptionUI();
 }
 
 window.startEditShop = async (id)=>{
-  const r = await fetch("/.netlify/functions/my-shops", { headers: { "Authorization": `Bearer ${piAccessToken}` } });
-  const d = await r.json();
-  const shop = d.shops.find(s => String(s.id) === String(id));
-  if(shop){
-    editShopId = shop.id;
-    mName.value = shop.name;
-    mDesc.value = shop.description;
-    mAddr.value = shop.address;
-    mCat.value = shop.category || "other";
-    shopLoc = { lat: shop.lat, lng: shop.lng };
-    shopLocText.textContent = "تم تحميل الموقع القديم";
-    saveMsg.textContent = "وضع التعديل";
-    btnCancelEdit.style.display = "block";
-    window.scrollTo({top:0});
+  let shop = myShopsCache.find((item)=> String(item.id) === String(id));
+  if(!shop){
+    try{
+      myShopsCache = await fetchMyShopsList();
+      shop = myShopsCache.find((item)=> String(item.id) === String(id));
+    }catch(e){}
   }
+  if(!shop) return alert("خطأ: تعذر تحميل المتجر.");
+
+  editShopId = shop.id;
+
+  mName.value = shop.name || "";
+  mDesc.value = shop.description || "";
+  mAddr.value = shop.address || "";
+
+  shopLoc = { lat: shop.lat, lng: shop.lng };
+  shopLocText.textContent = `موقع المتجر الحالي: ${shopLoc.lat.toFixed(5)}, ${shopLoc.lng.toFixed(5)}`;
+
+  saveMsg.textContent = "وضع التعديل: عدّل ثم اضغط حفظ ✅";
+  btnCancelEdit.style.display = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 window.deleteShop = async (id)=>{
-  if(!confirm("حذف؟")) return;
-  await fetch(`/.netlify/functions/my-shops?id=${id}`, { method: "DELETE", headers: { "Authorization": `Bearer ${piAccessToken}` } });
-  loadMyShops();
+  const ok = confirm("متأكد أنك تريد حذف المتجر؟");
+  if(!ok) return;
+
+  try{
+    await callMyShops("DELETE", null, `?id=${encodeURIComponent(id)}`);
+  }catch(e){
+    return alert("خطأ: تعذر حذف المتجر.");
+  }
+
+  if(editShopId === id) resetForm();
+  alert("تم الحذف ✅");
+  await loadMyShops();
 };
 
-btnCancelEdit.addEventListener("click", resetForm);
-
-function resetForm(){
-  editShopId = null;
-  mName.value = ""; mDesc.value = ""; mAddr.value = ""; mImg.value = "";
-  shopLoc = null; shopLocText.textContent = "";
-  btnCancelEdit.style.display = "none";
-  saveMsg.textContent = "";
-}
-
-// تشغيل
+// boot
 checkAuth();
-try {
+
+// Bonus: try load last user location (optional)
+try{
   const saved = localStorage.getItem("user_loc");
-  if(saved) { userLoc = JSON.parse(saved); userLocText.textContent = "موقع محفوظ"; }
-} catch(e){}
+  if(saved){
+    userLoc = JSON.parse(saved);
+    userLocText.textContent = `آخر موقع محفوظ: ${userLoc.lat.toFixed(5)}, ${userLoc.lng.toFixed(5)}`;
+  }
+}catch{}
 </script>
 </body>
 </html>
