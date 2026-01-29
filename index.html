@@ -424,10 +424,20 @@ function haversine(lat1, lon1, lat2, lon2){
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-function openMap(lat, lng){
-  window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,"_blank");
+function openGoogleMapsApp(lat, lng) {
+  // يفتح تطبيق Google Maps لو موجود
+  const geoUrl = `geo:${lat},${lng}?q=${lat},${lng}`;
+  // رابط احتياطي لو مفيش تطبيق
+  const webUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  
+  // جرّب يفتح التطبيق
+  window.location.href = geoUrl;
+  
+  // لو التطبيق مش موجود أو ما فتحش، افتح الويب بعد لحظة
+  setTimeout(() => {
+    window.open(webUrl, "_blank");
+  }, 700);
 }
-
 // Fingerprint (SHA-256)
 async function generateFingerprint(){
   const raw =
@@ -511,7 +521,7 @@ function renderShopCard(s){
 
       <div class="row" style="margin-top:10px">
         <span class="badge">⭐ ${avg} (${cnt})</span>
-        <button class="secondary" type="button" style="width:auto" onclick="openMap(${s.lat},${s.lng})">🗺️ الخريطة</button>
+        <button class="secondary" type="button" style="width:auto" onclick="openGoogleMapsApp(${s.lat},${s.lng})">الخريطة 🗺️</button>
       </div>
 
       <hr class="sep">
