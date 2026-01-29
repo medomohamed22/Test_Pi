@@ -925,12 +925,18 @@ function getActiveSubscription(){
 
 async function getActiveStoreCount(){
   if(!piUser) return 0;
-  const { count } = await supa
+  const { count, error } = await supa
     .from("shops")
     .select("id", { count: "exact", head: true })
     .or(`merchant_id.eq.${piUser.username},owner_username.eq.${piUser.username}`)
     .eq("status", "active");
-  return count || 0;
+  if(!error) return count || 0;
+
+  const fallback = await supa
+    .from("shops")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_username", piUser.username);
+  return fallback.count || 0;
 }
 
 async function updateSubscriptionUI(){
@@ -1328,6 +1334,15 @@ btnSave.addEventListener("click", async ()=>{
       res = await supa.from("shops").insert(payload);
     }
 
+    if(res.error && String(res.error.message || "").includes("merchant_id")){
+      const fallbackPayload = { ...payload };
+      delete fallbackPayload.merchant_id;
+      delete fallbackPayload.status;
+      res = editShopId
+        ? await supa.from("shops").update(fallbackPayload).eq("id", editShopId)
+        : await supa.from("shops").insert(fallbackPayload);
+    }
+
     if(res.error){
       saveMsg.textContent = "خطأ: " + res.error.message;
       return;
@@ -1355,12 +1370,19 @@ function resetForm(){
 async function loadMyShops(){
   myShopsList.innerHTML = `<div class="muted">جاري تحميل محلاتك...</div>`;
 
-  const { data, error } = await supa
+  let { data, error } = await supa
     .from("shops")
     .select("*")
     .or(`merchant_id.eq.${piUser.username},owner_username.eq.${piUser.username}`)
     .eq("status", "active")
     .order("created_at", { ascending: false });
+  if(error && String(error.message || "").includes("merchant_id")){
+    ({ data, error } = await supa
+      .from("shops")
+      .select("*")
+      .eq("owner_username", piUser.username)
+      .order("created_at", { ascending: false }));
+  }
 
   if(error){
     myShopsList.innerHTML = `<div class="muted">خطأ: ${error.message}</div>`;
