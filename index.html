@@ -302,6 +302,38 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
   border-color: rgba(255,255,255,.35);
 }
 
+/* --- Category Filters Styles --- */
+.cat-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.cat-scroll::-webkit-scrollbar { display: none; }
+
+.cat-chip {
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.6);
+  border: 1px solid rgba(127,92,255,0.2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.cat-chip.active {
+  background: var(--p);
+  color: #fff;
+  border-color: var(--p);
+  box-shadow: 0 4px 10px rgba(139,108,255,0.3);
+}
+
 @media (max-width:420px){
   .container{padding:12px}
   .card{padding:14px}
@@ -336,6 +368,11 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <div style="height:10px"></div>
       <button id="btnUserGPS" type="button" data-i18n="btnLocateMe">📍 تحديد موقعي</button>
       <div id="userLocText" class="muted" style="margin-top:8px"></div>
+    </div>
+
+    <!-- Category Filter for Users -->
+    <div id="catFilters" class="cat-scroll">
+      <!-- Generated via JS -->
     </div>
 
     <div id="shopsList"></div>
@@ -430,6 +467,11 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <input id="mName" placeholder="اسم المتجر">
       <div style="height:10px"></div>
 
+      <!-- New Category Select -->
+      <label class="muted" style="display:block;margin-bottom:6px" data-i18n="selectCategory">اختر فئة المتجر</label>
+      <select id="mCat"></select>
+      <div style="height:10px"></div>
+
       <textarea id="mDesc" placeholder="وصف المتجر"></textarea>
       <div style="height:10px"></div>
 
@@ -464,6 +506,21 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
 </div>
 
 <script>
+// --- Constants & Categories ---
+const CATEGORIES = [
+  { id: 'all', ar: 'الكل', en: 'All' }, // For Filter Only
+  { id: 'supermarket', ar: 'سوبر ماركت', en: 'Supermarket' },
+  { id: 'restaurant', ar: 'مطعم', en: 'Restaurant' },
+  { id: 'cafe', ar: 'مقهى', en: 'Cafe' },
+  { id: 'clothing', ar: 'ملابس', en: 'Clothing' },
+  { id: 'electronics', ar: 'إلكترونيات', en: 'Electronics' },
+  { id: 'pharmacy', ar: 'صيدلية', en: 'Pharmacy' },
+  { id: 'services', ar: 'خدمات', en: 'Services' },
+  { id: 'other', ar: 'أخرى', en: 'Other' }
+];
+
+let selectedFilter = 'all';
+
 // --- Localization & Setup ---
 const translations = {
   ar: {
@@ -554,7 +611,17 @@ const translations = {
     loginFirst: "سجّل الدخول أولاً.",
     sdkError: "Pi SDK غير متاح.",
     loadingMyShops: "جاري تحميل محلاتك...",
-    noMyShops: "لا توجد محلات مضافة بعد."
+    noMyShops: "لا توجد محلات مضافة بعد.",
+    selectCategory: "اختر فئة المتجر",
+    cat_all: "الكل",
+    cat_supermarket: "سوبر ماركت",
+    cat_restaurant: "مطعم",
+    cat_cafe: "مقهى",
+    cat_clothing: "ملابس",
+    cat_electronics: "إلكترونيات",
+    cat_pharmacy: "صيدلية",
+    cat_services: "خدمات",
+    cat_other: "أخرى"
   },
   en: {
     appTitle: "📍 Nearby Shops",
@@ -644,7 +711,17 @@ const translations = {
     loginFirst: "Login first.",
     sdkError: "Pi SDK not available.",
     loadingMyShops: "Loading your shops...",
-    noMyShops: "No shops added yet."
+    noMyShops: "No shops added yet.",
+    selectCategory: "Select Shop Category",
+    cat_all: "All",
+    cat_supermarket: "Supermarket",
+    cat_restaurant: "Restaurant",
+    cat_cafe: "Cafe",
+    cat_clothing: "Clothing",
+    cat_electronics: "Electronics",
+    cat_pharmacy: "Pharmacy",
+    cat_services: "Services",
+    cat_other: "Other"
   }
 };
 
@@ -652,6 +729,36 @@ let currentLang = 'ar';
 
 function t(key) {
   return translations[currentLang][key] || key;
+}
+
+function getCategoryName(catId) {
+  const cat = CATEGORIES.find(c => c.id === catId);
+  if(!cat) return catId;
+  return currentLang === 'ar' ? cat.ar : cat.en;
+}
+
+// Render the scrolling chips for users
+function renderCategoryFilters() {
+  const container = document.getElementById('catFilters');
+  if(!container) return;
+  container.innerHTML = CATEGORIES.map(c => `
+    <div class="cat-chip ${c.id === selectedFilter ? 'active' : ''}" 
+         onclick="filterShopsByCategory('${c.id}')">
+       ${currentLang === 'ar' ? c.ar : c.en}
+    </div>
+  `).join('');
+}
+
+// Render the select options for merchants (excludes 'All')
+function renderMerchantCategorySelect() {
+  const select = document.getElementById('mCat');
+  if(!select) return;
+  const currentVal = select.value; // preserve value if possible
+  select.innerHTML = CATEGORIES
+    .filter(c => c.id !== 'all')
+    .map(c => `<option value="${c.id}">${currentLang === 'ar' ? c.ar : c.en}</option>`)
+    .join('');
+  if(currentVal) select.value = currentVal;
 }
 
 function setLanguage(lang) {
@@ -677,23 +784,26 @@ function setLanguage(lang) {
     'mName': 'shopNamePh',
     'mDesc': 'shopDescPh',
     'mAddr': 'shopAddrPh',
-    // Dynamic review textareas handle themselves usually, but we can target them if needed
   };
   for (const [id, key] of Object.entries(phMap)) {
     const el = document.getElementById(id);
     if(el) el.placeholder = t(key);
   }
 
-  // Refresh dynamic views if active
+  // Update Dynamic Categories UI
+  renderCategoryFilters();
+  renderMerchantCategorySelect();
+
+  // Refresh views
   if(piUser) {
-    updateSubscriptionUI(); // Refreshes plan texts
-    // If we have shop list loaded, refresh it implies rebuilding HTML
+    updateSubscriptionUI();
     if(myShopsCache.length > 0) loadMyShops();
   }
   
-  if(userLoc && cachedNearby.length > 0 && shopsList.style.display !== 'none') {
-    // Refresh user shop list to update "km" and labels
-    loadNearbyShops();
+  // Re-render user shops to update filter text and card details
+  if(cachedNearby.length > 0 && shopsList.style.display !== 'none') {
+    // If filtering is active, this re-applies it visually
+    filterShopsByCategory(selectedFilter, false); 
   }
   if(currentShopId && shopDetailsView.style.display !== 'none') {
      openShopDetails(currentShopId);
@@ -755,6 +865,7 @@ const mName = $("mName");
 const mDesc = $("mDesc");
 const mAddr = $("mAddr");
 const mImg  = $("mImg");
+const mCat  = $("mCat"); // New
 const btnShopGPS = $("btnShopGPS");
 const shopLocText = $("shopLocText");
 const btnSave = $("btnSave");
@@ -894,22 +1005,42 @@ async function loadNearbyShops(){
     return;
   }
 
-  const arr = cachedNearby;
+  // Apply default filter (all)
+  filterShopsByCategory(selectedFilter, false);
+}
 
+// Filtering Function
+window.filterShopsByCategory = (catId, redraw = true) => {
+  selectedFilter = catId;
+  renderCategoryFilters(); // Update active chip UI
+
+  const arr = cachedNearby;
   if(!arr.length){
-    shopsList.innerHTML = `<div class="card"><b>${t("noShops")}</b><div class="muted">${t("noShopsHint")}</div></div>`;
+    if(redraw) shopsList.innerHTML = `<div class="card"><b>${t("noShops")}</b><div class="muted">${t("noShopsHint")}</div></div>`;
+    return;
+  }
+
+  const filtered = (catId === 'all') 
+    ? arr 
+    : arr.filter(s => s.category === catId || (catId === 'other' && !s.category));
+
+  if(!filtered.length && redraw){
+    shopsList.innerHTML = `<div class="card"><b>${t("noShops")}</b><div class="muted">${t("cat_" + catId) || catId}</div></div>`;
     return;
   }
 
   shopDetailsView.style.display = "none";
   shopsList.style.display = "block";
-  shopsList.innerHTML = `<div class="shops-grid">${arr.map(renderShopIcon).join("")}</div>`;
-}
+  if(redraw) {
+    shopsList.innerHTML = `<div class="shops-grid">${filtered.map(renderShopIcon).join("")}</div>`;
+  }
+};
 
 function renderShopIcon(s){
   const img = s.image_url || `https://picsum.photos/300?seed=${encodeURIComponent(s.id)}`;
   const avg = Number(s.avg_rating || 0).toFixed(1);
   const cnt = Number(s.rating_count || 0);
+  const catName = getCategoryName(s.category || 'other');
 
   return `
     <div class="shop-icon" role="button" tabindex="0" onclick="openShopDetails('${s.id}')" onkeypress="if(event.key==='Enter'){openShopDetails('${s.id}')}" aria-label="${escapeHtml(s.name)}">
@@ -917,6 +1048,7 @@ function renderShopIcon(s){
       <div class="title">${escapeHtml(s.name)}</div>
       <div class="meta">
         <span>⭐ ${avg} (${cnt})</span>
+        <span class="badge" style="font-size:10px;padding:2px 6px">${catName}</span>
         <span>📏 ${s.dist_km.toFixed(2)} ${t("km")}</span>
       </div>
     </div>
@@ -929,6 +1061,8 @@ function renderShopDetails(s){
   const cnt = Number(s.rating_count || 0);
   const distance = typeof s.dist_km === "number" ? `${s.dist_km.toFixed(2)} ${t("km")}` : "—";
   const mapUrl = buildMapUrl(s.lat, s.lng);
+  const catName = getCategoryName(s.category || 'other');
+  
   return `
     <div class="card">
       <img class="cover" src="${img}" alt="shop">
@@ -936,6 +1070,9 @@ function renderShopDetails(s){
       <div class="row">
         <b>${escapeHtml(s.name)}</b>
         <span class="badge">📏 ${distance}</span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <span class="badge" style="background:var(--bg2);color:var(--p3)">${catName}</span>
       </div>
       <div class="muted" style="margin-top:8px">${escapeHtml(s.address || "")}</div>
       <div class="muted" style="margin-top:8px">${escapeHtml(s.description || "")}</div>
@@ -1558,6 +1695,7 @@ btnSave.addEventListener("click", async ()=>{
 
   const payload = {
     name,
+    category: mCat.value || 'other', // Add category
     description: mDesc.value.trim() || null,
     address: mAddr.value.trim() || null,
     lat: shopLoc.lat,
@@ -1598,6 +1736,7 @@ function resetForm(){
   mDesc.value = "";
   mAddr.value = "";
   mImg.value = "";
+  mCat.value = "other"; // reset category
   shopLoc = null;
   shopLocText.textContent = "";
   btnCancelEdit.style.display = "none";
@@ -1629,12 +1768,14 @@ async function loadMyShops(){
   myShopsList.innerHTML = "";
   activeShops.forEach(s=>{
     const img = s.image_url || `https://picsum.photos/200?seed=${encodeURIComponent(s.id)}`;
+    const catName = getCategoryName(s.category || 'other');
     myShopsList.innerHTML += `
       <div class="card" style="padding:12px;margin-bottom:10px">
         <div class="shop-mini">
           <img src="${img}" alt="shop">
           <div class="meta">
             <b>${escapeHtml(s.name)}</b>
+            <div class="muted">${catName}</div>
             <div class="muted">${escapeHtml(s.address || "")}</div>
             <div class="muted">⭐ ${Number(s.avg_rating||0).toFixed(1)} (${Number(s.rating_count||0)})</div>
           </div>
@@ -1665,6 +1806,7 @@ window.startEditShop = async (id)=>{
   mName.value = shop.name || "";
   mDesc.value = shop.description || "";
   mAddr.value = shop.address || "";
+  mCat.value = shop.category || "other"; // Set Category
 
   shopLoc = { lat: shop.lat, lng: shop.lng };
   shopLocText.textContent = `Current Loc: ${shopLoc.lat.toFixed(5)}, ${shopLoc.lng.toFixed(5)}`;
