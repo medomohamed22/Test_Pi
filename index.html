@@ -1,9 +1,11 @@
+
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>أقرب المحلات / Nearby Shops</title>
+<title>أقرب المحلات</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -31,7 +33,7 @@
   --radius2:999px;
 }
 
-*{box-sizing:border-box;font-family:Tajawal,system-ui,sans-serif}
+*{box-sizing:border-box;font-family:Tajawal,system-ui}
 html,body{height:100%}
 body{
   margin:0;
@@ -45,9 +47,7 @@ body{
 
 header{
   padding:16px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  text-align:center;
   font-weight:900;
   letter-spacing:.2px;
   color:#fff;
@@ -55,19 +55,6 @@ header{
   position:sticky;top:0;z-index:10;
   box-shadow: 0 10px 30px rgba(91,44,255,.22);
 }
-
-.lang-btn {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.4);
-    color: #fff;
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 20px;
-    cursor: pointer;
-    width: auto;
-    box-shadow: none;
-}
-.lang-btn:hover { background: rgba(255,255,255,0.3); }
 
 .container{
   padding:14px;
@@ -302,38 +289,6 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
   border-color: rgba(255,255,255,.35);
 }
 
-/* Category Filter Styles */
-.cat-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 12px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.cat-scroll::-webkit-scrollbar { display: none; }
-
-.cat-chip {
-  flex: 0 0 auto;
-  padding: 8px 16px;
-  border-radius: 99px;
-  background: rgba(255,255,255,0.6);
-  border: 1px solid rgba(127,92,255,0.2);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-.cat-chip.active {
-  background: var(--p);
-  color: #fff;
-  border-color: var(--p);
-  box-shadow: 0 4px 10px rgba(139,108,255,0.3);
-}
-
 @media (max-width:420px){
   .container{padding:12px}
   .card{padding:14px}
@@ -346,38 +301,30 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
 </head>
 
 <body>
-<header>
-  <span data-i18n="appTitle">📍 أقرب المحلات</span>
-  <button id="langToggle" class="lang-btn" type="button">English</button>
-</header>
+<header>📍 أقرب المحلات</header>
 
 <div class="container">
 
   <div class="tabs">
-    <button id="tUser" class="active" type="button" data-i18n="tabUser">المستخدم</button>
-    <button id="tMer" type="button" data-i18n="tabMerchant">التاجر</button>
+    <button id="tUser" class="active" type="button">المستخدم</button>
+    <button id="tMer" type="button">التاجر</button>
   </div>
 
   <!-- ================= USER ================= -->
   <div id="userView">
     <div class="card">
       <div class="row">
-        <b data-i18n="userLocation">موقع المستخدم</b>
-        <span class="badge" id="gpsStatus" data-i18n="statusReady">جاهز</span>
+        <b>موقع المستخدم</b>
+        <span class="badge" id="gpsStatus">جاهز</span>
       </div>
       <div style="height:10px"></div>
-      <button id="btnUserGPS" type="button" data-i18n="btnLocateMe">📍 تحديد موقعي</button>
+      <button id="btnUserGPS" type="button">📍 تحديد موقعي</button>
       <div id="userLocText" class="muted" style="margin-top:8px"></div>
-    </div>
-
-    <!-- Category Filter for Users -->
-    <div id="catFilters" class="cat-scroll">
-      <!-- Generated via JS -->
     </div>
 
     <div id="shopsList"></div>
     <div id="shopDetailsView" class="shop-details">
-      <button id="btnBackToGrid" class="secondary" type="button" data-i18n="backToList">⬅️ رجوع للقائمة</button>
+      <button id="btnBackToGrid" class="secondary" type="button">⬅️ رجوع للقائمة</button>
       <div style="height:10px"></div>
       <div id="shopDetailsCard"></div>
     </div>
@@ -389,14 +336,14 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
     <!-- Auth -->
     <div id="authBox" class="card">
       <div class="row">
-        <b data-i18n="merAccount">حساب التاجر</b>
+        <b>حساب التاجر</b>
         <span class="badge">Pi Network</span>
       </div>
       <div style="height:10px"></div>
 
       <div class="auth-form">
-        <div class="muted" data-i18n="authHint">تسجيل الدخول يتم عبر Pi SDK لاستخراج اسم المستخدم والمحفظة.</div>
-        <button id="btnPiLogin" type="button" data-i18n="btnPiLogin">🔑 دخول عبر Pi</button>
+        <div class="muted">تسجيل الدخول يتم عبر Pi SDK لاستخراج اسم المستخدم والمحفظة.</div>
+        <button id="btnPiLogin" type="button">🔑 دخول عبر Pi</button>
         <div id="authMsg" class="muted"></div>
       </div>
     </div>
@@ -404,8 +351,8 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
     <!-- Merchant Dashboard -->
     <div id="shopForm" class="card" style="display:none">
       <div class="row">
-        <b data-i18n="merDashboard">لوحة التاجر</b>
-        <button id="btnLogout" class="danger" type="button" style="width:auto" data-i18n="btnLogout">خروج</button>
+        <b>لوحة التاجر</b>
+        <button id="btnLogout" class="danger" type="button" style="width:auto">خروج</button>
       </div>
 
       <div style="height:10px"></div>
@@ -413,51 +360,52 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <div class="row">
         <div>
           <b id="merchantName">--</b>
-          <div class="muted" id="merchantWallet"></div>
+          <div class="muted" id="merchantWallet">محفظة: --</div>
         </div>
-        <span class="badge" id="subscriptionBadge" data-i18n="notSubscribed">غير مشترك</span>
+        <span class="badge" id="subscriptionBadge">غير مشترك</span>
       </div>
 
       <div style="height:10px"></div>
 
       <div class="card" style="margin-top:10px">
         <div class="row">
-          <b data-i18n="merSub">اشتراك التاجر</b>
-          <span class="badge" id="subscriptionStatus" data-i18n="notSubscribed">غير مشترك</span>
+          <b>اشتراك التاجر</b>
+          <span class="badge" id="subscriptionStatus">غير مشترك</span>
         </div>
         <div id="subscriptionMsg" class="muted" style="margin-top:6px"></div>
         <div class="row" style="margin-top:8px">
-          <span class="badge" id="subscriptionRemaining" data-i18n="duration30">مدة 30 يوم</span>
-          <span class="badge" id="subscriptionUsage">0 / 0</span>
+          <span class="badge" id="subscriptionRemaining">مدة 30 يوم</span>
+          <span class="badge" id="subscriptionUsage">المحلات: 0 / 0</span>
         </div>
-        <button id="btnRenewPlan" class="secondary" type="button" style="margin-top:10px;display:none" data-i18n="renewPlan">🔁 تجديد الاشتراك</button>
+        <button id="btnRenewPlan" class="secondary" type="button" style="margin-top:10px;display:none">🔁 تجديد الاشتراك</button>
         <div id="subscriptionHint" class="muted" style="margin-top:6px"></div>
         <div class="plans-grid" id="plansGrid" style="margin-top:12px">
           <div class="plan-card">
-            <b data-i18n="planBasic">الأساسية</b>
-            <div class="muted" data-i18n="duration30">مدة 30 يوم</div>
+            <b>الأساسية</b>
+            <div class="muted">مدة 30 يوم</div>
             <div class="price">1 Pi</div>
-            <div class="muted" data-i18n="oneShop">محل واحد</div>
-            <button class="plan-btn" type="button" data-plan="basic" data-i18n="subscribeUpgrade">اشترك / ترقية</button>
+            <div class="muted">محل واحد</div>
+            <button class="plan-btn" type="button" data-plan="basic">اشترك / ترقية</button>
           </div>
           <div class="plan-card">
-            <b data-i18n="planPlatinum">بلاتنيم</b>
-            <div class="muted" data-i18n="duration30">مدة 30 يوم</div>
+            <b>بلاتنيم</b>
+            <div class="muted">مدة 30 يوم</div>
             <div class="price">3 Pi</div>
-            <div class="muted" data-i18n="threeShops">3 محلات</div>
-            <button class="plan-btn" type="button" data-plan="platinum" data-i18n="subscribeUpgrade">اشترك / ترقية</button>
+            <div class="muted">3 محلات</div>
+            <button class="plan-btn" type="button" data-plan="platinum">اشترك / ترقية</button>
           </div>
           <div class="plan-card">
-            <b data-i18n="planPremier">بريمير</b>
-            <div class="muted" data-i18n="duration30">مدة 30 يوم</div>
+            <b>بريمير</b>
+            <div class="muted">مدة 30 يوم</div>
             <div class="price">5 Pi</div>
-            <div class="muted" data-i18n="fiveShops">5 محلات</div>
-            <button class="plan-btn" type="button" data-plan="premier" data-i18n="subscribeUpgrade">اشترك / ترقية</button>
+            <div class="muted">5 محلات</div>
+            <button class="plan-btn" type="button" data-plan="premier">اشترك / ترقية</button>
           </div>
         </div>
       </div>
 
-      <button id="btnResolvePending" class="secondary" type="button" style="display:none;margin-top:10px" data-i18n="resolvePending">
+      <!-- ✅ زر يدوي لحل أي دفعة معلّقة -->
+      <button id="btnResolvePending" class="secondary" type="button" style="display:none;margin-top:10px">
         🔁 حاول تكمل الدفعة المعلّقة
       </button>
       <div id="pendingMsg" class="muted" style="margin-top:6px"></div>
@@ -467,11 +415,6 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <input id="mName" placeholder="اسم المتجر">
       <div style="height:10px"></div>
 
-      <!-- Category Select -->
-      <label class="muted" style="display:block;margin-bottom:6px" data-i18n="selectCategory">اختر فئة المتجر</label>
-      <select id="mCat"></select>
-      <div style="height:10px"></div>
-
       <textarea id="mDesc" placeholder="وصف المتجر"></textarea>
       <div style="height:10px"></div>
 
@@ -479,15 +422,15 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <div style="height:10px"></div>
 
       <input id="mImg" type="file" accept="image/*">
-      <div class="muted" style="margin-top:6px" data-i18n="uploadHint">اختياري: ارفع صورة للمحل (JPG/PNG)</div>
+      <div class="muted" style="margin-top:6px">اختياري: ارفع صورة للمحل (JPG/PNG)</div>
 
       <div class="merchant-actions">
-        <button id="btnShopGPS" type="button" data-i18n="btnShopGPS">📍 تحديد موقع المتجر</button>
+        <button id="btnShopGPS" type="button">📍 تحديد موقع المتجر</button>
         <div id="shopLocText" class="badge muted"></div>
 
-        <button id="btnSave" type="button" data-i18n="btnSaveShop">💾 حفظ المتجر</button>
+        <button id="btnSave" type="button">💾 حفظ المتجر</button>
 
-        <button id="btnCancelEdit" class="secondary" type="button" style="display:none" data-i18n="btnCancelEdit">إلغاء التعديل</button>
+        <button id="btnCancelEdit" class="secondary" type="button" style="display:none">إلغاء التعديل</button>
       </div>
 
       <div id="saveMsg" class="muted" style="margin-top:10px"></div>
@@ -495,8 +438,8 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
       <hr class="sep">
 
       <div class="row" style="margin-bottom:10px">
-        <b data-i18n="myShops">محلاتي</b>
-        <button id="btnRefreshMyShops" class="secondary" type="button" style="width:auto" data-i18n="btnRefresh">تحديث</button>
+        <b>محلاتي</b>
+        <button id="btnRefreshMyShops" class="secondary" type="button" style="width:auto">تحديث</button>
       </div>
 
       <div id="myShopsList"></div>
@@ -506,308 +449,6 @@ hr.sep{border:0;border-top:1px solid rgba(127,92,255,.18);margin:14px 0}
 </div>
 
 <script>
-// --- Constants & Categories ---
-const CATEGORIES = [
-  { id: 'all', ar: 'الكل', en: 'All' }, 
-  { id: 'supermarket', ar: 'سوبر ماركت', en: 'Supermarket' },
-  { id: 'restaurant', ar: 'مطعم', en: 'Restaurant' },
-  { id: 'cafe', ar: 'مقهى', en: 'Cafe' },
-  { id: 'clothing', ar: 'ملابس', en: 'Clothing' },
-  { id: 'electronics', ar: 'إلكترونيات', en: 'Electronics' },
-  { id: 'pharmacy', ar: 'صيدلية', en: 'Pharmacy' },
-  { id: 'services', ar: 'خدمات', en: 'Services' },
-  { id: 'other', ar: 'أخرى', en: 'Other' }
-];
-
-let selectedFilter = 'all';
-
-// --- Localization & Setup ---
-const translations = {
-  ar: {
-    appTitle: "📍 أقرب المحلات",
-    tabUser: "المستخدم",
-    tabMerchant: "التاجر",
-    userLocation: "موقع المستخدم",
-    statusReady: "جاهز",
-    btnLocateMe: "📍 تحديد موقعي",
-    locating: "⏳ جاري تحديد الموقع...",
-    locationDenied: "مرفوض",
-    locationAlert: "من فضلك اسمح بالموقع (GPS) من إعدادات المتصفح/الهاتف.",
-    myLoc: "موقعك",
-    loadingShops: "جاري تحميل المحلات...",
-    moments: "لحظات…",
-    error: "خطأ",
-    errorLoad: "تعذر تحميل المحلات.",
-    selectLocFirst: "حدد موقعك أولاً",
-    clickLocate: "اضغط على “تحديد موقعي”.",
-    noShops: "لا توجد محلات",
-    noShopsHint: "اطلب من التاجر إضافة متجر.",
-    km: "كم",
-    backToList: "⬅️ رجوع للقائمة",
-    googleMap: "Google Map",
-    rateShop: "قيّم المتجر",
-    commentPh: "اكتب تعليق (اختياري)...",
-    sendReview: "إرسال التقييم",
-    reviewSent: "تم إرسال التقييم ⭐",
-    reviewError: "خطأ في التقييم",
-    duplicateReview: "لقد قمت بتقييم هذا المحل بالفعل من هذا الجهاز ✅",
-    merAccount: "حساب التاجر",
-    authHint: "تسجيل الدخول يتم عبر Pi SDK لاستخراج اسم المستخدم والمحفظة.",
-    btnPiLogin: "🔑 دخول عبر Pi",
-    merDashboard: "لوحة التاجر",
-    btnLogout: "خروج",
-    wallet: "محفظة",
-    notSubscribed: "غير مشترك",
-    merSub: "اشتراك التاجر",
-    duration30: "مدة 30 يوم",
-    renewPlan: "🔁 تجديد الاشتراك",
-    planBasic: "الأساسية",
-    planPlatinum: "بلاتنيم",
-    planPremier: "بريمير",
-    oneShop: "محل واحد",
-    threeShops: "3 محلات",
-    fiveShops: "5 محلات",
-    subscribeUpgrade: "اشترك / ترقية",
-    currentPlan: "الخطة الحالية",
-    resolvePending: "🔁 حاول تكمل الدفعة المعلّقة",
-    pendingHint: "فيه دفعة سابقة ممكن تكون معلّقة (ID: {id}...) — جرب تكملها.",
-    shopNamePh: "اسم المتجر",
-    shopDescPh: "وصف المتجر",
-    shopAddrPh: "العنوان",
-    uploadHint: "اختياري: ارفع صورة للمحل (JPG/PNG)",
-    btnShopGPS: "📍 تحديد موقع المتجر",
-    shopLocWait: "⏳ جاري تحديد الموقع...",
-    shopLocDenied: "من فضلك اسمح بالموقع للتاجر.",
-    btnSaveShop: "💾 حفظ المتجر",
-    btnCancelEdit: "إلغاء التعديل",
-    myShops: "محلاتي",
-    btnRefresh: "تحديث",
-    edit: "تعديل",
-    delete: "حذف",
-    confirmDelete: "متأكد أنك تريد حذف المتجر؟",
-    deleted: "تم الحذف ✅",
-    saveSuccess: "تم تحديث المتجر ✅",
-    addSuccess: "تم إضافة المتجر ✅",
-    fillName: "اكتب اسم المتجر",
-    fillLoc: "حدد موقع المتجر أولاً",
-    subActive: "مشترك ✅",
-    subExpired: "منتهي",
-    subInactive: "غير نشط",
-    subMsgActive: "الخطة: {plan} — {limit} محلات",
-    subMsgInactive: "لا يوجد اشتراك نشط — اشترك لمدة 30 يوم لإضافة المحلات.",
-    remaining: "متبقي: {days} يوم",
-    shopsUsage: "المحلات: {used} / {total}",
-    upgradeHint: "يمكنك الترقية في أي وقت بخطة أعلى.",
-    upgradeHintNone: "اختر خطة للاشتراك أو الترقية.",
-    gateNoSub: "لا يوجد اشتراك نشط — اشترك لمدة 30 يوم.",
-    gateLimit: "وصلت للحد الأقصى للمحلات — قم بالترقية أو التجديد.",
-    creatingPayment: "جاري إنشاء عملية الدفع...",
-    approving: "جاري اعتماد الدفع...",
-    approved: "تم اعتماد الدفع ✅",
-    activating: "جاري تفعيل الاشتراك...",
-    activeSuccess: "تم الاشتراك ✅ يمكنك إضافة المحلات.",
-    paymentCanceled: "تم إلغاء الدفع.",
-    paymentError: "حصل خطأ في الدفع.",
-    loginFirst: "سجّل الدخول أولاً.",
-    sdkError: "Pi SDK غير متاح.",
-    loadingMyShops: "جاري تحميل محلاتك...",
-    noMyShops: "لا توجد محلات مضافة بعد.",
-    selectCategory: "اختر فئة المتجر",
-    cat_all: "الكل",
-    cat_supermarket: "سوبر ماركت",
-    cat_restaurant: "مطعم",
-    cat_cafe: "مقهى",
-    cat_clothing: "ملابس",
-    cat_electronics: "إلكترونيات",
-    cat_pharmacy: "صيدلية",
-    cat_services: "خدمات",
-    cat_other: "أخرى"
-  },
-  en: {
-    appTitle: "📍 Nearby Shops",
-    tabUser: "User",
-    tabMerchant: "Merchant",
-    userLocation: "User Location",
-    statusReady: "Ready",
-    btnLocateMe: "📍 Locate Me",
-    locating: "⏳ Locating...",
-    locationDenied: "Denied",
-    locationAlert: "Please allow GPS location from browser settings.",
-    myLoc: "Your Location",
-    loadingShops: "Loading shops...",
-    moments: "Just a moment...",
-    error: "Error",
-    errorLoad: "Failed to load shops.",
-    selectLocFirst: "Locate yourself first",
-    clickLocate: "Click 'Locate Me'.",
-    noShops: "No Shops Found",
-    noShopsHint: "Ask a merchant to add a shop.",
-    km: "km",
-    backToList: "⬅️ Back to List",
-    googleMap: "Google Map",
-    rateShop: "Rate Shop",
-    commentPh: "Write a comment (optional)...",
-    sendReview: "Submit Review",
-    reviewSent: "Review Sent ⭐",
-    reviewError: "Review Error",
-    duplicateReview: "You have already reviewed this shop from this device ✅",
-    merAccount: "Merchant Account",
-    authHint: "Login is handled via Pi SDK to get username and wallet.",
-    btnPiLogin: "🔑 Login with Pi",
-    merDashboard: "Merchant Dashboard",
-    btnLogout: "Logout",
-    wallet: "Wallet",
-    notSubscribed: "Not Subscribed",
-    merSub: "Subscription",
-    duration30: "30 Days Duration",
-    renewPlan: "🔁 Renew Subscription",
-    planBasic: "Basic",
-    planPlatinum: "Platinum",
-    planPremier: "Premier",
-    oneShop: "1 Shop",
-    threeShops: "3 Shops",
-    fiveShops: "5 Shops",
-    subscribeUpgrade: "Subscribe / Upgrade",
-    currentPlan: "Current Plan",
-    resolvePending: "🔁 Resolve Pending Payment",
-    pendingHint: "There is a pending payment (ID: {id}...) — Try to complete it.",
-    shopNamePh: "Shop Name",
-    shopDescPh: "Shop Description",
-    shopAddrPh: "Address",
-    uploadHint: "Optional: Upload shop image (JPG/PNG)",
-    btnShopGPS: "📍 Set Shop Location",
-    shopLocWait: "⏳ Locating...",
-    shopLocDenied: "Please allow location access.",
-    btnSaveShop: "💾 Save Shop",
-    btnCancelEdit: "Cancel Edit",
-    myShops: "My Shops",
-    btnRefresh: "Refresh",
-    edit: "Edit",
-    delete: "Delete",
-    confirmDelete: "Are you sure you want to delete this shop?",
-    deleted: "Deleted ✅",
-    saveSuccess: "Shop Updated ✅",
-    addSuccess: "Shop Added ✅",
-    fillName: "Enter shop name",
-    fillLoc: "Set shop location first",
-    subActive: "Subscribed ✅",
-    subExpired: "Expired",
-    subInactive: "Inactive",
-    subMsgActive: "Plan: {plan} — {limit} shops",
-    subMsgInactive: "No active subscription — Subscribe for 30 days to add shops.",
-    remaining: "{days} days remaining",
-    shopsUsage: "Shops: {used} / {total}",
-    upgradeHint: "You can upgrade anytime to a higher plan.",
-    upgradeHintNone: "Choose a plan to subscribe or upgrade.",
-    gateNoSub: "No active subscription — Subscribe for 30 days.",
-    gateLimit: "Shop limit reached — Upgrade or Renew.",
-    creatingPayment: "Creating payment...",
-    approving: "Approving payment...",
-    approved: "Payment Approved ✅",
-    activating: "Activating subscription...",
-    activeSuccess: "Subscribed ✅ You can add shops now.",
-    paymentCanceled: "Payment Canceled.",
-    paymentError: "Payment Error.",
-    loginFirst: "Login first.",
-    sdkError: "Pi SDK not available.",
-    loadingMyShops: "Loading your shops...",
-    noMyShops: "No shops added yet.",
-    selectCategory: "Select Shop Category",
-    cat_all: "All",
-    cat_supermarket: "Supermarket",
-    cat_restaurant: "Restaurant",
-    cat_cafe: "Cafe",
-    cat_clothing: "Clothing",
-    cat_electronics: "Electronics",
-    cat_pharmacy: "Pharmacy",
-    cat_services: "Services",
-    cat_other: "Other"
-  }
-};
-
-let currentLang = 'ar';
-
-function t(key) {
-  return translations[currentLang][key] || key;
-}
-
-function getCategoryName(catId) {
-  const cat = CATEGORIES.find(c => c.id === catId);
-  if(!cat) return catId;
-  return currentLang === 'ar' ? cat.ar : cat.en;
-}
-
-function renderCategoryFilters() {
-  const container = document.getElementById('catFilters');
-  if(!container) return;
-  container.innerHTML = CATEGORIES.map(c => `
-    <div class="cat-chip ${c.id === selectedFilter ? 'active' : ''}" 
-         onclick="filterShopsByCategory('${c.id}')">
-       ${currentLang === 'ar' ? c.ar : c.en}
-    </div>
-  `).join('');
-}
-
-function renderMerchantCategorySelect() {
-  const select = document.getElementById('mCat');
-  if(!select) return;
-  const currentVal = select.value;
-  select.innerHTML = CATEGORIES
-    .filter(c => c.id !== 'all')
-    .map(c => `<option value="${c.id}">${currentLang === 'ar' ? c.ar : c.en}</option>`)
-    .join('');
-  if(currentVal) select.value = currentVal;
-}
-
-function setLanguage(lang) {
-  if (lang !== 'ar' && lang !== 'en') return;
-  currentLang = lang;
-  localStorage.setItem("app_lang", lang);
-
-  const isRtl = (lang === 'ar');
-  document.documentElement.lang = lang;
-  document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
-  document.getElementById('langToggle').textContent = isRtl ? "English" : "العربية";
-
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (translations[lang][key]) {
-      el.textContent = translations[lang][key];
-    }
-  });
-
-  const phMap = {
-    'mName': 'shopNamePh',
-    'mDesc': 'shopDescPh',
-    'mAddr': 'shopAddrPh',
-  };
-  for (const [id, key] of Object.entries(phMap)) {
-    const el = document.getElementById(id);
-    if(el) el.placeholder = t(key);
-  }
-
-  renderCategoryFilters();
-  renderMerchantCategorySelect();
-
-  if(piUser) {
-    updateSubscriptionUI();
-    if(myShopsCache.length > 0) loadMyShops();
-  }
-  
-  if(cachedNearby.length > 0 && shopsList.style.display !== 'none') {
-    filterShopsByCategory(selectedFilter, false); 
-  }
-  if(currentShopId && shopDetailsView.style.display !== 'none') {
-     openShopDetails(currentShopId);
-  }
-}
-
-document.getElementById('langToggle').addEventListener('click', () => {
-  setLanguage(currentLang === 'ar' ? 'en' : 'ar');
-});
-
-// --- End Localization ---
-
 const SUPA_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
 const SUPA_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
@@ -832,6 +473,9 @@ const shopsList = $("shopsList");
 const shopDetailsView = $("shopDetailsView");
 const shopDetailsCard = $("shopDetailsCard");
 const btnBackToGrid = $("btnBackToGrid");
+const custMapLink = $("custMapLink");
+const custTrackMapLink = $("custTrackMapLink");
+const dMapLink = $("dMapLink");
 
 const authBox = $("authBox");
 const shopForm = $("shopForm");
@@ -857,7 +501,6 @@ const mName = $("mName");
 const mDesc = $("mDesc");
 const mAddr = $("mAddr");
 const mImg  = $("mImg");
-const mCat  = $("mCat");
 const btnShopGPS = $("btnShopGPS");
 const shopLocText = $("shopLocText");
 const btnSave = $("btnSave");
@@ -883,15 +526,14 @@ tMer.addEventListener("click", ()=>{
   tUser.classList.remove("active");
 });
 
-// Optimized GPS helper
+// GPS helper (fixed)
 function getGPS(){
   return new Promise((res, rej)=>{
-    if(!navigator.geolocation) return rej(new Error("GPS not supported"));
-    // Optimized: Allow cached position up to 10 seconds, timeout after 10s
+    if(!navigator.geolocation) return rej(new Error("GPS غير مدعوم"));
     navigator.geolocation.getCurrentPosition(
       p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
       err => rej(err),
-      { enableHighAccuracy:true, timeout: 10000, maximumAge: 10000 }
+      { enableHighAccuracy:true, timeout: 15000, maximumAge: 0 }
     );
   });
 }
@@ -927,6 +569,24 @@ function buildMapUrl(lat, lng) {
   return `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
 }
 
+function openGoogleMapsApp(lat, lng, name) {
+  const safeName = encodeURIComponent(name || "");
+  const intentUrl = `intent://maps.google.com/?daddr=${lat},${lng}#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+  const geoUrl = `geo:${lat},${lng}?q=${lat},${lng}(${safeName})`;
+  const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+  if (tryOpenExternal(intentUrl)) return;
+
+  setTimeout(() => {
+    if (tryOpenExternal(geoUrl)) return;
+
+    setTimeout(() => {
+      if (!tryOpenExternal(webUrl)) {
+        window.location.href = webUrl;
+      }
+    }, 400);
+  }, 400);
+}
 // Fingerprint (SHA-256)
 async function generateFingerprint(){
   const raw =
@@ -954,19 +614,19 @@ btnBackToGrid.addEventListener("click", ()=>{
 btnUserGPS.addEventListener("click", async ()=>{
   try{
     btnUserGPS.disabled = true;
-    gpsStatus.textContent = "Status: ...";
-    btnUserGPS.textContent = t("locating");
+    gpsStatus.textContent = "جاري...";
+    btnUserGPS.textContent = "⏳ جاري تحديد الموقع...";
     userLoc = await getGPS();
-    gpsStatus.textContent = t("statusReady");
-    userLocText.textContent = `${t("myLoc")}: ${userLoc.lat.toFixed(5)}, ${userLoc.lng.toFixed(5)}`;
+    gpsStatus.textContent = "تم";
+    userLocText.textContent = `موقعك: ${userLoc.lat.toFixed(5)}, ${userLoc.lng.toFixed(5)}`;
     localStorage.setItem("user_loc", JSON.stringify(userLoc));
     await loadNearbyShops();
   }catch(e){
-    gpsStatus.textContent = t("locationDenied");
-    alert(t("locationAlert"));
+    gpsStatus.textContent = "مرفوض";
+    alert("من فضلك اسمح بالموقع (GPS) من إعدادات المتصفح/الهاتف.");
   }finally{
     btnUserGPS.disabled = false;
-    btnUserGPS.textContent = t("btnLocateMe");
+    btnUserGPS.textContent = "📍 تحديد موقعي";
   }
 });
 
@@ -983,65 +643,45 @@ async function refreshPublicShopsCache(){
 }
 
 async function loadNearbyShops(){
-  shopsList.innerHTML = `<div class="card"><b>${t("loadingShops")}</b><div class="muted">${t("moments")}</div></div>`;
+  shopsList.innerHTML = `<div class="card"><b>جاري تحميل المحلات...</b><div class="muted">لحظات…</div></div>`;
 
   let data = [];
   try{
     data = await refreshPublicShopsCache();
   }catch(e){
-    shopsList.innerHTML = `<div class="card"><b>${t("error")}</b><div class="muted">${t("errorLoad")}</div></div>`;
+    shopsList.innerHTML = `<div class="card"><b>خطأ</b><div class="muted">تعذر تحميل المحلات.</div></div>`;
     return;
   }
 
   if(!userLoc){
-    shopsList.innerHTML = `<div class="card"><b>${t("selectLocFirst")}</b><div class="muted">${t("clickLocate")}</div></div>`;
+    shopsList.innerHTML = `<div class="card"><b>حدد موقعك أولاً</b><div class="muted">اضغط على “تحديد موقعي”.</div></div>`;
     return;
   }
-
-  filterShopsByCategory(selectedFilter, false);
-}
-
-// Filtering Function
-window.filterShopsByCategory = (catId, redraw = true) => {
-  selectedFilter = catId;
-  renderCategoryFilters();
 
   const arr = cachedNearby;
+
   if(!arr.length){
-    if(redraw) shopsList.innerHTML = `<div class="card"><b>${t("noShops")}</b><div class="muted">${t("noShopsHint")}</div></div>`;
-    return;
-  }
-
-  const filtered = (catId === 'all') 
-    ? arr 
-    : arr.filter(s => s.category === catId || (catId === 'other' && !s.category));
-
-  if(!filtered.length && redraw){
-    shopsList.innerHTML = `<div class="card"><b>${t("noShops")}</b><div class="muted">${t("cat_" + catId) || catId}</div></div>`;
+    shopsList.innerHTML = `<div class="card"><b>لا توجد محلات</b><div class="muted">اطلب من التاجر إضافة متجر.</div></div>`;
     return;
   }
 
   shopDetailsView.style.display = "none";
   shopsList.style.display = "block";
-  if(redraw) {
-    shopsList.innerHTML = `<div class="shops-grid">${filtered.map(renderShopIcon).join("")}</div>`;
-  }
-};
+  shopsList.innerHTML = `<div class="shops-grid">${arr.map(renderShopIcon).join("")}</div>`;
+}
 
 function renderShopIcon(s){
   const img = s.image_url || `https://picsum.photos/300?seed=${encodeURIComponent(s.id)}`;
   const avg = Number(s.avg_rating || 0).toFixed(1);
   const cnt = Number(s.rating_count || 0);
-  const catName = getCategoryName(s.category || 'other');
 
   return `
-    <div class="shop-icon" role="button" tabindex="0" onclick="openShopDetails('${s.id}')" onkeypress="if(event.key==='Enter'){openShopDetails('${s.id}')}" aria-label="${escapeHtml(s.name)}">
+    <div class="shop-icon" role="button" tabindex="0" onclick="openShopDetails('${s.id}')" onkeypress="if(event.key==='Enter'){openShopDetails('${s.id}')}" aria-label="عرض تفاصيل ${escapeHtml(s.name)}">
       <img class="thumb" src="${img}" alt="shop">
       <div class="title">${escapeHtml(s.name)}</div>
       <div class="meta">
         <span>⭐ ${avg} (${cnt})</span>
-        <span class="badge" style="font-size:10px;padding:2px 6px">${catName}</span>
-        <span>📏 ${s.dist_km.toFixed(2)} ${t("km")}</span>
+        <span>📏 ${s.dist_km.toFixed(2)} كم</span>
       </div>
     </div>
   `;
@@ -1051,10 +691,8 @@ function renderShopDetails(s){
   const img = s.image_url || `https://picsum.photos/700?seed=${encodeURIComponent(s.id)}`;
   const avg = Number(s.avg_rating || 0).toFixed(1);
   const cnt = Number(s.rating_count || 0);
-  const distance = typeof s.dist_km === "number" ? `${s.dist_km.toFixed(2)} ${t("km")}` : "—";
+  const distance = typeof s.dist_km === "number" ? `${s.dist_km.toFixed(2)} كم` : "—";
   const mapUrl = buildMapUrl(s.lat, s.lng);
-  const catName = getCategoryName(s.category || 'other');
-  
   return `
     <div class="card">
       <img class="cover" src="${img}" alt="shop">
@@ -1063,24 +701,21 @@ function renderShopDetails(s){
         <b>${escapeHtml(s.name)}</b>
         <span class="badge">📏 ${distance}</span>
       </div>
-      <div class="row" style="margin-top:8px">
-        <span class="badge" style="background:var(--bg2);color:var(--p3)">${catName}</span>
-      </div>
       <div class="muted" style="margin-top:8px">${escapeHtml(s.address || "")}</div>
       <div class="muted" style="margin-top:8px">${escapeHtml(s.description || "")}</div>
       <div class="row" style="margin-top:12px">
         <span class="badge">⭐ ${avg} (${cnt})</span>
       </div>
       <div class="detail-actions">
-        <button type="button" onclick="return openMapUrl('${mapUrl}')">${t("googleMap")}</button>
+        <button type="button" onclick="return openMapUrl('${mapUrl}')">Google Map</button>
       </div>
       <hr class="sep">
-      <b>${t("rateShop")}</b>
+      <b>قيّم المتجر</b>
       <div class="stars" data-shop="${s.id}">
         ${[1,2,3,4,5].map(n=>`<button type="button" onclick="setStars('${s.id}',${n})">${n}⭐</button>`).join("")}
       </div>
-      <textarea id="c_${s.id}" placeholder="${t("commentPh")}" style="margin-top:10px"></textarea>
-      <button type="button" style="margin-top:10px" onclick="submitReview('${s.id}')">${t("sendReview")}</button>
+      <textarea id="c_${s.id}" placeholder="اكتب تعليق (اختياري)..." style="margin-top:10px"></textarea>
+      <button type="button" style="margin-top:10px" onclick="submitReview('${s.id}')">إرسال التقييم</button>
     </div>
   `;
 }
@@ -1097,7 +732,7 @@ window.openShopDetails = async (shopId, forceRefresh = false)=>{
       }catch(e){}
     }
     if(!found){
-      alert(t("errorLoad"));
+      alert("تعذر تحميل تفاصيل المتجر.");
       return;
     }
     shop = found;
@@ -1125,7 +760,7 @@ window.submitReview = async (shopId)=>{
   try{
     const wrap = document.querySelector(`.stars[data-shop="${shopId}"]`);
     const stars = Number(wrap?.dataset?.value || 0);
-    if(!stars) return alert(t("rateShop") + " ⭐");
+    if(!stars) return alert("اختر عدد النجوم أولاً ⭐");
 
     const comment = (document.getElementById(`c_${shopId}`)?.value || "").trim();
     const fp = await generateFingerprint();
@@ -1139,20 +774,20 @@ window.submitReview = async (shopId)=>{
 
     if(error){
       if(String(error.message||"").toLowerCase().includes("duplicate") || String(error.message||"").includes("unique")){
-        alert(t("duplicateReview"));
+        alert("لقد قمت بتقييم هذا المحل بالفعل من هذا الجهاز ✅");
       }else{
-        alert(t("reviewError") + ": " + error.message);
+        alert("خطأ في التقييم: " + error.message);
       }
       return;
     }
 
-    alert(t("reviewSent"));
+    alert("تم إرسال التقييم ⭐");
     await loadNearbyShops();
     if(currentShopId){
       await openShopDetails(currentShopId, true);
     }
   }catch(e){
-    alert(t("reviewError"));
+    alert("حدث خطأ أثناء إرسال التقييم.");
   }
 };
 
@@ -1165,6 +800,18 @@ function escapeHtml(str){
     .replaceAll("'","&#039;");
 }
 
+const wireMapLink = (link) => {
+  if (!link) return;
+  link.onclick = (e) => {
+    e.preventDefault();
+    return openMapUrl(link.href);
+  };
+};
+
+wireMapLink(custMapLink);
+wireMapLink(custTrackMapLink);
+wireMapLink(dMapLink);
+
 // ================= MERCHANT =================
 let piUser = null;
 let piAccessToken = null;
@@ -1173,6 +820,7 @@ let currentSubscription = null;
 let shopLoc = null;
 let editShopId = null;
 
+// ✅ قفل لمنع تكرار إنشاء دفع
 let payLock = false;
 
 const SUBSCRIPTION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -1216,7 +864,7 @@ async function refreshMerchantProfile(){
   merchantProfile = data || null;
   const wallet = merchantProfile?.wallet_address || "";
   merchantName.textContent = piUser.username;
-  merchantWallet.textContent = `${t("wallet")}: ${wallet || "--"}`;
+  merchantWallet.textContent = `محفظة: ${wallet || "غير متوفر"}`;
 }
 
 async function upsertMerchantProfile(walletAddress){
@@ -1232,22 +880,24 @@ async function upsertMerchantProfile(walletAddress){
     .select()
     .single();
   if(error){
-    authMsg.textContent = "Error saving merchant: " + error.message;
+    authMsg.textContent = "خطأ في حفظ التاجر: " + error.message;
     return;
   }
   merchantProfile = data;
-  merchantWallet.textContent = `${t("wallet")}: ${merchantProfile.wallet_address || "--"}`;
+  merchantWallet.textContent = `محفظة: ${merchantProfile.wallet_address || "غير متوفر"}`;
 }
-
 async function refreshSubscription() {
   if (!piUser) return;
+  
+  // بدل supa.from("merchant_subscriptions") ...
   const r = await fetch(`/.netlify/functions/subscription-status?merchant_id=${encodeURIComponent(piUser.username)}`);
   let j = {};
   try { j = await r.json(); } catch {}
   
   if (!r.ok || !j.ok) {
     currentSubscription = null;
-    subscriptionMsg.textContent = "Server error loading subscription";
+    subscriptionMsg.textContent = "تعذر تحميل الاشتراك (server).";
+    console.error("subscription-status failed:", r.status, j);
     await updateSubscriptionUI();
     return;
   }
@@ -1259,6 +909,18 @@ function getRemainingDays(expiresAt){
   if(!expiresAt) return 0;
   const diff = new Date(expiresAt).getTime() - Date.now();
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
+async function expireSubscriptionIfNeeded(){
+  if(!currentSubscription) return;
+  if(currentSubscription.status !== "active") return;
+  const expired = new Date(currentSubscription.expires_at).getTime() <= Date.now();
+  if(!expired) return;
+  await supa
+    .from("merchant_subscriptions")
+    .update({ status: "expired", updated_at: new Date().toISOString() })
+    .eq("id", currentSubscription.id);
+  currentSubscription = { ...currentSubscription, status: "expired" };
 }
 
 function getActiveSubscription(){
@@ -1280,46 +942,28 @@ async function getActiveStoreCount(){
   return myShopsCache.filter((shop)=> (shop.status || "active") === "active").length;
 }
 
-function getLocalizedPlanName(code) {
-  if (code === 'basic') return t('planBasic');
-  if (code === 'platinum') return t('planPlatinum');
-  if (code === 'premier') return t('planPremier');
-  return code;
-}
-
 async function updateSubscriptionUI(){
   const active = getActiveSubscription();
   if(active){
     const remainingDays = getRemainingDays(active.expires_at);
     const usedStores = await getActiveStoreCount();
-    const planDisplay = getLocalizedPlanName(active.plan_code);
-
-    subscriptionBadge.textContent = t("subActive");
-    subscriptionStatus.textContent = planDisplay;
-    
-    let msg = t("subMsgActive");
-    msg = msg.replace("{plan}", planDisplay).replace("{limit}", active.store_limit);
-    subscriptionMsg.textContent = msg;
-
-    subscriptionRemaining.textContent = t("remaining").replace("{days}", remainingDays);
-    subscriptionUsage.textContent = t("shopsUsage").replace("{used}", usedStores).replace("{total}", active.store_limit);
-    
-    subscriptionHint.textContent = t("upgradeHint");
+    subscriptionBadge.textContent = "مشترك ✅";
+    subscriptionStatus.textContent = active.plan_name_ar || "نشط";
+    subscriptionMsg.textContent = `الخطة: ${active.plan_name_ar} — ${active.store_limit} محلات`;
+    subscriptionRemaining.textContent = `متبقي: ${remainingDays} يوم`;
+    subscriptionUsage.textContent = `المحلات: ${usedStores} / ${active.store_limit}`;
+    subscriptionHint.textContent = "يمكنك الترقية في أي وقت بخطة أعلى.";
     btnRenewPlan.style.display = "none";
     btnSave.disabled = false;
   }else{
-    subscriptionBadge.textContent = t("notSubscribed");
-    subscriptionStatus.textContent = currentSubscription?.status === "expired" ? t("subExpired") : t("subInactive");
-    
-    if(currentSubscription?.plan_name_ar) {
-        subscriptionMsg.textContent = t("subInactive");
-    } else {
-        subscriptionMsg.textContent = t("subMsgInactive");
-    }
-    
-    subscriptionRemaining.textContent = t("duration30");
-    subscriptionUsage.textContent = "0 / 0";
-    subscriptionHint.textContent = t("upgradeHintNone");
+    subscriptionBadge.textContent = "غير مشترك";
+    subscriptionStatus.textContent = currentSubscription?.status === "expired" ? "منتهي" : "غير نشط";
+    subscriptionMsg.textContent = currentSubscription?.plan_name_ar
+      ? `آخر خطة: ${currentSubscription.plan_name_ar} — انتهت صلاحيتها.`
+      : "لا يوجد اشتراك نشط — اشترك لمدة 30 يوم لإضافة المحلات.";
+    subscriptionRemaining.textContent = "مدة 30 يوم";
+    subscriptionUsage.textContent = "المحلات: 0 / 0";
+    subscriptionHint.textContent = "اختر خطة للاشتراك أو الترقية.";
     btnRenewPlan.style.display = "block";
     btnSave.disabled = true;
   }
@@ -1327,10 +971,10 @@ async function updateSubscriptionUI(){
   document.querySelectorAll(".plan-btn").forEach((btn)=>{
     const planCode = btn.dataset.plan;
     if(active && planCode === active.plan_code){
-      btn.textContent = t("currentPlan");
+      btn.textContent = "الخطة الحالية";
       btn.disabled = true;
     }else{
-      btn.textContent = t("subscribeUpgrade");
+      btn.textContent = "اشترك / ترقية";
       btn.disabled = false;
     }
   });
@@ -1339,19 +983,19 @@ async function updateSubscriptionUI(){
 function showSubscriptionGate(message){
   saveMsg.textContent = message;
   subscriptionHint.textContent = message;
-  btnRenewPlan.textContent = "⬆️ " + t("subscribeUpgrade");
+  btnRenewPlan.textContent = "⬆️ ترقية / تجديد الاشتراك";
   btnRenewPlan.style.display = "block";
 }
 
 async function canPublishStore(){
   const active = getActiveSubscription();
   if(!active){
-    showSubscriptionGate(t("gateNoSub"));
+    showSubscriptionGate("لا يوجد اشتراك نشط — اشترك لمدة 30 يوم.");
     return false;
   }
   const usedStores = await getActiveStoreCount();
   if(usedStores >= active.store_limit){
-    showSubscriptionGate(t("gateLimit"));
+    showSubscriptionGate("وصلت للحد الأقصى للمحلات — قم بالترقية أو التجديد.");
     return false;
   }
   return true;
@@ -1359,10 +1003,10 @@ async function canPublishStore(){
 
 btnPiLogin.addEventListener("click", async ()=>{
   if(!window.Pi) {
-    authMsg.textContent = "Pi SDK error";
+    authMsg.textContent = "Pi SDK غير متاح في هذا المتصفح.";
     return;
   }
-  authMsg.textContent = t("locating") + " (Login)...";
+  authMsg.textContent = "جاري تسجيل الدخول عبر Pi...";
   try{
     const scopes = ["username", "payments"];
     const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
@@ -1372,10 +1016,10 @@ btnPiLogin.addEventListener("click", async ()=>{
     const wallet = await fetchPiWalletAddress();
     await upsertMerchantProfile(wallet);
 
-    authMsg.textContent = "Login Success ✅";
+    authMsg.textContent = "تم تسجيل الدخول ✅";
     await checkAuth();
   }catch(e){
-    authMsg.textContent = "Login Failed";
+    authMsg.textContent = "تعذر تسجيل الدخول عبر Pi.";
   }
 });
 
@@ -1390,6 +1034,7 @@ btnLogout.addEventListener("click", async ()=>{
   await checkAuth();
 });
 
+// ✅ سجل أي حالة دفع في DB
 async function recordPayment(paymentId, status, txid, errorMessage) {
   const uname = piUser?.username || "unknown";
   await supa.from("merchant_payments").insert({
@@ -1401,11 +1046,12 @@ async function recordPayment(paymentId, status, txid, errorMessage) {
   });
 }
 
+// ✅ لو فيه paymentId محفوظ من قبل، نعرض زر يساعد المستخدم يحلّها
 async function showPendingHintIfAny(){
   const last = localStorage.getItem("last_payment_id");
   if(last){
     btnResolvePending.style.display = "block";
-    pendingMsg.textContent = t("pendingHint").replace("{id}", last.slice(0,8));
+    pendingMsg.textContent = `فيه دفعة سابقة ممكن تكون معلّقة (ID: ${last.slice(0,8)}...) — جرب تكملها.`;
   }else{
     btnResolvePending.style.display = "none";
     pendingMsg.textContent = "";
@@ -1414,10 +1060,11 @@ async function showPendingHintIfAny(){
 
 btnResolvePending.addEventListener("click", async ()=>{
   const paymentId = localStorage.getItem("last_payment_id");
-  if(!paymentId) return;
+  if(!paymentId) return alert("مفيش دفعة محفوظة.");
 
-  pendingMsg.textContent = "Processing...";
+  pendingMsg.textContent = "بحاول أعتمد الدفعة وأفتحها…";
   try{
+    // approve
     const ar = await fetch("/api/pi/approve", {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
@@ -1425,24 +1072,25 @@ btnResolvePending.addEventListener("click", async ()=>{
     });
     const aj = await ar.json().catch(()=> ({}));
     if(!ar.ok || !aj.ok){
-      pendingMsg.textContent = "Approve failed on server.";
+      pendingMsg.textContent = "Approve فشل. راجع السيرفر.";
       await recordPayment(paymentId, "approve_failed_manual", null, aj?.error || "approve_failed");
       return;
     }
 
+    // open payment screen in Pi
     if (typeof Pi?.openPayment === "function") {
       await Pi.openPayment(paymentId);
-      pendingMsg.textContent = "Opened in Pi ✅";
+      pendingMsg.textContent = "فتحت شاشة الدفعة. كمّلها من Pi ✅";
     } else if (typeof Pi?.openPaymentRequest === "function") {
       await Pi.openPaymentRequest(paymentId);
-      pendingMsg.textContent = "Opened in Pi ✅";
+      pendingMsg.textContent = "فتحت شاشة الدفعة. كمّلها من Pi ✅";
     } else {
-      pendingMsg.textContent = "SDK cannot open payment automatically.";
+      pendingMsg.textContent = "الـ SDK لا يدعم فتح الدفعة تلقائيًا — افتحها من سجل المدفوعات في Pi.";
     }
 
     await recordPayment(paymentId, "pending_opened_manual", null, null);
   }catch(e){
-    pendingMsg.textContent = "Error opening payment.";
+    pendingMsg.textContent = "حصل خطأ أثناء محاولة فتح الدفعة.";
     await recordPayment(paymentId, "error_manual", null, String(e));
   }
 });
@@ -1475,25 +1123,26 @@ async function callSubscriptionActivate(plan, paymentId, txid){
   });
   const data = await r.json().catch(()=> ({}));
   if(!r.ok || !data.ok){
+    console.error("subscription-activate failed", { status: r.status, data });
     throw new Error(data?.error || "SUBSCRIPTION_ACTIVATE_FAILED");
   }
   return data.subscription || null;
 }
 
 async function startPlanPayment(planCode){
-  if(!piUser) return alert(t("loginFirst"));
-  if(!window.Pi) return alert(t("sdkError"));
+  if(!piUser) return alert("سجّل الدخول أولاً.");
+  if(!window.Pi) return alert("Pi SDK غير متاح.");
   const plan = getPlanByCode(planCode);
-  if(!plan) return alert("Invalid Plan");
+  if(!plan) return alert("الخطة غير متاحة.");
 
-  if(payLock) return;
+  if(payLock) return; // ✅ منع تكرار الضغط
   payLock = true;
 
-  subscriptionMsg.textContent = t("creatingPayment");
+  subscriptionMsg.textContent = "جاري إنشاء عملية الدفع...";
   try{
     await Pi.createPayment({
       amount: plan.price_pi,
-      memo: `Merchant Sub - ${plan.plan_name_ar} (${plan.store_limit} shops)`,
+      memo: `اشتراك تاجر - ${plan.plan_name_ar} (${plan.store_limit} محلات)`,
       metadata: {
         purpose: "MERCHANT_SUBSCRIPTION",
         username: piUser.username,
@@ -1502,10 +1151,11 @@ async function startPlanPayment(planCode){
       }
     }, {
       onReadyForServerApproval: async (paymentId) => {
+        // ✅ خزّن آخر paymentId (عشان لو وقف عند approve)
         localStorage.setItem("last_payment_id", paymentId);
         await showPendingHintIfAny();
 
-        subscriptionMsg.textContent = t("approving");
+        subscriptionMsg.textContent = "جاري اعتماد الدفع...";
         const r = await fetch("/api/pi/approve", {
           method:"POST",
           headers:{ "Content-Type":"application/json" },
@@ -1513,12 +1163,12 @@ async function startPlanPayment(planCode){
         });
         const j = await r.json().catch(()=> ({}));
         if(!r.ok || !j.ok) throw new Error(j?.error || "approve_failed");
-        subscriptionMsg.textContent = t("approved");
+        subscriptionMsg.textContent = "تم اعتماد الدفع ✅";
         await recordPayment(paymentId, "approved", null, null);
       },
 
       onReadyForServerCompletion: async (paymentId, txid) => {
-        subscriptionMsg.textContent = t("activating");
+        subscriptionMsg.textContent = "جاري تفعيل الاشتراك...";
         const r = await fetch("/api/pi/complete", {
           method:"POST",
           headers:{ "Content-Type":"application/json" },
@@ -1529,13 +1179,15 @@ async function startPlanPayment(planCode){
 
         try{
           await callSubscriptionActivate(plan, paymentId, txid);
-          subscriptionMsg.textContent = t("activeSuccess");
+          subscriptionMsg.textContent = "تم الاشتراك ✅ يمكنك إضافة المحلات.";
         }catch(err){
-          subscriptionMsg.textContent = "Payment complete but activation failed. Contact support.";
+          subscriptionMsg.textContent = "تمت الدفعة لكن تفعيل الاشتراك فشل — تواصل مع الدعم.";
+          console.error("Activation error", err);
           throw err;
         }
         await recordPayment(paymentId, "completed", txid, null);
 
+        // ✅ الدفعة اكتملت، شيل آخر paymentId
         localStorage.removeItem("last_payment_id");
         await showPendingHintIfAny();
 
@@ -1543,34 +1195,39 @@ async function startPlanPayment(planCode){
       },
 
       onCancel: async (paymentId) => {
-        subscriptionMsg.textContent = t("paymentCanceled");
+        subscriptionMsg.textContent = "تم إلغاء الدفع.";
         await recordPayment(paymentId, "canceled", null, null);
+        // نسيب last_payment_id عشان ممكن المستخدم يرجع يكملها من سجل Pi
       },
 
       onError: async (error, payment) => {
         const pid = payment?.identifier || payment?.id || localStorage.getItem("last_payment_id") || "unknown";
-        subscriptionMsg.textContent = t("paymentError");
+        subscriptionMsg.textContent = "حصل خطأ في الدفع.";
         await recordPayment(pid, "error", null, error?.message || String(error));
       }
     });
 
   }catch(e){
-    subscriptionMsg.textContent = "Error starting payment: " + e.message;
+    // الرسالة الشهيرة: pending payment needs action from developer
+    subscriptionMsg.textContent = "تعذر إنشاء الدفع. لو ظهر Pending Payment، لازم تكمل/تعمل Complete للدفعة القديمة من السيرفر.";
   }finally{
     payLock = false;
   }
 }
 
+// ✅ هتشتغل لو Pi لقى دفعة معلّقة أثناء تسجيل الدخول
 async function onIncompletePaymentFound(payment) {
   const paymentId = payment?.identifier || payment?.paymentId || payment?.id;
   if (!paymentId) return;
 
+  // خزّنها عشان يبان زر "حل المعلّق"
   localStorage.setItem("last_payment_id", paymentId);
   await showPendingHintIfAny();
 
-  authMsg.textContent = "Found incomplete payment. Approving...";
+  authMsg.textContent = "لقيت دفعة معلّقة.. بجرب أعتمدها (Approve) وبعدين أفتحها ✅";
 
   try {
+    // 1) Approve من السيرفر
     const ar = await fetch("/api/pi/approve", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1580,45 +1237,46 @@ async function onIncompletePaymentFound(payment) {
 
     if (!ar.ok || !aj.ok) {
       await recordPayment(paymentId, "approve_failed", null, aj?.error || "approve_failed");
-      authMsg.textContent = "Server approval failed.";
+      authMsg.textContent = "الدفع المعلّق محتاج موافقة من السيرفر، لكن approve فشل ❌";
       return;
     }
 
-    authMsg.textContent = "Approved. Opening payment...";
+    // 2) افتح الدفع داخل Pi (المستخدم يكمله)
+    authMsg.textContent = "تم اعتماد الدفع ✅ بفتح الدفع المعلّق الآن…";
 
     if (typeof Pi?.openPayment === "function") {
       await Pi.openPayment(paymentId);
     } else if (typeof Pi?.openPaymentRequest === "function") {
       await Pi.openPaymentRequest(paymentId);
     } else {
-      authMsg.textContent = "Please check Pi payment history.";
+      authMsg.textContent = "SDK لا يدعم فتح الدفع تلقائيًا. افتحه من سجل المدفوعات داخل Pi.";
     }
 
     await recordPayment(paymentId, "incomplete_opened", null, null);
 
   } catch (e) {
     await recordPayment(paymentId, "error", null, String(e));
-    authMsg.textContent = "Error handling incomplete payment.";
+    authMsg.textContent = "حصل خطأ أثناء محاولة حل الدفع المعلّق.";
   }
 }
 
 btnShopGPS.addEventListener("click", async ()=>{
   try{
     btnShopGPS.disabled = true;
-    btnShopGPS.textContent = t("shopLocWait");
+    btnShopGPS.textContent = "⏳ جاري تحديد الموقع...";
     shopLoc = await getGPS();
-    shopLocText.textContent = `Loc: ${shopLoc.lat.toFixed(5)}, ${shopLoc.lng.toFixed(5)}`;
+    shopLocText.textContent = `موقع المتجر: ${shopLoc.lat.toFixed(5)}, ${shopLoc.lng.toFixed(5)}`;
   }catch(e){
-    alert(t("shopLocDenied"));
+    alert("من فضلك اسمح بالموقع للتاجر.");
   }finally{
     btnShopGPS.disabled = false;
-    btnShopGPS.textContent = t("btnShopGPS");
+    btnShopGPS.textContent = "📍 تحديد موقع المتجر";
   }
 });
 
 btnCancelEdit.addEventListener("click", ()=>{
   resetForm();
-  saveMsg.textContent = "Canceled.";
+  saveMsg.textContent = "تم إلغاء التعديل.";
 });
 
 btnRefreshMyShops.addEventListener("click", loadMyShops);
@@ -1645,7 +1303,10 @@ async function callMyShops(method, payload, query = ""){
   });
   const data = await r.json().catch(()=> ({}));
   if(!r.ok || !data.ok){
-    throw new Error(data?.error || "MY_SHOPS_FAILED");
+    const err = new Error(data?.error || "MY_SHOPS_FAILED");
+    err.status = r.status;
+    err.data = data;
+    throw err;
   }
   return data;
 }
@@ -1663,36 +1324,33 @@ async function uploadShopImage(file){
   return supa.storage.from("shop-images").getPublicUrl(path).data.publicUrl;
 }
 
-// Save Shop Button - Ensures category is sent correctly
 btnSave.addEventListener("click", async ()=>{
   try{
-    if(!piUser) return alert(t("loginFirst"));
+    if(!piUser) return alert("لازم تسجل دخول كتاجر أولاً");
     if(!editShopId){
       const canPublish = await canPublishStore();
       if(!canPublish) return;
     }
-    if(!shopLoc) return alert(t("fillLoc"));
+    if(!shopLoc) return alert("حدد موقع المتجر أولاً");
 
     const name = mName.value.trim();
-    if(!name) return alert(t("fillName"));
+    if(!name) return alert("اكتب اسم المتجر");
 
-    saveMsg.textContent = "Saving...";
+    saveMsg.textContent = "جاري الحفظ...";
 
     let imageUrl = null;
     if(mImg.files && mImg.files[0]){
       imageUrl = await uploadShopImage(mImg.files[0]);
     }
 
-    const payload = {
-      name,
-      // Pass the selected category here
-      category: mCat.value || 'other',
-      description: mDesc.value.trim() || null,
-      address: mAddr.value.trim() || null,
-      lat: shopLoc.lat,
-      lng: shopLoc.lng,
-      status: "active"
-    };
+  const payload = {
+    name,
+    description: mDesc.value.trim() || null,
+    address: mAddr.value.trim() || null,
+    lat: shopLoc.lat,
+    lng: shopLoc.lng,
+    status: "active"
+  };
     if(imageUrl) payload.image_url = imageUrl;
 
     const shopPayload = editShopId ? { ...payload, id: editShopId } : payload;
@@ -1702,22 +1360,23 @@ btnSave.addEventListener("click", async ()=>{
     }catch(err){
       const errCode = err?.message || "SHOP_UPSERT_FAILED";
       if(errCode === "SUBSCRIPTION_REQUIRED"){
-        showSubscriptionGate(t("gateNoSub"));
+        showSubscriptionGate("لا يوجد اشتراك نشط — اشترك لمدة 30 يوم.");
         return;
       }
       if(errCode === "STORE_LIMIT_REACHED"){
-        showSubscriptionGate(t("gateLimit"));
+        showSubscriptionGate("وصلت للحد الأقصى للمحلات — قم بالترقية أو التجديد.");
         return;
       }
-      saveMsg.textContent = "Error saving.";
+      saveMsg.textContent = "خطأ: تعذر حفظ المتجر.";
+      console.error("my-shops failed", { error: errCode });
       return;
     }
 
-    saveMsg.textContent = editShopId ? t("saveSuccess") : t("addSuccess");
+    saveMsg.textContent = editShopId ? "تم تحديث المتجر ✅" : "تم إضافة المتجر ✅";
     resetForm();
     await loadMyShops();
   }catch(e){
-    saveMsg.textContent = "Error: " + (e?.message || e);
+    saveMsg.textContent = "خطأ: " + (e?.message || e);
   }
 });
 
@@ -1727,20 +1386,19 @@ function resetForm(){
   mDesc.value = "";
   mAddr.value = "";
   mImg.value = "";
-  mCat.value = "other";
   shopLoc = null;
   shopLocText.textContent = "";
   btnCancelEdit.style.display = "none";
 }
 
 async function loadMyShops(){
-  myShopsList.innerHTML = `<div class="muted">${t("loadingMyShops")}</div>`;
+  myShopsList.innerHTML = `<div class="muted">جاري تحميل محلاتك...</div>`;
 
   let data = [];
   try{
     data = await fetchMyShopsList();
   }catch(e){
-    myShopsList.innerHTML = `<div class="muted">Error loading your shops.</div>`;
+    myShopsList.innerHTML = `<div class="muted">خطأ: تعذر تحميل محلاتك.</div>`;
     await updateSubscriptionUI();
     return;
   }
@@ -1750,7 +1408,7 @@ async function loadMyShops(){
 
   if(!activeShops.length){
     myShopsCount = 0;
-    myShopsList.innerHTML = `<div class="muted">${t("noMyShops")}</div>`;
+    myShopsList.innerHTML = `<div class="muted">لا توجد محلات مضافة بعد.</div>`;
     await updateSubscriptionUI();
     return;
   }
@@ -1759,22 +1417,20 @@ async function loadMyShops(){
   myShopsList.innerHTML = "";
   activeShops.forEach(s=>{
     const img = s.image_url || `https://picsum.photos/200?seed=${encodeURIComponent(s.id)}`;
-    const catName = getCategoryName(s.category || 'other');
     myShopsList.innerHTML += `
       <div class="card" style="padding:12px;margin-bottom:10px">
         <div class="shop-mini">
           <img src="${img}" alt="shop">
           <div class="meta">
             <b>${escapeHtml(s.name)}</b>
-            <div class="muted">${catName}</div>
             <div class="muted">${escapeHtml(s.address || "")}</div>
             <div class="muted">⭐ ${Number(s.avg_rating||0).toFixed(1)} (${Number(s.rating_count||0)})</div>
           </div>
         </div>
 
         <div class="actions">
-          <button class="secondary" type="button" onclick="startEditShop('${s.id}')">${t("edit")}</button>
-          <button class="danger" type="button" onclick="deleteShop('${s.id}')">${t("delete")}</button>
+          <button class="secondary" type="button" onclick="startEditShop('${s.id}')">تعديل</button>
+          <button class="danger" type="button" onclick="deleteShop('${s.id}')">حذف</button>
         </div>
       </div>
     `;
@@ -1790,55 +1446,46 @@ window.startEditShop = async (id)=>{
       shop = myShopsCache.find((item)=> String(item.id) === String(id));
     }catch(e){}
   }
-  if(!shop) return alert("Error loading shop data");
+  if(!shop) return alert("خطأ: تعذر تحميل المتجر.");
 
   editShopId = shop.id;
 
   mName.value = shop.name || "";
   mDesc.value = shop.description || "";
   mAddr.value = shop.address || "";
-  mCat.value = shop.category || "other";
 
   shopLoc = { lat: shop.lat, lng: shop.lng };
-  shopLocText.textContent = `Current Loc: ${shopLoc.lat.toFixed(5)}, ${shopLoc.lng.toFixed(5)}`;
+  shopLocText.textContent = `موقع المتجر الحالي: ${shopLoc.lat.toFixed(5)}, ${shopLoc.lng.toFixed(5)}`;
 
-  saveMsg.textContent = "Edit Mode.";
+  saveMsg.textContent = "وضع التعديل: عدّل ثم اضغط حفظ ✅";
   btnCancelEdit.style.display = "block";
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 window.deleteShop = async (id)=>{
-  const ok = confirm(t("confirmDelete"));
+  const ok = confirm("متأكد أنك تريد حذف المتجر؟");
   if(!ok) return;
 
   try{
     await callMyShops("DELETE", null, `?id=${encodeURIComponent(id)}`);
   }catch(e){
-    return alert("Error deleting shop.");
+    return alert("خطأ: تعذر حذف المتجر.");
   }
 
   if(editShopId === id) resetForm();
-  alert(t("deleted"));
+  alert("تم الحذف ✅");
   await loadMyShops();
 };
 
-const savedLang = localStorage.getItem("app_lang");
-let initialLang = savedLang;
-
-if(!initialLang) {
-    const userLang = navigator.language || navigator.userLanguage; 
-    initialLang = userLang.toLowerCase().startsWith('ar') ? 'ar' : 'en';
-}
-
-setLanguage(initialLang);
-
+// boot
 checkAuth();
 
+// Bonus: try load last user location (optional)
 try{
   const saved = localStorage.getItem("user_loc");
   if(saved){
     userLoc = JSON.parse(saved);
-    userLocText.textContent = `${t("myLoc")}: ${userLoc.lat.toFixed(5)}, ${userLoc.lng.toFixed(5)}`;
+    userLocText.textContent = `آخر موقع محفوظ: ${userLoc.lat.toFixed(5)}, ${userLoc.lng.toFixed(5)}`;
   }
 }catch{}
 </script>
