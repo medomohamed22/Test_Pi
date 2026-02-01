@@ -3,129 +3,120 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pi Login Only</title>
+  <title>Pi Login + Supabase</title>
 
   <!-- Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
+  <!-- Supabase UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Fallback لو jsdelivr اتمنع -->
+  <script>
+    (function () {
+      function ok(){
+        return (window.supabaseJs?.createClient || window.supabase?.createClient);
+      }
+      function loadFallback(){
+        var s=document.createElement("script");
+        s.src="https://unpkg.com/@supabase/supabase-js@2";
+        s.onload=function(){ console.log("Supabase fallback loaded ✅"); };
+        s.onerror=function(){ console.error("Supabase fallback failed ❌"); };
+        document.head.appendChild(s);
+      }
+      setTimeout(function(){ if(!ok()) loadFallback(); }, 400);
+    })();
+  </script>
+
   <style>
     *{box-sizing:border-box;font-family:Tahoma,Arial}
-    body{
-      margin:0; color:#1f1230; background:#f4f0ff;
-      min-height:100vh; display:flex; flex-direction:column;
-    }
+    body{margin:0;background:#f4f0ff;color:#1f1230;min-height:100vh;display:flex;flex-direction:column}
 
     header{
-      background:#6a1b9a; color:#fff;
-      padding:14px 16px;
-      display:flex; justify-content:space-between; align-items:center;
-      box-shadow:0 10px 25px rgba(0,0,0,.18);
-      position:sticky; top:0; z-index:10;
+      background:#6a1b9a;color:#fff;padding:14px 16px;
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
+      position:sticky;top:0;z-index:10;box-shadow:0 10px 25px rgba(0,0,0,.18);
     }
-    .brand{display:flex; gap:10px; align-items:center}
+    .brand{display:flex;gap:10px;align-items:center}
     .logo{font-size:22px}
     .title{font-weight:900}
-    .sub{font-size:12px; opacity:.9}
+    .sub{font-size:12px;opacity:.9}
 
-    main{flex:1; display:flex; align-items:center; justify-content:center; padding:18px}
+    main{flex:1;display:flex;align-items:center;justify-content:center;padding:18px}
     .card{
-      width:min(520px, 94vw);
-      background:#fff; border-radius:16px;
-      border:1px solid rgba(106,27,154,.14);
+      width:min(560px,94vw);
+      background:#fff;border:1px solid rgba(106,27,154,.14);
+      border-radius:16px;padding:16px;
       box-shadow:0 14px 40px rgba(0,0,0,.10);
-      padding:16px;
     }
-    .row{display:flex; gap:10px; flex-wrap:wrap}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .btn{
-      border:none; cursor:pointer;
-      padding:11px 14px; border-radius:12px;
-      font-weight:800;
-      background:#6a1b9a; color:#fff;
+      border:none;cursor:pointer;
+      padding:11px 14px;border-radius:12px;font-weight:800;
+      background:#6a1b9a;color:#fff;
       box-shadow:0 10px 22px rgba(0,0,0,.10);
       transition:.15s transform;
     }
     .btn:hover{transform:translateY(-1px)}
     .btn:active{transform:translateY(0)}
     .btn-ghost{
-      background:#fff; color:#6a1b9a;
+      background:#fff;color:#6a1b9a;
       border:1px solid rgba(106,27,154,.22);
       box-shadow:none;
     }
 
-    .hint{
-      margin-top:10px; font-size:12.5px; line-height:1.7;
-      color:rgba(31,18,48,.75);
-      background:#faf7ff;
-      border:1px dashed rgba(106,27,154,.22);
-      padding:10px; border-radius:12px;
-    }
-
-    .profile{
-      display:flex; gap:12px; align-items:center;
-      padding:12px; border-radius:14px;
-      background:#faf7ff;
-      border:1px solid rgba(106,27,154,.12);
-      margin:12px 0;
-    }
-    .avatar{
-      width:54px; height:54px; border-radius:50%;
-      border:2px solid rgba(106,27,154,.25);
-      background:#fff;
-    }
-    .name{font-weight:900; color:#4a1770}
-    .meta{font-size:12px; opacity:.78; margin-top:2px}
-    code{
-      display:block;
-      padding:10px; border-radius:12px;
-      background:#0f0b18; color:#e9ddff;
-      overflow:auto; font-size:12px;
-      border:1px solid rgba(255,255,255,.10);
-      margin-top:10px;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-
     .badge{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px; border-radius:999px;
-      font-size:12px; font-weight:800;
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      font-size:12px;font-weight:800;
       border:1px solid rgba(106,27,154,.18);
-      background:#fff; color:#4a1770;
+      background:#fff;color:#4a1770;
     }
     .ok{color:#1b7a3a}
     .bad{color:#b42318}
 
-    .top-actions{display:flex; gap:10px; align-items:center}
-    .mini{
-      background:rgba(255,255,255,.16);
-      border:1px solid rgba(255,255,255,.28);
-      color:#fff;
-      padding:8px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:800;
+    .hint{
+      margin-top:12px;font-size:12.5px;line-height:1.7;
+      color:rgba(31,18,48,.78);
+      background:#faf7ff;border:1px dashed rgba(106,27,154,.22);
+      padding:10px;border-radius:12px;
     }
 
-    @media (max-width:520px){
-      header{flex-direction:column; align-items:stretch; gap:10px}
-      .top-actions{justify-content:space-between}
+    .profile{
+      display:flex;gap:12px;align-items:center;
+      padding:12px;border-radius:14px;background:#faf7ff;
+      border:1px solid rgba(106,27,154,.12);
+      margin-top:12px;
+    }
+    .avatar{width:54px;height:54px;border-radius:50%;border:2px solid rgba(106,27,154,.25);background:#fff}
+    .name{font-weight:900;color:#4a1770}
+    .meta{font-size:12px;opacity:.78;margin-top:2px}
+
+    code{
+      display:block;margin-top:12px;
+      padding:10px;border-radius:12px;
+      background:#0f0b18;color:#e9ddff;
+      border:1px solid rgba(255,255,255,.10);
+      font-size:12px;white-space:pre-wrap;word-break:break-word;
+      max-height:260px;overflow:auto;
     }
   </style>
 </head>
-<body>
 
+<body>
   <header>
     <div class="brand">
       <div class="logo">💜</div>
       <div>
-        <div class="title">Pi Login Only</div>
-        <div class="sub">تسجيل دخول بـ Pi SDK فقط (sandbox: false)</div>
+        <div class="title">Pi Login + Supabase</div>
+        <div class="sub">يسجّل uid + username في DB بعد اللوجين</div>
       </div>
     </div>
 
-    <div class="top-actions">
+    <div class="row">
       <span id="piState" class="badge">Pi: ...</span>
-      <button class="mini" id="copyUidBtn" title="نسخ UID" style="display:none">نسخ UID</button>
+      <span id="sbState" class="badge">DB: ...</span>
     </div>
   </header>
 
@@ -137,9 +128,10 @@
         <button class="btn btn-ghost" id="logoutBtn" style="display:none">تسجيل خروج</button>
       </div>
 
-      <div class="hint" id="hintBox">
-        ✅ لازم تفتح الصفحة من <b>Pi Browser</b> علشان تسجيل الدخول يشتغل.<br>
-        ✅ وضع التشغيل: <b>Production (sandbox: false)</b>
+      <div class="hint">
+        ✅ لازم تفتح الصفحة من <b>Pi Browser</b>.<br>
+        ✅ وضع Pi: <b>sandbox: false</b>.<br>
+        ✅ بعد اللوجين هنحفظ بياناتك في Supabase جدول <b>profiles</b>.
       </div>
 
       <div id="profileBox" class="profile" style="display:none">
@@ -147,6 +139,7 @@
         <div>
           <div class="name" id="username">—</div>
           <div class="meta" id="userid">—</div>
+          <div class="meta" id="dbMsg">—</div>
         </div>
       </div>
 
@@ -155,99 +148,168 @@
     </div>
   </main>
 
-  <script>
-    let currentUser = null;
+<script>
+/* ================== CONFIG ================== */
+const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
+const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
+const PI_SANDBOX = false;
 
-    const piState   = document.getElementById("piState");
-    const loginBtn  = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const profileBox= document.getElementById("profileBox");
-    const usernameEl= document.getElementById("username");
-    const useridEl  = document.getElementById("userid");
-    const avatarEl  = document.getElementById("avatar");
-    const rawBox    = document.getElementById("rawBox");
-    const copyUidBtn= document.getElementById("copyUidBtn");
+/* ================== UI ================== */
+const piState = document.getElementById("piState");
+const sbState = document.getElementById("sbState");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
 
-    function setPiState() {
-      const ok = !!window.Pi;
-      piState.innerHTML = ok
-        ? 'Pi: <span class="ok">جاهز</span>'
-        : 'Pi: <span class="bad">غير موجود</span>';
+const profileBox = document.getElementById("profileBox");
+const usernameEl = document.getElementById("username");
+const useridEl   = document.getElementById("userid");
+const dbMsgEl    = document.getElementById("dbMsg");
+const avatarEl   = document.getElementById("avatar");
+const rawBox     = document.getElementById("rawBox");
+
+let supabase = null;
+let currentUser = null;
+
+function setPiState(){
+  const ok = !!window.Pi;
+  piState.innerHTML = ok ? `Pi: <span class="ok">جاهز</span>` : `Pi: <span class="bad">غير موجود</span>`;
+}
+function setSbState(ok){
+  sbState.innerHTML = ok ? `DB: <span class="ok">جاهز</span>` : `DB: <span class="bad">غير جاهز</span>`;
+}
+setPiState();
+
+function getSupabaseGlobal(){
+  if (window.supabaseJs?.createClient) return window.supabaseJs;
+  if (window.supabase?.createClient) return window.supabase;
+  return null;
+}
+async function waitForSupabase(timeoutMs=3500){
+  const start = Date.now();
+  while(Date.now()-start < timeoutMs){
+    const g = getSupabaseGlobal();
+    if(g) return g;
+    await new Promise(r=>setTimeout(r,100));
+  }
+  return null;
+}
+
+function showError(where, err){
+  const msg = err?.message || String(err || "Unknown error");
+  alert(`المشكلة في: ${where}\n\n${msg}\n\nلو DB:\n- راجع SQL/RLS/Policies\n- راجع المفتاح URL/KEY\n`);
+  console.error("ERROR @", where, err);
+}
+
+/* ================== INIT ================== */
+(async function boot(){
+  const g = await waitForSupabase(3500);
+  if(!g){
+    setSbState(false);
+    showError("Supabase Init", "Supabase library not loaded (no supabaseJs/supabase global)");
+    return;
+  }
+  try{
+    supabase = g.createClient(SUPABASE_URL, SUPABASE_KEY);
+    setSbState(true);
+  }catch(e){
+    setSbState(false);
+    showError("Supabase Init", e);
+    return;
+  }
+
+  try{
+    if(window.Pi){
+      window.Pi.init({ version:"2.0", sandbox: PI_SANDBOX });
+      setPiState();
+    }
+  }catch(e){
+    console.warn("Pi.init warning:", e);
+  }
+})();
+
+/* ================== LOGIN ================== */
+async function loginWithPi(){
+  try{
+    if(!window.Pi){
+      showError("Pi Login", "لازم تفتح من Pi Browser");
+      return;
     }
 
-    setPiState();
+    // init safe
+    try{ window.Pi.init({ version:"2.0", sandbox: PI_SANDBOX }); }catch{}
 
-    // init Pi (production) - safe
-    function initPi() {
-      if (!window.Pi) return false;
-      try {
-        window.Pi.init({ version: "2.0", sandbox: false });
-        return true;
-      } catch (e) {
-        console.error("Pi.init error:", e);
-        return false;
-      }
+    const auth = await window.Pi.authenticate(["username"], () => {});
+    if(!auth?.user?.uid || !auth?.user?.username){
+      showError("Pi Login", "auth رجع بدون uid/username");
+      console.log(auth);
+      return;
     }
 
-    loginBtn.addEventListener("click", async () => {
-      try {
-        if (!initPi()) {
-          alert("لازم تفتح الصفحة من Pi Browser علشان Pi SDK يكون موجود.");
-          return;
-        }
+    currentUser = auth.user;
 
-        // permissions: username فقط
-        const auth = await window.Pi.authenticate(["username"], () => {});
-        if (!auth?.user?.uid || !auth?.user?.username) {
-          alert("التسجيل رجع بيانات ناقصة. حاول تاني.");
-          console.log("auth=", auth);
-          return;
-        }
+    // UI
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    profileBox.style.display = "flex";
+    rawBox.style.display = "block";
 
-        currentUser = auth.user;
+    usernameEl.textContent = "@" + currentUser.username;
+    useridEl.textContent = "uid: " + currentUser.uid;
+    avatarEl.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser.username);
+    rawBox.textContent = JSON.stringify(auth, null, 2);
 
-        // UI
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        profileBox.style.display = "flex";
-        rawBox.style.display = "block";
-        copyUidBtn.style.display = "inline-block";
+    // ✅ Save to DB
+    await saveProfileToDB();
 
-        usernameEl.textContent = "@" + currentUser.username;
-        useridEl.textContent = "uid: " + currentUser.uid;
-        avatarEl.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser.username);
+  }catch(e){
+    showError("Pi Login", e);
+  }
+}
 
-        rawBox.textContent = JSON.stringify(auth, null, 2);
+async function saveProfileToDB(){
+  try{
+    if(!supabase) return showError("DB Save", "Supabase client مش جاهز");
 
-      } catch (e) {
-        console.error(e);
-        alert("فشل تسجيل الدخول. تأكد إنك فاتح من Pi Browser.");
-      }
-    });
+    dbMsgEl.textContent = "جاري حفظ البيانات في قاعدة البيانات...";
 
-    logoutBtn.addEventListener("click", () => {
-      currentUser = null;
+    const payload = {
+      pi_uid: String(currentUser.uid),
+      username: currentUser.username,
+      last_login: new Date().toISOString()
+    };
 
-      loginBtn.style.display = "inline-block";
-      logoutBtn.style.display = "none";
-      profileBox.style.display = "none";
-      rawBox.style.display = "none";
-      copyUidBtn.style.display = "none";
-    });
+    // upsert = insert أو update
+    const { error } = await supabase.from("profiles").upsert(payload, { onConflict: "pi_uid" });
 
-    copyUidBtn.addEventListener("click", async () => {
-      try{
-        if(!currentUser?.uid) return;
-        await navigator.clipboard.writeText(String(currentUser.uid));
-        alert("تم نسخ UID ✅");
-      }catch(e){
-        alert("مش قادر أنسخ. انسخه يدويًا من الشاشة.");
-      }
-    });
+    if(error){
+      dbMsgEl.textContent = "فشل حفظ البيانات ❌";
+      showError("DB Save (profiles upsert)", error);
+      return;
+    }
 
-    // تحديث حالة Pi لو الصفحة اتفتحت في Pi Browser بعد تحميلها
-    setInterval(setPiState, 1500);
-  </script>
+    dbMsgEl.textContent = "تم حفظ بياناتك في قاعدة البيانات ✅";
+
+  }catch(e){
+    dbMsgEl.textContent = "فشل حفظ البيانات ❌";
+    showError("DB Save", e);
+  }
+}
+
+function logout(){
+  currentUser = null;
+  loginBtn.style.display = "inline-block";
+  logoutBtn.style.display = "none";
+  profileBox.style.display = "none";
+  rawBox.style.display = "none";
+}
+
+/* ================== EVENTS ================== */
+loginBtn.addEventListener("click", loginWithPi);
+logoutBtn.addEventListener("click", logout);
+
+// تحديث حالة Pi لو اتفتح في Pi Browser بعد التحميل
+setInterval(setPiState, 1500);
+</script>
 
 </body>
 </html>
