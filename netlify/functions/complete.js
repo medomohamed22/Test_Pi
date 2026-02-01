@@ -7,7 +7,7 @@ exports.handler = async (event) => {
   try {
     const { paymentId, txid } = JSON.parse(event.body || "{}");
     const PI_SECRET_KEY = process.env.PI_SECRET_KEY;
-    const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE);
+    const sb = createClient(process.env.PUBLIC_SUPABASE_URL, process.env.SECRETS_SCAN_OMIT_KEYS);
 
     // 1. التحقق من الدفعة
     const pr = await fetch(`https://api.minepi.com/v2/payments/${paymentId}`, {
