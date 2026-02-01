@@ -1,46 +1,113 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Pi Social</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Pi Social (Debug)</title>
 
   <!-- Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase UMD (primary) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.93.1/dist/umd/supabase-js.min.js"></script>
 
-  <link rel="stylesheet" href="style.css">
+  <!-- ✅ Fallback لو jsdelivr فشل -->
+  <script>
+    // لو window.supabase مش موجود بعد التحميل، نجرب unpkg
+    (function(){
+      function loadFallback(){
+        var s=document.createElement('script');
+        s.src="https://unpkg.com/@supabase/supabase-js@2.93.1/dist/umd/supabase-js.min.js";
+        s.onload=function(){ console.log("Supabase fallback loaded ✅"); };
+        s.onerror=function(){ console.error("Supabase fallback failed ❌"); };
+        document.head.appendChild(s);
+      }
+      // انتظر لحظة صغيرة عشان jsdelivr يخلص
+      setTimeout(function(){
+        if(!window.supabase || !window.supabase.createClient){
+          console.warn("Supabase UMD not found. Loading fallback...");
+          loadFallback();
+        }
+      }, 400);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header>
-  <h1>💜 Pi Social</h1>
-  <button id="loginBtn">تسجيل الدخول بـ Pi</button>
-</header>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">💜</span>
+      <div>
+        <div class="title">Pi Social</div>
+        <div class="sub">ستايل قديم + Debug</div>
+      </div>
+    </div>
 
-<main id="app" class="hidden">
+    <div class="actions">
+      <button id="loginBtn" class="btn">تسجيل الدخول بـ Pi</button>
+      <button id="debugBtn" class="btn btn-ghost">Debug</button>
+    </div>
+  </header>
 
-  <!-- PROFILE -->
-  <section class="profile">
-    <img id="avatar" src="">
-    <h3 id="username"></h3>
+  <section class="statusbar">
+    <div class="chip" id="piChip">Pi: ...</div>
+    <div class="chip" id="sbChip">Supabase: ...</div>
+    <div class="chip" id="envChip">Env: ...</div>
   </section>
 
-  <!-- CREATE POST -->
-  <section class="create-post">
-    <textarea id="postText" placeholder="بم تفكر؟"></textarea>
-    <input type="file" id="postImage" accept="image/*">
-    <input type="file" id="postVideo" accept="video/*">
-    <button onclick="createPost()">نشر</button>
-  </section>
+  <main id="app" class="container hidden">
 
-  <!-- FEED -->
-  <section id="feed"></section>
+    <section class="card profile">
+      <div class="profileRow">
+        <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=Pi" alt="avatar" />
+        <div class="profileInfo">
+          <div class="name" id="username">—</div>
+          <div class="meta" id="userid">—</div>
+        </div>
+      </div>
+    </section>
 
-</main>
+    <section class="card composer">
+      <div class="cardTitle">إنشاء بوست</div>
+      <textarea id="postText" placeholder="بم تفكر؟ (نص فقط في النسخة دي)"></textarea>
+      <div class="row">
+        <button id="postBtn" class="btn btn-primary">نشر</button>
+        <button id="refreshBtn" class="btn btn-ghost">تحديث الفيد</button>
+      </div>
+      <div class="hint">لو عايز صور/فيديو + لايك/كومنت هنضيفهم بعد ما نثبت الاتصال.</div>
+    </section>
 
-<script src="app.js"></script>
+    <section class="card feedCard">
+      <div class="cardTitle">المنشورات</div>
+      <div id="feed" class="feed"></div>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <aside id="debugPanel" class="debug hidden">
+    <div class="debugHead">
+      <div class="debugTitle">Debug Console</div>
+      <button id="clearDebug" class="mini">مسح</button>
+    </div>
+    <div id="debugLog" class="debugBody"></div>
+  </aside>
+
+  <div id="modal" class="modal hidden">
+    <div class="modalBox">
+      <div class="modalTitle" id="modalTitle">خطأ</div>
+      <div class="modalBody" id="modalBody">—</div>
+      <div class="modalActions">
+        <button id="copyBtn" class="btn btn-ghost">نسخ التفاصيل</button>
+        <button id="closeBtn" class="btn btn-primary">تمام</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ مهم: app.js آخر حاجة بعد كل المكتبات -->
+  <script src="app.js"></script>
 </body>
 </html>
