@@ -1,83 +1,172 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Pi Social</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pi Social</title>
 
-  <!-- Pi SDK -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<!-- Pi SDK -->
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-  <!-- Supabase (CDN 1) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- ✅ Fallback لو jsdelivr اتحظر -->
-  <script>
-    (function () {
-      function loadFallback() {
-        var s = document.createElement("script");
-        s.src = "https://unpkg.com/@supabase/supabase-js@2";
-        s.onload = function () { console.log("Supabase fallback loaded ✅"); };
-        s.onerror = function () { console.error("Supabase fallback failed ❌"); };
-        document.head.appendChild(s);
-      }
-      setTimeout(function () {
-        var ok =
-          (window.supabaseJs && window.supabaseJs.createClient) ||
-          (window.supabase && window.supabase.createClient);
-        if (!ok) loadFallback();
-      }, 400);
-    })();
-  </script>
+<style>
+*{box-sizing:border-box;font-family:Tahoma,Arial}
+body{margin:0;background:#f3edff;color:#1f1230}
 
-  <link rel="stylesheet" href="style.css" />
+header{
+  background:#6a1b9a;color:#fff;
+  padding:12px 16px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+button{
+  background:#6a1b9a;color:#fff;
+  border:none;border-radius:8px;
+  padding:8px 14px;cursor:pointer;
+}
+button.outline{background:#fff;color:#6a1b9a;border:1px solid #6a1b9a}
+
+.container{max-width:600px;margin:15px auto;padding:10px}
+
+.card{
+  background:#fff;border-radius:12px;
+  padding:12px;margin-bottom:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.hidden{display:none}
+
+textarea{
+  width:100%;border-radius:8px;
+  border:1px solid #ccc;padding:8px;
+  min-height:70px;
+}
+
+.post{
+  border-top:1px solid #eee;
+  padding-top:10px;margin-top:10px;
+}
+.post b{color:#6a1b9a}
+.like{color:#6a1b9a;cursor:pointer;font-size:14px}
+</style>
 </head>
+
 <body>
 
-  <header class="topbar">
-    <div class="brand">
-      <span class="logo">💜</span>
-      <div>
-        <div class="title">Pi Social</div>
-        <div class="sub">ستايل قديم</div>
+<header>
+  <div><b>💜 Pi Social</b></div>
+  <button id="loginBtn">دخول عبر Pi</button>
+</header>
+
+<div class="container hidden" id="app">
+
+  <!-- PROFILE -->
+  <div class="card">
+    <b id="username">—</b>
+  </div>
+
+  <!-- CREATE POST -->
+  <div class="card">
+    <textarea id="postText" placeholder="بم تفكر؟"></textarea>
+    <button style="margin-top:8px" onclick="createPost()">نشر</button>
+  </div>
+
+  <!-- FEED -->
+  <div class="card">
+    <b>المنشورات</b>
+    <div id="feed"></div>
+  </div>
+
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
+const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
+
+/* ================= INIT ================= */
+const SB = window.supabaseJs?.createClient
+        ? window.supabaseJs
+        : window.supabase;
+
+const supabase = SB.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+
+/* ================= LOGIN ================= */
+document.getElementById("loginBtn").onclick = async () => {
+  if(!window.Pi){
+    alert("افتح الموقع من Pi Browser");
+    return;
+  }
+
+  Pi.init({ version:"2.0", sandbox:false });
+
+  try{
+    const auth = await Pi.authenticate(["username"], () => {});
+    currentUser = auth.user;
+
+    document.getElementById("loginBtn").style.display="none";
+    document.getElementById("app").classList.remove("hidden");
+    document.getElementById("username").innerText = "@"+currentUser.username;
+
+    // save profile
+    await supabase.from("profiles").upsert({
+      pi_uid: String(currentUser.uid),
+      username: currentUser.username
+    });
+
+    loadPosts();
+  }catch(e){
+    alert("فشل تسجيل الدخول");
+  }
+};
+
+/* ================= POSTS ================= */
+async function createPost(){
+  const text = document.getElementById("postText").value.trim();
+  if(!text) return;
+
+  await supabase.from("posts").insert({
+    user_id: String(currentUser.uid),
+    content: text,
+    likes: 0
+  });
+
+  document.getElementById("postText").value="";
+  loadPosts();
+}
+
+async function loadPosts(){
+  const { data } = await supabase
+    .from("posts")
+    .select("id,content,likes,profiles(username)")
+    .order("created_at",{ascending:false});
+
+  const feed = document.getElementById("feed");
+  feed.innerHTML="";
+
+  data.forEach(p=>{
+    feed.innerHTML += `
+      <div class="post">
+        <b>@${p.profiles.username}</b>
+        <p>${p.content}</p>
+        <span class="like" onclick="likePost('${p.id}',${p.likes})">
+          ❤️ ${p.likes}
+        </span>
       </div>
-    </div>
+    `;
+  });
+}
 
-    <button id="loginBtn" class="btn">تسجيل الدخول بـ Pi</button>
-  </header>
+async function likePost(id,likes){
+  await supabase.from("posts")
+    .update({likes:likes+1})
+    .eq("id",id);
+  loadPosts();
+}
+</script>
 
-  <main id="app" class="container hidden">
-
-    <!-- PROFILE -->
-    <section class="card profile">
-      <div class="profileRow">
-        <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=Pi" alt="avatar" />
-        <div class="profileInfo">
-          <div class="name" id="username">—</div>
-          <div class="meta" id="userid">—</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CREATE POST -->
-    <section class="card composer">
-      <div class="cardTitle">إنشاء بوست</div>
-      <textarea id="postText" placeholder="بم تفكر؟ (نص فقط في النسخة دي)"></textarea>
-      <div class="row">
-        <button id="postBtn" class="btn btn-primary">نشر</button>
-        <button id="refreshBtn" class="btn btn-ghost">تحديث</button>
-      </div>
-    </section>
-
-    <!-- FEED -->
-    <section class="card">
-      <div class="cardTitle">المنشورات</div>
-      <div id="feed" class="feed"></div>
-    </section>
-
-  </main>
-
-  <!-- app.js آخر حاجة -->
-  <script src="app.js"></script>
 </body>
 </html>
