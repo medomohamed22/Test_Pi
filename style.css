@@ -11,13 +11,6 @@ body{margin:0;background:#f4f0ff;color:#1f1230}
 .logo{font-size:22px}
 .title{font-weight:900}
 .sub{font-size:12px;opacity:.9}
-.actions{display:flex;gap:8px;align-items:center}
-
-.statusbar{display:flex;gap:8px;padding:10px 12px;flex-wrap:wrap}
-.chip{
-  background:#fff;border:1px solid rgba(106,27,154,.18);
-  color:#4a1770;padding:6px 10px;border-radius:999px;font-size:12px;
-}
 
 .container{width:min(980px,94vw);margin:12px auto 90px;display:grid;gap:12px}
 .card{
@@ -36,6 +29,7 @@ textarea{
   border-radius:10px;border:1px solid rgba(106,27,154,.22);outline:none;
 }
 textarea:focus{border-color:#6a1b9a;box-shadow:0 0 0 3px rgba(106,27,154,.12)}
+
 .row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
 
 .btn{
@@ -47,8 +41,6 @@ textarea:focus{border-color:#6a1b9a;box-shadow:0 0 0 3px rgba(106,27,154,.12)}
 .btn:active{transform:translateY(0px)}
 .btn-primary{background:#6a1b9a;color:#fff;border:1px solid rgba(106,27,154,.35)}
 .btn-ghost{background:#fff;color:#6a1b9a;border:1px solid rgba(106,27,154,.22);box-shadow:none}
-
-.hint{margin-top:10px;font-size:12px;opacity:.8;line-height:1.6}
 
 .feed{display:grid;gap:10px}
 .post{
@@ -63,43 +55,7 @@ textarea:focus{border-color:#6a1b9a;box-shadow:0 0 0 3px rgba(106,27,154,.12)}
 
 .hidden{display:none}
 
-/* Toast */
-.toast{
-  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
-  background:#1f1230;color:#fff;padding:10px 14px;border-radius:999px;
-  font-size:13px;box-shadow:0 12px 30px rgba(0,0,0,.25);max-width:92vw;z-index:80;
-}
-
-/* Debug */
-.debug{
-  position:fixed;right:10px;bottom:70px;width:min(420px,92vw);max-height:55vh;
-  background:#0f0b18;color:#e9ddff;border:1px solid rgba(255,255,255,.12);
-  border-radius:14px;overflow:hidden;box-shadow:0 18px 45px rgba(0,0,0,.35);z-index:90;
-}
-.debugHead{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;
-  background:linear-gradient(135deg,#6a1b9a,#3c0e66);
-}
-.debugTitle{font-weight:900}
-.mini{border:none;padding:6px 10px;border-radius:10px;cursor:pointer;background:rgba(255,255,255,.12);color:#fff}
-.debugBody{
-  padding:10px 12px;overflow:auto;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;
-  font-size:12px;line-height:1.6;white-space:pre-wrap;
-}
-
-/* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}
-.modalBox{width:min(520px,96vw);background:#fff;border-radius:16px;border:1px solid rgba(106,27,154,.18);
-  box-shadow:0 18px 60px rgba(0,0,0,.35);padding:14px;
-}
-.modalTitle{font-weight:900;color:#4a1770;margin-bottom:8px}
-.modalBody{
-  font-size:13px;line-height:1.7;color:#241233;background:#faf7ff;
-  border:1px solid rgba(106,27,154,.12);border-radius:12px;padding:10px;max-height:45vh;overflow:auto;white-space:pre-wrap;
-}
-.modalActions{display:flex;gap:10px;margin-top:12px;justify-content:flex-end;flex-wrap:wrap}
-
 @media (max-width:520px){
   .topbar{flex-direction:column;align-items:stretch}
-  .actions{justify-content:space-between}
+  #loginBtn{width:100%}
 }
