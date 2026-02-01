@@ -286,10 +286,8 @@
 </div>
 
 <div id="toast">رسالة تنبيه</div>
-
 <script>
-  // --- إعدادات Supabase ---
-  // ملاحظة: المفاتيح ظاهرة لأن هذا كود Client-side، تأكد من إعداد RLS في Supabase لحماية البيانات
+  // 1. إعداد Supabase
   const supabase = window.supabase.createClient(
     "https://xncapmzlwuisupkjlftb.supabase.co",
     "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS"
@@ -297,69 +295,102 @@
 
   let currentUser = null;
 
-  // --- Pi SDK Integration ---
-  async function initPiSDK() {
+  // 2. دالة التعامل مع المدفوعات غير المكتملة (إجبارية من Pi SDK)
+  function onIncompletePaymentFound(payment) {
+    console.log("Incomplete payment found:", payment);
+    // في التطبيق الحقيقي، هنا تقوم بإرسال الدفعة للسيرفر لإكمالها
+    return $.post('/payment/complete', { paymentId: payment.identifier, txid: payment.transaction.txid, app_client: 'pi_app' }); 
+  };
+
+  // 3. تهيئة Pi SDK عند تحميل الصفحة
+  window.addEventListener('load', async () => {
     try {
-      // 1. تهيئة SDK
-      // غير sandbox إلى false عند الرفع للإنتاج (Production)
-      Pi.init({ version: "2.0", sandbox: false }); 
+      const Pi = window.Pi;
+      if (!Pi) {
+        alert("خطأ: Pi SDK لم يتم تحميله. تأكد من اتصال الإنترنت.");
+        return;
+      }
+      
+      // هام جداً:
+      // sandbox: true -> للتجربة (يعمل بدون توثيق الدومين أحياناً)
+      // sandbox: false -> للوضع الحقيقي (يجب أن يكون الدومين مسجلاً في البوابة)
+      Pi.init({ version: "2.0", sandbox: true }); 
       console.log("Pi SDK Initialized");
+      
     } catch (err) {
-      console.error("Pi SDK Init Error:", err);
+      console.error("Initialization Error:", err);
     }
-  }
+  });
 
+  // 4. دالة تسجيل الدخول
   async function authenticateUser() {
+    const loginBtn = document.getElementById("loginBtn");
+    const originalText = loginBtn.innerHTML;
+
     try {
-      const loginBtn = document.getElementById("loginBtn");
-      loginBtn.innerHTML = "جاري التحميل...";
+      // تغيير حالة الزر
       loginBtn.disabled = true;
+      loginBtn.innerHTML = "جاري الاتصال بـ Pi...";
 
-      // 2. طلب المصادقة والصلاحيات (username)
-      const scopes = ['username']; 
+      const Pi = window.Pi;
       
-      // دالة callback مطلوبة للدفوعات غير المكتملة (حتى لو لم نستخدم الدفع الآن)
-      function onIncompletePaymentFound(payment) { 
-        console.log("Incomplete payment found", payment);
-      };
+      // الصلاحيات المطلوبة
+      const scopes = ['username', 'payments'];
 
-      const authResults = await Pi.authenticate(scopes, onIncompletePaymentFound);
-      
-      // 3. تخزين بيانات المستخدم
-      currentUser = authResults.user;
-      
-      // 4. تحديث الواجهة
+      // طلب المصادقة (أهم سطر)
+      const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+
+      console.log("Auth Success:", auth);
+
+      // تخزين بيانات المستخدم
+      // ملاحظة: أحياناً يأتي الكائن auth مباشرة أو auth.user حسب الإصدار
+      currentUser = auth.user || auth; 
+
+      if (!currentUser || !currentUser.username) {
+        throw new Error("لم يتم العثور على اسم المستخدم.");
+      }
+
+      // نجاح الدخول
       onLoginSuccess();
-      
-      // 5. حفظ المستخدم في قاعدة البيانات (اختياري)
+
+      // حفظ في Supabase
       saveUserToDB(currentUser);
 
     } catch (err) {
-      console.error("Authentication failed:", err);
-      showToast("فشل تسجيل الدخول. تأكد أنك في متصفح Pi.");
-      const loginBtn = document.getElementById("loginBtn");
-      loginBtn.innerHTML = `تسجيل دخول Pi`;
+      console.error("Auth Failed:", err);
+      // إظهار رسالة الخطأ للمستخدم
+      alert("فشل تسجيل الدخول: " + (err.message || err));
+      
+      // إعادة الزر لحالته الأصلية
       loginBtn.disabled = false;
+      loginBtn.innerHTML = originalText;
     }
   }
 
+  // 5. واجهة المستخدم بعد النجاح
   function onLoginSuccess() {
     document.getElementById("auth-btn-container").style.display = "none";
-    document.getElementById("user-section").style.display = "block";
+    const userSection = document.getElementById("user-section");
+    userSection.style.display = "block";
+    userSection.classList.add("fade-in"); // إضافة تأثير
+    
     document.getElementById("display-username").textContent = currentUser.username;
     document.getElementById("pOwner").value = currentUser.username;
-    showToast(`مرحباً ${currentUser.username} 👋`);
+    
+    showToast(`تم تسجيل الدخول بنجاح! أهلاً ${currentUser.username}`);
   }
 
+  // 6. حفظ المستخدم في قاعدة البيانات
   async function saveUserToDB(user) {
     const { error } = await supabase
       .from("pi_users")
       .upsert({ pi_uid: user.uid, username: user.username }, { onConflict: 'pi_uid' });
-    if(error) console.warn("DB User Sync Error:", error.message);
+      
+    if(error) console.warn("Supabase Log:", error.message);
   }
 
-  // --- إدارة المشروعات (Supabase) ---
-
+  /* --- وظائف المشروعات (نفس السابق مع تحسينات بسيطة) --- */
+  
   async function submitProject() {
     if (!currentUser) return showToast("يجب تسجيل الدخول أولاً!");
 
@@ -368,122 +399,93 @@
     const desc = document.getElementById("pDesc").value.trim();
     const goal = document.getElementById("pGoal").value;
 
-    if (!name || !desc || !goal) return showToast("يرجى ملء جميع الحقول المطلوبة");
+    if (!name || !desc || !goal) return showToast("أكمل جميع البيانات المطلوبة");
+
+    const btn = event.target;
+    const oldText = btn.textContent;
+    btn.textContent = "جاري النشر...";
+    btn.disabled = true;
 
     const payload = {
       owner_pi_uid: currentUser.uid,
       owner_username: currentUser.username,
-      name: name,
-      category: category,
-      description: desc,
-      goal_pi: Number(goal),
-      raised_pi: 0
+      name, category, description: desc,
+      goal_pi: Number(goal), raised_pi: 0
     };
-
-    const btn = event.target;
-    btn.textContent = "جاري النشر...";
-    btn.disabled = true;
 
     const { error } = await supabase.from("projects").insert(payload);
 
     if (error) {
-      console.error(error);
-      showToast("حدث خطأ أثناء النشر: " + error.message);
+      alert("خطأ قاعدة البيانات: " + error.message);
     } else {
-      showToast("تم نشر المشروع بنجاح! 🚀");
-      toggleAddProject(); // إخفاء الفورم
+      showToast("تم نشر المشروع! 🚀");
+      toggleAddProject();
       document.getElementById("pName").value = "";
       document.getElementById("pDesc").value = "";
       document.getElementById("pGoal").value = "";
-      fetchProjects(); // تحديث القائمة
+      fetchProjects();
     }
-    
-    btn.textContent = "نشر المشروع";
+    btn.textContent = oldText;
     btn.disabled = false;
   }
 
   async function fetchProjects() {
     const grid = document.getElementById("projects-grid");
+    grid.innerHTML = '<div style="text-align:center;width:100%">جاري التحميل...</div>';
     
     const { data, error } = await supabase
       .from("projects")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      grid.innerHTML = `<div style="text-align:center; color:red">خطأ في التحميل</div>`;
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      grid.innerHTML = `<div style="text-align:center; color:var(--text-muted); grid-column:1/-1;">لا توجد مشروعات حالياً. كن الأول!</div>`;
+    if (error || !data) {
+      grid.innerHTML = '<div style="text-align:center">لا توجد مشروعات أو حدث خطأ.</div>';
       return;
     }
 
     grid.innerHTML = "";
+    if(data.length === 0) {
+       grid.innerHTML = '<div style="text-align:center; color:#777">كن أول من يضيف مشروعاً!</div>';
+       return;
+    }
+
     data.forEach(p => {
-      const goal = p.goal_pi || 1;
-      const raised = p.raised_pi || 0;
-      const percent = Math.min(100, Math.round((raised / goal) * 100));
-      
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
+      const pct = Math.min(100, Math.round(((p.raised_pi||0) / (p.goal_pi||1)) * 100));
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
         <div class="card-body">
           <span class="card-tag">${escapeHtml(p.category)}</span>
           <h3>${escapeHtml(p.name)}</h3>
           <p>${escapeHtml(p.description)}</p>
-          
           <div class="progress-container">
             <div class="progress-labels">
-              <span>تم جمع: ${raised} π</span>
-              <span>الهدف: ${goal} π</span>
+              <span>${p.raised_pi||0} π</span><span>${p.goal_pi} π</span>
             </div>
-            <div class="progress-bar" title="${percent}%">
-              <div class="progress-fill" style="width: ${percent}%"></div>
-            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
           </div>
-          
-          <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#999;">
-             <span>بواسطة: ${escapeHtml(p.owner_username || 'مجهول')}</span>
-             ${currentUser ? `<button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="showToast('قريباً: ميزة التبرع')">تبرع</button>` : ''}
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
+          <small style="color:#999; display:block; margin-top:10px">المالك: ${escapeHtml(p.owner_username)}</small>
+        </div>`;
+      grid.appendChild(div);
     });
   }
 
-  // --- UI Helpers ---
+  // Helpers
   function toggleAddProject() {
-    const box = document.getElementById("add-project-box");
-    box.style.display = (box.style.display === "none") ? "block" : "none";
+    const b = document.getElementById("add-project-box");
+    b.style.display = b.style.display==="none"?"block":"none";
   }
-
-  function showToast(msg) {
-    const x = document.getElementById("toast");
-    x.textContent = msg;
-    x.className = "show";
-    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+  function showToast(m) {
+    const t = document.getElementById("toast");
+    t.textContent = m; t.className = "show";
+    setTimeout(()=>t.className="", 3000);
   }
+  function escapeHtml(t) { return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-  function escapeHtml(text) {
-    if (!text) return "";
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  // تشغيل عند التحميل
-  window.onload = function() {
-    initPiSDK();
-    fetchProjects();
-  };
-
+  // Init
+  fetchProjects();
 </script>
+
 
 </body>
 </html>
