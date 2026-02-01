@@ -32,7 +32,6 @@
       line-height: 1.6;
     }
 
-    /* Header Styling */
     header { 
       background: var(--glass); 
       backdrop-filter: blur(20px); 
@@ -43,7 +42,7 @@
     }
     
     .container { width: 92%; max-width: 1200px; margin: 0 auto; }
-    .nav-content { display: flex; justify-content: space-between; align-items: center; }
+    .nav-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     
     .logo { 
       font-weight: 900; font-size: 28px; color: var(--primary); 
@@ -51,20 +50,28 @@
       letter-spacing: -0.5px;
     }
 
-    .nav-controls { display: flex; align-items: center; gap: 12px; }
-    
+    .nav-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
     .lang-btn { 
       background: #fff; border: 1.5px solid var(--primary); color: var(--primary); 
-      padding: 7px 16px; border-radius: 50px; cursor: pointer; 
-      font-size: 13px; font-weight: 700;
+      padding: 10px 20px; border-radius: 50px; cursor: pointer; 
+      font-size: 14px; font-weight: 700; min-width: 100px;
     }
     .lang-btn:hover { background: var(--primary); color: #fff; }
 
-    /* Buttons */
+    .user-profile { display: flex; align-items: center; gap: 10px; }
+    .user-avatar { 
+      width: 42px; height: 42px; border-radius: 50%; 
+      background: var(--primary-gradient); color: #fff; 
+      display: flex; align-items: center; justify-content: center; 
+      font-weight: 900; font-size: 18px; 
+    }
+
     .btn { 
-      padding: 14px 28px; border-radius: 18px; border: none; 
+      padding: 16px 32px; border-radius: 18px; border: none; 
       font-weight: 700; cursor: pointer; display: inline-flex; 
-      align-items: center; gap: 10px; font-family: 'Tajawal'; font-size: 15px;
+      align-items: center; justify-content: center; gap: 10px; 
+      font-family: 'Tajawal'; font-size: 16px; min-height: 52px;
     }
     .btn-primary { 
       background: var(--primary-gradient); color: #fff; 
@@ -73,9 +80,8 @@
     .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(111, 47, 160, 0.35); }
     
     .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-    .btn-danger { background: #fff1f1; color: #ff4757; font-size: 13px; }
+    .btn-danger { background: #fff1f1; color: #ff4757; font-size: 14px; }
 
-    /* Hero Section */
     .hero { text-align: center; padding: 60px 0 40px; animation: fadeIn 1s ease; }
     .hero h1 { 
       font-size: 42px; font-weight: 900; margin-bottom: 15px;
@@ -83,7 +89,6 @@
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Project Cards */
     .grid-container { 
       display: grid; 
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
@@ -92,8 +97,7 @@
     
     .card { 
       background: #fff; border-radius: var(--radius); padding: 25px; 
-      border: 1px solid rgba(255,255,255,1); box-shadow: var(--shadow);
-      position: relative; overflow: hidden;
+      box-shadow: var(--shadow); position: relative; overflow: hidden;
     }
     .card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(111, 47, 160, 0.15); }
     
@@ -108,7 +112,6 @@
       padding: 5px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
     }
 
-    /* Progress Bar */
     .progress-container { margin: 20px 0; }
     .progress-bar-bg { height: 12px; background: #eff2f7; border-radius: 10px; overflow: hidden; }
     .progress-fill { 
@@ -116,15 +119,21 @@
       border-radius: 10px; width: 0%;
     }
 
-    /* Modal / Form */
+    .owner-actions { 
+      display: flex; 
+      gap: 12px; 
+      margin-top: 15px; 
+    }
+
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
       display: none; justify-content: center; align-items: center; z-index: 2000;
+      padding: 20px;
     }
     .form-card { 
       background: #fff; padding: 40px; border-radius: 30px; 
-      width: 90%; max-width: 550px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+      width: 100%; max-width: 550px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);
     }
     
     input, textarea { 
@@ -132,7 +141,7 @@
       border-radius: 15px; margin-bottom: 20px; font-family: 'Tajawal';
       font-size: 15px; background: #fcfcfc;
     }
-    input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(111, 47, 160, 0.1); }
+    input:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(111, 47, 160, 0.1); }
 
     #toast { 
       visibility: hidden; position: fixed; bottom: 30px; left: 50%; 
@@ -143,7 +152,27 @@
     #toast.show { visibility: visible; animation: slideUp 0.4s ease forwards; }
     @keyframes slideUp { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
 
-    body.ltr { direction: ltr; }
+    @media (max-width: 768px) {
+      .hero { padding: 50px 0 30px; }
+      .hero h1 { font-size: 36px; }
+      .hero p { font-size: 17px; }
+      .btn { padding: 18px 32px; font-size: 16px; }
+      .card { padding: 20px; }
+      .grid-container { gap: 20px; }
+      .nav-content { flex-direction: column; align-items: flex-start; }
+      .nav-controls { width: 100%; justify-content: space-between; }
+      .form-card { padding: 30px 20px; }
+      .lang-btn { padding: 12px 24px; font-size: 15px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 32px; }
+      .logo { font-size: 24px; }
+      .btn { padding: 18px 24px; font-size: 15px; }
+    }
+
+    body.ltr { direction: ltr; text-align: left; }
+    body.ltr .nav-content { flex-direction: row; }
   </style>
 </head>
 <body id="mainBody">
@@ -163,17 +192,16 @@
 <div class="container">
   <section class="hero">
     <h1 id="heroTitle">استثمر في مستقبل الابتكار</h1>
-    <p id="heroSub" style="color:var(--text-muted); font-size: 18px;">المنصة الأولى لدعم مشاريع مجتمع Pi وتحويل الأفكار إلى شركات واقعية.</p>
-    <button class="btn btn-primary" onclick="openModal()" id="startBtn" style="padding: 18px 40px; font-size: 17px;">إطلاق حملة استثمارية</button>
+    <p id="heroSub">المنصة الأولى لدعم مشاريع مجتمع Pi وتحويل الأفكار إلى شركات واقعية.</p>
+    <button class="btn btn-primary" onclick="openModal()" id="startBtn">إطلاق حملة استثمارية</button>
   </section>
 
-  <div class="grid-container" id="projects-grid">
-    </div>
+  <div class="grid-container" id="projects-grid"></div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="form-card">
-    <h2 id="formTitle" style="margin-top:0; color:var(--primary)">بيانات المشروع</h2>
+    <h2 id="formTitle">إعداد حملة التمويل</h2>
     <input type="hidden" id="edit-id">
     <input type="text" id="pName" placeholder="اسم المشروع">
     <input type="text" id="pCategory" placeholder="المجال (تكنولوجيا، زراعة..)">
@@ -181,42 +209,91 @@
     
     <div style="display:flex; gap:15px; margin-bottom:10px">
       <div style="flex:1">
-        <label id="labelGoal" style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px">الهدف (Pi)</label>
-        <input type="number" id="pGoal">
+        <label id="labelGoal" style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px">الهدف المطلوب (Pi)</label>
+        <input type="number" id="pGoal" min="1">
       </div>
       <div style="flex:1">
-        <label id="labelEquity" style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px">الأسهم للداعمين (%)</label>
-        <input type="number" id="pEquity">
+        <label id="labelEquity" style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px">نسبة الأسهم للداعمين (%)</label>
+        <input type="number" id="pEquity" min="0" max="100">
       </div>
     </div>
     
-    <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="saveProject()" id="submitBtn">نشر المشروع الآن</button>
-    <button class="btn" style="width:100%; justify-content:center; margin-top:10px; color:var(--text-muted)" onclick="closeModal()" id="cancelBtn">إغلاق</button>
+    <button class="btn btn-primary" style="width:100%" onclick="saveProject()" id="submitBtn">نشر المشروع الآن</button>
+    <button class="btn" style="width:100%; margin-top:10px; color:var(--text-muted)" onclick="closeModal()" id="cancelBtn">إغلاق</button>
   </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-  // 
-  
   const langData = {
-    ar: { login: "دخول عبر Pi", heroT: "استثمر في مستقبل الابتكار", heroS: "المنصة الأولى لدعم مشاريع مجتمع Pi وتحويل الأفكار إلى شركات واقعية.", start: "إطلاق حملة استثمارية", formT: "إعداد حملة التمويل", goalL: "الهدف المطلوب (Pi)", equityL: "نسبة الأسهم للداعمين (%)", submitB: "نشر المشروع الآن", equityT: "💎 حصة الأسهم للداعم:", raisedT: "تم جمع", targetT: "الهدف:", byT: "بواسطة:", investB: "استثمر Pi الآن", editB: "تعديل", delB: "حذف", promptAmt: "أدخل كمية Pi التي تود استثمارها في ", welcome: "أهلاً بك، ", success: "تم بنجاح!" },
-    en: { login: "Login with Pi", heroT: "Invest in the Future", heroS: "The premier platform for supporting Pi community projects and building real startups.", start: "Launch Campaign", formT: "Setup Campaign", goalL: "Target Goal (Pi)", equityL: "Equity for Backers (%)", submitB: "Publish Project Now", equityT: "💎 Backer Equity Share:", raisedT: "Raised", targetT: "Target:", byT: "By:", investB: "Invest Pi Now", editB: "Edit", delB: "Delete", promptAmt: "Enter Pi amount to invest in ", welcome: "Welcome, ", success: "Success!" }
+    ar: { 
+      login: "دخول عبر Pi", 
+      heroT: "استثمر في مستقبل الابتكار", 
+      heroS: "المنصة الأولى لدعم مشاريع مجتمع Pi وتحويل الأفكار إلى شركات واقعية.", 
+      start: "إطلاق حملة استثمارية", 
+      formT: "إعداد حملة التمويل", 
+      goalL: "الهدف المطلوب (Pi)", 
+      equityL: "نسبة الأسهم للداعمين (%)", 
+      submitB: "نشر المشروع الآن", 
+      cancel: "إغلاق",
+      equityT: "💎 حصة الأسهم للداعم:", 
+      raisedT: "تم جمع", 
+      targetT: "الهدف:", 
+      byT: "بواسطة:", 
+      investB: "استثمر Pi الآن", 
+      editB: "تعديل", 
+      delB: "حذف", 
+      promptAmt: "أدخل كمية Pi التي تود استثمارها في ", 
+      welcome: "أهلاً بك، ", 
+      success: "تم بنجاح!" 
+    },
+    en: { 
+      login: "Login with Pi", 
+      heroT: "Invest in the Future", 
+      heroS: "The premier platform for supporting Pi community projects and building real startups.", 
+      start: "Launch Campaign", 
+      formT: "Setup Funding Campaign", 
+      goalL: "Target Goal (Pi)", 
+      equityL: "Equity for Backers (%)", 
+      submitB: "Publish Project Now", 
+      cancel: "Close",
+      equityT: "💎 Backer Equity Share:", 
+      raisedT: "Raised", 
+      targetT: "Target:", 
+      byT: "By:", 
+      investB: "Invest Pi Now", 
+      editB: "Edit", 
+      delB: "Delete", 
+      promptAmt: "Enter Pi amount to invest in ", 
+      welcome: "Welcome, ", 
+      success: "Success!" 
+    }
   };
   
   let currentLang = 'ar';
   let currentUser = null;
 
-  // Supabase Client
-  // تقسيم الرابط والمفتاح لمنع Netlify من حظر الـ Build
-const _URL = "https://xncapmzlwuisupkjlftb" + ".supabase.co";
-const _KEY = "sb_publishable_zPECXAiI" + "_bDbeLtRYe3vIw_IEt_p_AS";
+  // Supabase
+  const _URL = "https://xncapmzlwuisupkjlftb" + ".supabase.co";
+  const _KEY = "sb_publishable_zPECXAiI" + "_bDbeLtRYe3vIw_IEt_p_AS";
+  const supa = window.supabase.createClient(_URL, _KEY);
 
-const supa = window.supabase.createClient(_URL, _KEY);
-
-  // Pi SDK Initialization
+  // Pi SDK - Production mode (sandbox: false) مع ربط بالـ backend
   if (window.Pi) { window.Pi.init({ version: "2.0", sandbox: false }); }
+
+  // دالة لمعالجة الدفعات غير المكتملة (عند تسجيل الدخول)
+  function onIncompletePaymentFound(payment) {
+    // إرسال الدفعة غير المكتملة إلى الـ backend للإكمال
+    fetch("/api/pi/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        paymentId: payment.identifier,
+        txid: payment.transaction?.txid || null
+      })
+    }).catch(err => console.error("Incomplete payment error:", err));
+  }
 
   async function authenticateUser() {
     try {
@@ -230,11 +307,11 @@ const supa = window.supabase.createClient(_URL, _KEY);
       await supa.from("pi_users").upsert({ pi_uid: currentUser.uid, username: currentUser.username });
       showToast(langData[currentLang].welcome + currentUser.username);
       fetchProjects();
-    } catch (err) { showToast("Please use Pi Browser"); }
-  }
-
-  function onIncompletePaymentFound(payment) {
-    fetch("/api/pi/complete", { method: "POST", body: JSON.stringify({ paymentId: payment.identifier, txid: payment.transaction.txid }) });
+      updateLanguageTexts();
+    } catch (err) { 
+      console.error(err);
+      showToast("يرجى استخدام متصفح Pi Browser الرسمي");
+    }
   }
 
   async function fetchProjects() {
@@ -266,59 +343,108 @@ const supa = window.supabase.createClient(_URL, _KEY);
             <div class="progress-bar-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
             <div style="font-size:11px; color:#999; margin-top:8px">${t.targetT} ${goal} Pi | ${t.byT} ${p.owner_username}</div>
           </div>
-          <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="supportProject('${p.id}', '${p.name}')">${t.investB}</button>
+          <button class="btn btn-primary" style="width:100%" onclick="supportProject('${p.id}', '${p.name}')">${t.investB}</button>
           ${isOwner ? `
             <div class="owner-actions">
-              <button class="btn btn-outline" style="flex:1" onclick="editProject('${p.id}')">${t.editB}</button>
-              <button class="btn btn-danger" style="flex:1" onclick="deleteProject('${p.id}')">${t.delB}</button>
+              <button class="btn btn-outline" onclick="editProject('${p.id}')">${t.editB}</button>
+              <button class="btn btn-danger" onclick="deleteProject('${p.id}')">${t.delB}</button>
             </div>` : ''}
         </div>`;
     });
   }
 
-  async function saveProject() {
+  async function supportProject(projectId, projectName) {
     if (!currentUser) return authenticateUser();
-    const id = document.getElementById('edit-id').value;
-    const projectData = {
-      name: document.getElementById('pName').value,
-      category: document.getElementById('pCategory').value,
-      description: document.getElementById('pDesc').value,
-      goal_pi: Number(document.getElementById('pGoal').value),
-      equity_pct: Number(document.getElementById('pEquity').value),
-      owner_pi_uid: currentUser.uid,
-      owner_username: currentUser.username
-    };
+    
+    const amountStr = prompt(langData[currentLang].promptAmt + projectName);
+    const amount = Number(amountStr);
+    
+    if (!amountStr || isNaN(amount) || amount <= 0) {
+      showToast("أدخل مبلغًا صحيحًا");
+      return;
+    }
 
-    const res = id ? await supa.from("projects").update(projectData).eq("id", id) : await supa.from("projects").insert(projectData);
-    if (!res.error) { 
-      showToast(langData[currentLang].success);
-      closeModal(); 
-      fetchProjects(); 
+    try {
+      const payment = await window.Pi.createPayment(
+        {
+          amount: amount,
+          memo: `استثمار في مشروع: ${projectName}`,
+          metadata: { projectId: projectId, investor_uid: currentUser.uid }
+        },
+        {
+          // طلب موافقة السيرفر
+          onReadyForServerApproval: async (paymentId) => {
+            await fetch("/api/pi/approve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId })
+            });
+          },
+          // إكمال الدفع بعد التحقق من السيرفر
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            const response = await fetch("/api/pi/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId, txid })
+            });
+            
+            if (response.ok) {
+              showToast(langData[currentLang].success);
+              fetchProjects(); // تحديث القائمة بعد الدفع الناجح
+            } else {
+              showToast("فشل في إكمال الدفع");
+            }
+          },
+          onCancel: () => showToast("تم إلغاء الدفع"),
+          onError: (error) => {
+            console.error(error);
+            showToast("خطأ في الدفع: " + error.message);
+          }
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      showToast("خطأ في بدء الدفع");
     }
   }
 
-  async function supportProject(id, name) {
+  async function saveProject() {
     if (!currentUser) return authenticateUser();
-    const amount = prompt(langData[currentLang].promptAmt + name);
-    if (!amount || isNaN(amount) || amount <= 0) return;
+    
+    const id = document.getElementById('edit-id').value;
+    const projectData = {
+      name: document.getElementById('pName').value.trim(),
+      category: document.getElementById('pCategory').value.trim(),
+      description: document.getElementById('pDesc').value.trim(),
+      goal_pi: Number(document.getElementById('pGoal').value),
+      equity_pct: Number(document.getElementById('pEquity').value),
+      owner_pi_uid: currentUser.uid,
+      owner_username: currentUser.username,
+      raised_pi: id ? undefined : 0  // لا نغير raised_pi عند التعديل
+    };
 
-    try {
-      await window.Pi.createPayment({
-        amount: Number(amount),
-        memo: `Investment in ${name}`,
-        metadata: { projectId: id }
-      }, {
-        onReadyForServerApproval: (pid) => fetch("/api/pi/approve", { method: "POST", body: JSON.stringify({ paymentId: pid }) }),
-        onReadyForServerCompletion: (pid, txid) => {
-          fetch("/api/pi/complete", { method: "POST", body: JSON.stringify({ paymentId: pid, txid: txid }) })
-            .then(() => { showToast(langData[currentLang].success); fetchProjects(); });
-        }
-      });
-    } catch (err) { showToast("Payment Error"); }
+    if (!projectData.name || !projectData.category || !projectData.description || !projectData.goal_pi) {
+      showToast("يرجى ملء جميع الحقول");
+      return;
+    }
+
+    const { error } = id 
+      ? await supa.from("projects").update(projectData).eq("id", id)
+      : await supa.from("projects").insert(projectData);
+
+    if (!error) { 
+      showToast(langData[currentLang].success);
+      closeModal(); 
+      fetchProjects(); 
+    } else {
+      showToast("حدث خطأ، حاول مرة أخرى");
+    }
   }
 
+  // باقي الدوال (edit, delete, language, modal, toast) كما هي...
   function editProject(id) {
-    supa.from("projects").select("*").eq("id", id).single().then(({data}) => {
+    supa.from("projects").select("*").eq("id", id).single().then(({data, error}) => {
+      if (error || !data) return;
       document.getElementById('edit-id').value = data.id;
       document.getElementById('pName').value = data.name;
       document.getElementById('pCategory').value = data.category;
@@ -330,31 +456,59 @@ const supa = window.supabase.createClient(_URL, _KEY);
   }
 
   async function deleteProject(id) {
-    if (confirm("Delete?")) { await supa.from("projects").delete().eq("id", id); fetchProjects(); }
+    if (confirm(langData[currentLang].delB + "?")) { 
+      await supa.from("projects").delete().eq("id", id); 
+      fetchProjects(); 
+    }
+  }
+
+  function updateLanguageTexts() {
+    const t = langData[currentLang];
+    document.getElementById('heroTitle').innerText = t.heroT;
+    document.getElementById('heroSub').innerText = t.heroS;
+    document.getElementById('startBtn').innerText = t.start;
+    document.getElementById('formTitle').innerText = t.formT;
+    document.getElementById('labelGoal').innerText = t.goalL;
+    document.getElementById('labelEquity').innerText = t.equityL;
+    document.getElementById('submitBtn').innerText = t.submitB;
+    document.getElementById('cancelBtn').innerText = t.cancel;
+
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) loginBtn.innerText = t.login;
   }
 
   function toggleLanguage() {
     currentLang = currentLang === 'ar' ? 'en' : 'ar';
-    const t = langData[currentLang];
     document.getElementById('mainBody').className = currentLang === 'en' ? 'ltr' : '';
     document.getElementById('mainBody').dir = currentLang === 'en' ? 'ltr' : 'rtl';
     document.getElementById('langSwitcher').innerText = currentLang === 'en' ? 'العربية' : 'English';
-    document.getElementById('heroTitle').innerText = t.heroT;
-    document.getElementById('heroSub').innerText = t.heroS;
-    document.getElementById('startBtn').innerText = t.start;
+    
+    updateLanguageTexts();
     fetchProjects();
   }
 
-  function openModal() { document.getElementById('modalOverlay').style.display = 'flex'; }
+  function openModal() { 
+    document.getElementById('modalOverlay').style.display = 'flex'; 
+    updateLanguageTexts();
+  }
   function closeModal() { 
     document.getElementById('modalOverlay').style.display = 'none'; 
     document.getElementById('edit-id').value = '';
     document.getElementById('pName').value = '';
+    document.getElementById('pCategory').value = '';
     document.getElementById('pDesc').value = '';
+    document.getElementById('pGoal').value = '';
+    document.getElementById('pEquity').value = '';
   }
   
-  function showToast(m) { const t = document.getElementById("toast"); t.innerText = m; t.className = "show"; setTimeout(() => t.className = "", 3000); }
+  function showToast(m) { 
+    const t = document.getElementById("toast"); 
+    t.innerText = m; 
+    t.className = "show"; 
+    setTimeout(() => t.className = "", 3000); 
+  }
 
+  updateLanguageTexts();
   fetchProjects();
 </script>
 </body>
