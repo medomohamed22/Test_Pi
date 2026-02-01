@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Pi Social (Debug)</title>
+  <title>Pi Social</title>
 
   <!-- Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
@@ -25,10 +25,7 @@
         var ok =
           (window.supabaseJs && window.supabaseJs.createClient) ||
           (window.supabase && window.supabase.createClient);
-        if (!ok) {
-          console.warn("Supabase not found, loading fallback...");
-          loadFallback();
-        }
+        if (!ok) loadFallback();
       }, 400);
     })();
   </script>
@@ -42,24 +39,16 @@
       <span class="logo">💜</span>
       <div>
         <div class="title">Pi Social</div>
-        <div class="sub">ستايل قديم + Debug</div>
+        <div class="sub">ستايل قديم</div>
       </div>
     </div>
 
-    <div class="actions">
-      <button id="loginBtn" class="btn">تسجيل الدخول بـ Pi</button>
-      <button id="debugBtn" class="btn btn-ghost">Debug</button>
-    </div>
+    <button id="loginBtn" class="btn">تسجيل الدخول بـ Pi</button>
   </header>
-
-  <section class="statusbar">
-    <div class="chip" id="piChip">Pi: ...</div>
-    <div class="chip" id="sbChip">Supabase: ...</div>
-    <div class="chip" id="envChip">Env: ...</div>
-  </section>
 
   <main id="app" class="container hidden">
 
+    <!-- PROFILE -->
     <section class="card profile">
       <div class="profileRow">
         <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=Pi" alt="avatar" />
@@ -70,50 +59,25 @@
       </div>
     </section>
 
+    <!-- CREATE POST -->
     <section class="card composer">
       <div class="cardTitle">إنشاء بوست</div>
       <textarea id="postText" placeholder="بم تفكر؟ (نص فقط في النسخة دي)"></textarea>
       <div class="row">
         <button id="postBtn" class="btn btn-primary">نشر</button>
-        <button id="refreshBtn" class="btn btn-ghost">تحديث الفيد</button>
-      </div>
-      <div class="hint">
-        بعد ما نتأكد إن Pi + Supabase شغالين، نضيف صور/فيديو/لايك/كومنت.
+        <button id="refreshBtn" class="btn btn-ghost">تحديث</button>
       </div>
     </section>
 
-    <section class="card feedCard">
+    <!-- FEED -->
+    <section class="card">
       <div class="cardTitle">المنشورات</div>
       <div id="feed" class="feed"></div>
     </section>
 
   </main>
 
-  <!-- Toast -->
-  <div id="toast" class="toast hidden"></div>
-
-  <!-- Debug Panel -->
-  <aside id="debugPanel" class="debug hidden">
-    <div class="debugHead">
-      <div class="debugTitle">Debug Console</div>
-      <button id="clearDebug" class="mini">مسح</button>
-    </div>
-    <div id="debugLog" class="debugBody"></div>
-  </aside>
-
-  <!-- Modal -->
-  <div id="modal" class="modal hidden">
-    <div class="modalBox">
-      <div class="modalTitle" id="modalTitle">خطأ</div>
-      <div class="modalBody" id="modalBody">—</div>
-      <div class="modalActions">
-        <button id="copyBtn" class="btn btn-ghost">نسخ التفاصيل</button>
-        <button id="closeBtn" class="btn btn-primary">تمام</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ✅ app.js آخر حاجة -->
+  <!-- app.js آخر حاجة -->
   <script src="app.js"></script>
 </body>
 </html>
