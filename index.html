@@ -8,24 +8,25 @@
   <!-- Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-  <!-- Supabase UMD (primary) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.93.1/dist/umd/supabase-js.min.js"></script>
+  <!-- Supabase (CDN 1) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- ✅ Fallback لو jsdelivr فشل -->
+  <!-- ✅ Fallback لو jsdelivr اتحظر -->
   <script>
-    // لو window.supabase مش موجود بعد التحميل، نجرب unpkg
-    (function(){
-      function loadFallback(){
-        var s=document.createElement('script');
-        s.src="https://unpkg.com/@supabase/supabase-js@2.93.1/dist/umd/supabase-js.min.js";
-        s.onload=function(){ console.log("Supabase fallback loaded ✅"); };
-        s.onerror=function(){ console.error("Supabase fallback failed ❌"); };
+    (function () {
+      function loadFallback() {
+        var s = document.createElement("script");
+        s.src = "https://unpkg.com/@supabase/supabase-js@2";
+        s.onload = function () { console.log("Supabase fallback loaded ✅"); };
+        s.onerror = function () { console.error("Supabase fallback failed ❌"); };
         document.head.appendChild(s);
       }
-      // انتظر لحظة صغيرة عشان jsdelivr يخلص
-      setTimeout(function(){
-        if(!window.supabase || !window.supabase.createClient){
-          console.warn("Supabase UMD not found. Loading fallback...");
+      setTimeout(function () {
+        var ok =
+          (window.supabaseJs && window.supabaseJs.createClient) ||
+          (window.supabase && window.supabase.createClient);
+        if (!ok) {
+          console.warn("Supabase not found, loading fallback...");
           loadFallback();
         }
       }, 400);
@@ -76,7 +77,9 @@
         <button id="postBtn" class="btn btn-primary">نشر</button>
         <button id="refreshBtn" class="btn btn-ghost">تحديث الفيد</button>
       </div>
-      <div class="hint">لو عايز صور/فيديو + لايك/كومنت هنضيفهم بعد ما نثبت الاتصال.</div>
+      <div class="hint">
+        بعد ما نتأكد إن Pi + Supabase شغالين، نضيف صور/فيديو/لايك/كومنت.
+      </div>
     </section>
 
     <section class="card feedCard">
@@ -86,8 +89,10 @@
 
   </main>
 
+  <!-- Toast -->
   <div id="toast" class="toast hidden"></div>
 
+  <!-- Debug Panel -->
   <aside id="debugPanel" class="debug hidden">
     <div class="debugHead">
       <div class="debugTitle">Debug Console</div>
@@ -96,6 +101,7 @@
     <div id="debugLog" class="debugBody"></div>
   </aside>
 
+  <!-- Modal -->
   <div id="modal" class="modal hidden">
     <div class="modalBox">
       <div class="modalTitle" id="modalTitle">خطأ</div>
@@ -107,7 +113,7 @@
     </div>
   </div>
 
-  <!-- ✅ مهم: app.js آخر حاجة بعد كل المكتبات -->
+  <!-- ✅ app.js آخر حاجة -->
   <script src="app.js"></script>
 </body>
 </html>
