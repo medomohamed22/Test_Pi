@@ -16,3 +16,7 @@
   to = "/.netlify/functions/complete"
   status = 200
   force = true
+
+
+[build.environment]
+  NODE_VERSION = "22.9.0"
