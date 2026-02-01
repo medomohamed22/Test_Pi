@@ -1,172 +1,253 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pi Social</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pi Login Only</title>
 
-<!-- Pi SDK -->
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <!-- Pi SDK -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *{box-sizing:border-box;font-family:Tahoma,Arial}
+    body{
+      margin:0; color:#1f1230; background:#f4f0ff;
+      min-height:100vh; display:flex; flex-direction:column;
+    }
 
-<style>
-*{box-sizing:border-box;font-family:Tahoma,Arial}
-body{margin:0;background:#f3edff;color:#1f1230}
+    header{
+      background:#6a1b9a; color:#fff;
+      padding:14px 16px;
+      display:flex; justify-content:space-between; align-items:center;
+      box-shadow:0 10px 25px rgba(0,0,0,.18);
+      position:sticky; top:0; z-index:10;
+    }
+    .brand{display:flex; gap:10px; align-items:center}
+    .logo{font-size:22px}
+    .title{font-weight:900}
+    .sub{font-size:12px; opacity:.9}
 
-header{
-  background:#6a1b9a;color:#fff;
-  padding:12px 16px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-button{
-  background:#6a1b9a;color:#fff;
-  border:none;border-radius:8px;
-  padding:8px 14px;cursor:pointer;
-}
-button.outline{background:#fff;color:#6a1b9a;border:1px solid #6a1b9a}
+    main{flex:1; display:flex; align-items:center; justify-content:center; padding:18px}
+    .card{
+      width:min(520px, 94vw);
+      background:#fff; border-radius:16px;
+      border:1px solid rgba(106,27,154,.14);
+      box-shadow:0 14px 40px rgba(0,0,0,.10);
+      padding:16px;
+    }
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{
+      border:none; cursor:pointer;
+      padding:11px 14px; border-radius:12px;
+      font-weight:800;
+      background:#6a1b9a; color:#fff;
+      box-shadow:0 10px 22px rgba(0,0,0,.10);
+      transition:.15s transform;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn-ghost{
+      background:#fff; color:#6a1b9a;
+      border:1px solid rgba(106,27,154,.22);
+      box-shadow:none;
+    }
 
-.container{max-width:600px;margin:15px auto;padding:10px}
+    .hint{
+      margin-top:10px; font-size:12.5px; line-height:1.7;
+      color:rgba(31,18,48,.75);
+      background:#faf7ff;
+      border:1px dashed rgba(106,27,154,.22);
+      padding:10px; border-radius:12px;
+    }
 
-.card{
-  background:#fff;border-radius:12px;
-  padding:12px;margin-bottom:12px;
-  box-shadow:0 8px 20px rgba(0,0,0,.08);
-}
+    .profile{
+      display:flex; gap:12px; align-items:center;
+      padding:12px; border-radius:14px;
+      background:#faf7ff;
+      border:1px solid rgba(106,27,154,.12);
+      margin:12px 0;
+    }
+    .avatar{
+      width:54px; height:54px; border-radius:50%;
+      border:2px solid rgba(106,27,154,.25);
+      background:#fff;
+    }
+    .name{font-weight:900; color:#4a1770}
+    .meta{font-size:12px; opacity:.78; margin-top:2px}
+    code{
+      display:block;
+      padding:10px; border-radius:12px;
+      background:#0f0b18; color:#e9ddff;
+      overflow:auto; font-size:12px;
+      border:1px solid rgba(255,255,255,.10);
+      margin-top:10px;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
 
-.hidden{display:none}
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:999px;
+      font-size:12px; font-weight:800;
+      border:1px solid rgba(106,27,154,.18);
+      background:#fff; color:#4a1770;
+    }
+    .ok{color:#1b7a3a}
+    .bad{color:#b42318}
 
-textarea{
-  width:100%;border-radius:8px;
-  border:1px solid #ccc;padding:8px;
-  min-height:70px;
-}
+    .top-actions{display:flex; gap:10px; align-items:center}
+    .mini{
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.28);
+      color:#fff;
+      padding:8px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:800;
+    }
 
-.post{
-  border-top:1px solid #eee;
-  padding-top:10px;margin-top:10px;
-}
-.post b{color:#6a1b9a}
-.like{color:#6a1b9a;cursor:pointer;font-size:14px}
-</style>
+    @media (max-width:520px){
+      header{flex-direction:column; align-items:stretch; gap:10px}
+      .top-actions{justify-content:space-between}
+    }
+  </style>
 </head>
-
 <body>
 
-<header>
-  <div><b>💜 Pi Social</b></div>
-  <button id="loginBtn">دخول عبر Pi</button>
-</header>
+  <header>
+    <div class="brand">
+      <div class="logo">💜</div>
+      <div>
+        <div class="title">Pi Login Only</div>
+        <div class="sub">تسجيل دخول بـ Pi SDK فقط (sandbox: false)</div>
+      </div>
+    </div>
 
-<div class="container hidden" id="app">
+    <div class="top-actions">
+      <span id="piState" class="badge">Pi: ...</span>
+      <button class="mini" id="copyUidBtn" title="نسخ UID" style="display:none">نسخ UID</button>
+    </div>
+  </header>
 
-  <!-- PROFILE -->
-  <div class="card">
-    <b id="username">—</b>
-  </div>
+  <main>
+    <div class="card">
 
-  <!-- CREATE POST -->
-  <div class="card">
-    <textarea id="postText" placeholder="بم تفكر؟"></textarea>
-    <button style="margin-top:8px" onclick="createPost()">نشر</button>
-  </div>
+      <div class="row">
+        <button class="btn" id="loginBtn">دخول عبر Pi</button>
+        <button class="btn btn-ghost" id="logoutBtn" style="display:none">تسجيل خروج</button>
+      </div>
 
-  <!-- FEED -->
-  <div class="card">
-    <b>المنشورات</b>
-    <div id="feed"></div>
-  </div>
+      <div class="hint" id="hintBox">
+        ✅ لازم تفتح الصفحة من <b>Pi Browser</b> علشان تسجيل الدخول يشتغل.<br>
+        ✅ وضع التشغيل: <b>Production (sandbox: false)</b>
+      </div>
 
-</div>
+      <div id="profileBox" class="profile" style="display:none">
+        <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=Pi" alt="avatar" />
+        <div>
+          <div class="name" id="username">—</div>
+          <div class="meta" id="userid">—</div>
+        </div>
+      </div>
 
-<script>
-/* ================= CONFIG ================= */
-const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
-const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
+      <code id="rawBox" style="display:none"></code>
 
-/* ================= INIT ================= */
-const SB = window.supabaseJs?.createClient
-        ? window.supabaseJs
-        : window.supabase;
+    </div>
+  </main>
 
-const supabase = SB.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script>
+    let currentUser = null;
 
-let currentUser = null;
+    const piState   = document.getElementById("piState");
+    const loginBtn  = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const profileBox= document.getElementById("profileBox");
+    const usernameEl= document.getElementById("username");
+    const useridEl  = document.getElementById("userid");
+    const avatarEl  = document.getElementById("avatar");
+    const rawBox    = document.getElementById("rawBox");
+    const copyUidBtn= document.getElementById("copyUidBtn");
 
-/* ================= LOGIN ================= */
-document.getElementById("loginBtn").onclick = async () => {
-  if(!window.Pi){
-    alert("افتح الموقع من Pi Browser");
-    return;
-  }
+    function setPiState() {
+      const ok = !!window.Pi;
+      piState.innerHTML = ok
+        ? 'Pi: <span class="ok">جاهز</span>'
+        : 'Pi: <span class="bad">غير موجود</span>';
+    }
 
-  Pi.init({ version:"2.0", sandbox:false });
+    setPiState();
 
-  try{
-    const auth = await Pi.authenticate(["username"], () => {});
-    currentUser = auth.user;
+    // init Pi (production) - safe
+    function initPi() {
+      if (!window.Pi) return false;
+      try {
+        window.Pi.init({ version: "2.0", sandbox: false });
+        return true;
+      } catch (e) {
+        console.error("Pi.init error:", e);
+        return false;
+      }
+    }
 
-    document.getElementById("loginBtn").style.display="none";
-    document.getElementById("app").classList.remove("hidden");
-    document.getElementById("username").innerText = "@"+currentUser.username;
+    loginBtn.addEventListener("click", async () => {
+      try {
+        if (!initPi()) {
+          alert("لازم تفتح الصفحة من Pi Browser علشان Pi SDK يكون موجود.");
+          return;
+        }
 
-    // save profile
-    await supabase.from("profiles").upsert({
-      pi_uid: String(currentUser.uid),
-      username: currentUser.username
+        // permissions: username فقط
+        const auth = await window.Pi.authenticate(["username"], () => {});
+        if (!auth?.user?.uid || !auth?.user?.username) {
+          alert("التسجيل رجع بيانات ناقصة. حاول تاني.");
+          console.log("auth=", auth);
+          return;
+        }
+
+        currentUser = auth.user;
+
+        // UI
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+        profileBox.style.display = "flex";
+        rawBox.style.display = "block";
+        copyUidBtn.style.display = "inline-block";
+
+        usernameEl.textContent = "@" + currentUser.username;
+        useridEl.textContent = "uid: " + currentUser.uid;
+        avatarEl.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser.username);
+
+        rawBox.textContent = JSON.stringify(auth, null, 2);
+
+      } catch (e) {
+        console.error(e);
+        alert("فشل تسجيل الدخول. تأكد إنك فاتح من Pi Browser.");
+      }
     });
 
-    loadPosts();
-  }catch(e){
-    alert("فشل تسجيل الدخول");
-  }
-};
+    logoutBtn.addEventListener("click", () => {
+      currentUser = null;
 
-/* ================= POSTS ================= */
-async function createPost(){
-  const text = document.getElementById("postText").value.trim();
-  if(!text) return;
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      profileBox.style.display = "none";
+      rawBox.style.display = "none";
+      copyUidBtn.style.display = "none";
+    });
 
-  await supabase.from("posts").insert({
-    user_id: String(currentUser.uid),
-    content: text,
-    likes: 0
-  });
+    copyUidBtn.addEventListener("click", async () => {
+      try{
+        if(!currentUser?.uid) return;
+        await navigator.clipboard.writeText(String(currentUser.uid));
+        alert("تم نسخ UID ✅");
+      }catch(e){
+        alert("مش قادر أنسخ. انسخه يدويًا من الشاشة.");
+      }
+    });
 
-  document.getElementById("postText").value="";
-  loadPosts();
-}
-
-async function loadPosts(){
-  const { data } = await supabase
-    .from("posts")
-    .select("id,content,likes,profiles(username)")
-    .order("created_at",{ascending:false});
-
-  const feed = document.getElementById("feed");
-  feed.innerHTML="";
-
-  data.forEach(p=>{
-    feed.innerHTML += `
-      <div class="post">
-        <b>@${p.profiles.username}</b>
-        <p>${p.content}</p>
-        <span class="like" onclick="likePost('${p.id}',${p.likes})">
-          ❤️ ${p.likes}
-        </span>
-      </div>
-    `;
-  });
-}
-
-async function likePost(id,likes){
-  await supabase.from("posts")
-    .update({likes:likes+1})
-    .eq("id",id);
-  loadPosts();
-}
-</script>
+    // تحديث حالة Pi لو الصفحة اتفتحت في Pi Browser بعد تحميلها
+    setInterval(setPiState, 1500);
+  </script>
 
 </body>
 </html>
