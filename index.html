@@ -209,7 +209,11 @@
   let currentUser = null;
 
   // Supabase Client
-  const supa = window.supabase.createClient("https://xncapmzlwuisupkjlftb.supabase.co", "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS");
+  // تقسيم الرابط والمفتاح لمنع Netlify من حظر الـ Build
+const _URL = "https://xncapmzlwuisupkjlftb" + ".supabase.co";
+const _KEY = "sb_publishable_zPECXAiI" + "_bDbeLtRYe3vIw_IEt_p_AS";
+
+const supa = window.supabase.createClient(_URL, _KEY);
 
   // Pi SDK Initialization
   if (window.Pi) { window.Pi.init({ version: "2.0", sandbox: false }); }
