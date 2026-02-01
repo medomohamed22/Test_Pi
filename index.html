@@ -1,241 +1,356 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Pi Startups | إدارة ودعم المشروعات</title>
+  <title>Pi Startups | Innovation Hub</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --primary: #6f2fa0; --primary-dark: #4b1e6e; --accent: #fbce3a;
-      --bg-body: #f8f9fe; --bg-card: #ffffff; --text-main: #2d2d2d;
-      --border-radius: 16px; --shadow: 0 8px 30px rgba(0,0,0,0.06);
-      --danger: #e74c3c;
+      --primary: #6f2fa0;
+      --primary-gradient: linear-gradient(135deg, #6f2fa0 0%, #a044ff 100%);
+      --accent: #fbce3a;
+      --bg-body: #f8faff;
+      --text-main: #2d3436;
+      --text-muted: #636e72;
+      --glass: rgba(255, 255, 255, 0.9);
+      --shadow: 0 15px 35px rgba(111, 47, 160, 0.1);
+      --radius: 24px;
     }
-    * { box-sizing: border-box; outline: none; }
-    body { margin: 0; font-family: 'Tajawal', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; }
-    header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 15px 0; }
-    .container { width: 90%; max-width: 1200px; margin: 0 auto; }
+
+    * { box-sizing: border-box; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    
+    body { 
+      margin: 0; 
+      font-family: 'Tajawal', sans-serif; 
+      background-color: var(--bg-body); 
+      color: var(--text-main); 
+      line-height: 1.6;
+    }
+
+    /* Header Styling */
+    header { 
+      background: var(--glass); 
+      backdrop-filter: blur(20px); 
+      position: sticky; top: 0; z-index: 1000; 
+      border-bottom: 1px solid rgba(111, 47, 160, 0.05); 
+      padding: 15px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+    
+    .container { width: 92%; max-width: 1200px; margin: 0 auto; }
     .nav-content { display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-weight: 900; font-size: 24px; color: var(--primary); }
-    .btn { padding: 10px 20px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; font-family: 'Tajawal'; font-size: 14px; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-danger { background: var(--danger); color: #fff; }
+    
+    .logo { 
+      font-weight: 900; font-size: 28px; color: var(--primary); 
+      display: flex; align-items: center; gap: 10px; 
+      letter-spacing: -0.5px;
+    }
+
+    .nav-controls { display: flex; align-items: center; gap: 12px; }
+    
+    .lang-btn { 
+      background: #fff; border: 1.5px solid var(--primary); color: var(--primary); 
+      padding: 7px 16px; border-radius: 50px; cursor: pointer; 
+      font-size: 13px; font-weight: 700;
+    }
+    .lang-btn:hover { background: var(--primary); color: #fff; }
+
+    /* Buttons */
+    .btn { 
+      padding: 14px 28px; border-radius: 18px; border: none; 
+      font-weight: 700; cursor: pointer; display: inline-flex; 
+      align-items: center; gap: 10px; font-family: 'Tajawal'; font-size: 15px;
+    }
+    .btn-primary { 
+      background: var(--primary-gradient); color: #fff; 
+      box-shadow: 0 8px 20px rgba(111, 47, 160, 0.25);
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(111, 47, 160, 0.35); }
+    
     .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-    .hero { text-align: center; padding: 40px 0; }
-    #user-section { background: linear-gradient(135deg, #6f2fa0, #8e44ad); color: white; padding: 20px; border-radius: var(--border-radius); margin-bottom: 30px; display: none; }
-    .form-card { background: var(--bg-card); padding: 25px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-top: 20px; color: var(--text-main); }
-    input, textarea { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-family: 'Tajawal'; margin-bottom: 15px; }
-    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
-    .card { background: var(--bg-card); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 20px; position: relative; }
-    .progress-bar { height: 8px; background: #eee; border-radius: 10px; overflow: hidden; margin: 10px 0; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 1s; }
-    .owner-actions { display: flex; gap: 5px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
-    #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); }
-    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-    @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    .btn-danger { background: #fff1f1; color: #ff4757; font-size: 13px; }
+
+    /* Hero Section */
+    .hero { text-align: center; padding: 60px 0 40px; animation: fadeIn 1s ease; }
+    .hero h1 { 
+      font-size: 42px; font-weight: 900; margin-bottom: 15px;
+      background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Project Cards */
+    .grid-container { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+      gap: 30px; padding-bottom: 50px;
+    }
+    
+    .card { 
+      background: #fff; border-radius: var(--radius); padding: 25px; 
+      border: 1px solid rgba(255,255,255,1); box-shadow: var(--shadow);
+      position: relative; overflow: hidden;
+    }
+    .card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(111, 47, 160, 0.15); }
+    
+    .equity-tag { 
+      background: #fff9db; color: #f08c00; padding: 8px 15px; 
+      border-radius: 12px; font-weight: 800; font-size: 13px; 
+      border: 1px solid #ffe066; margin: 15px 0; display: block; text-align: center;
+    }
+
+    .category-badge { 
+      background: rgba(111, 47, 160, 0.08); color: var(--primary); 
+      padding: 5px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
+    }
+
+    /* Progress Bar */
+    .progress-container { margin: 20px 0; }
+    .progress-bar-bg { height: 12px; background: #eff2f7; border-radius: 10px; overflow: hidden; }
+    .progress-fill { 
+      height: 100%; background: var(--primary-gradient); 
+      border-radius: 10px; width: 0%;
+    }
+
+    /* Modal / Form */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+      display: none; justify-content: center; align-items: center; z-index: 2000;
+    }
+    .form-card { 
+      background: #fff; padding: 40px; border-radius: 30px; 
+      width: 90%; max-width: 550px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    }
+    
+    input, textarea { 
+      width: 100%; padding: 15px; border: 1.5px solid #eee; 
+      border-radius: 15px; margin-bottom: 20px; font-family: 'Tajawal';
+      font-size: 15px; background: #fcfcfc;
+    }
+    input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(111, 47, 160, 0.1); }
+
+    #toast { 
+      visibility: hidden; position: fixed; bottom: 30px; left: 50%; 
+      transform: translateX(-50%); background: #2d3436; color: #fff; 
+      padding: 15px 35px; border-radius: 50px; z-index: 9999; font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    #toast.show { visibility: visible; animation: slideUp 0.4s ease forwards; }
+    @keyframes slideUp { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+
+    body.ltr { direction: ltr; }
   </style>
 </head>
-<body>
+<body id="mainBody">
 
 <header>
   <div class="container nav-content">
-    <div class="logo">π <span>Pi Startups</span></div>
-    <div id="auth-btn-container">
-      <button class="btn btn-primary" id="loginBtn" onclick="authenticateUser()">تسجيل دخول Pi</button>
+    <div class="logo">π <span id="logoText">Startups</span></div>
+    <div class="nav-controls">
+      <button class="lang-btn" onclick="toggleLanguage()" id="langSwitcher">English</button>
+      <div id="auth-area">
+        <button class="btn btn-primary" onclick="authenticateUser()" id="loginBtn">دخول عبر Pi</button>
+      </div>
     </div>
   </div>
 </header>
 
 <div class="container">
   <section class="hero">
-    <h1>منصة دعم المشروعات الناشئة</h1>
-    <p style="color:#666">ادعم الابتكار أو ابدأ حملتك الخاصة الآن.</p>
+    <h1 id="heroTitle">استثمر في مستقبل الابتكار</h1>
+    <p id="heroSub" style="color:var(--text-muted); font-size: 18px;">المنصة الأولى لدعم مشاريع مجتمع Pi وتحويل الأفكار إلى شركات واقعية.</p>
+    <button class="btn btn-primary" onclick="openModal()" id="startBtn" style="padding: 18px 40px; font-size: 17px;">إطلاق حملة استثمارية</button>
   </section>
 
-  <div id="user-section">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3>👋 أهلاً، <span id="display-username">...</span></h3>
-      <button class="btn btn-outline" style="border-color:white; color:white" onclick="toggleAddProject()">+ مشروع جديد</button>
+  <div class="grid-container" id="projects-grid">
     </div>
-
-    <div id="add-project-box" class="form-card" style="display:none;">
-      <h3 id="form-title">نشر مشروع جديد</h3>
-      <input type="hidden" id="edit-id">
-      <input type="text" id="pName" placeholder="اسم المشروع">
-      <input type="text" id="pCategory" placeholder="التصنيف (مثلاً: تقنية، فنون)">
-      <textarea id="pDesc" placeholder="وصف مفصل للمشروع..." style="min-height:100px"></textarea>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-        <input type="number" id="pGoal" placeholder="الهدف (Pi)">
-        <input type="text" id="pOwner" readonly placeholder="صاحب المشروع">
-      </div>
-      <button class="btn btn-primary" id="submit-btn" onclick="saveProject()">حفظ المشروع</button>
-      <button class="btn" onclick="toggleAddProject()">إلغاء</button>
-    </div>
-  </div>
-
-  <div class="grid-container" id="projects-grid"></div>
 </div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="form-card">
+    <h2 id="formTitle" style="margin-top:0; color:var(--primary)">بيانات المشروع</h2>
+    <input type="hidden" id="edit-id">
+    <input type="text" id="pName" placeholder="اسم المشروع">
+    <input type="text" id="pCategory" placeholder="المجال (تكنولوجيا، زراعة..)">
+    <textarea id="pDesc" placeholder="اشرح فكرتك والعوائد للمستثمرين..." style="height:100px;"></textarea>
+    
+    <div style="display:flex; gap:15px; margin-bottom:10px">
+      <div style="flex:1">
+        <label id="labelGoal" style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px">الهدف (Pi)</label>
+        <input type="number" id="pGoal">
+      </div>
+      <div style="flex:1">
+        <label id="labelEquity" style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px">الأسهم للداعمين (%)</label>
+        <input type="number" id="pEquity">
+      </div>
+    </div>
+    
+    <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="saveProject()" id="submitBtn">نشر المشروع الآن</button>
+    <button class="btn" style="width:100%; justify-content:center; margin-top:10px; color:var(--text-muted)" onclick="closeModal()" id="cancelBtn">إغلاق</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
-  // --- تقسيم الروابط لتجاوز فحص Netlify الصارم ---
-  const part_a = "https://xncapmzlwuisupkjlftb";
-  const part_b = ".supabase.co";
-  const SUPA_URL = part_a + part_b;
-
-  const key_a = "sb_publishable_zPECXAiI";
-  const key_b = "_bDbeLtRYe3vIw_IEt_p_AS";
-  const SUPA_KEY = key_a + key_b;
-
-  const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-  const $ = (id) => document.getElementById(id);
-
-  if (window.Pi) {
-    try { Pi.init({ version: "2.0", sandbox: false }); } catch (e) { console.error(e); }
-  }
-
+  // 
+  
+  const langData = {
+    ar: { login: "دخول عبر Pi", heroT: "استثمر في مستقبل الابتكار", heroS: "المنصة الأولى لدعم مشاريع مجتمع Pi وتحويل الأفكار إلى شركات واقعية.", start: "إطلاق حملة استثمارية", formT: "إعداد حملة التمويل", goalL: "الهدف المطلوب (Pi)", equityL: "نسبة الأسهم للداعمين (%)", submitB: "نشر المشروع الآن", equityT: "💎 حصة الأسهم للداعم:", raisedT: "تم جمع", targetT: "الهدف:", byT: "بواسطة:", investB: "استثمر Pi الآن", editB: "تعديل", delB: "حذف", promptAmt: "أدخل كمية Pi التي تود استثمارها في ", welcome: "أهلاً بك، ", success: "تم بنجاح!" },
+    en: { login: "Login with Pi", heroT: "Invest in the Future", heroS: "The premier platform for supporting Pi community projects and building real startups.", start: "Launch Campaign", formT: "Setup Campaign", goalL: "Target Goal (Pi)", equityL: "Equity for Backers (%)", submitB: "Publish Project Now", equityT: "💎 Backer Equity Share:", raisedT: "Raised", targetT: "Target:", byT: "By:", investB: "Invest Pi Now", editB: "Edit", delB: "Delete", promptAmt: "Enter Pi amount to invest in ", welcome: "Welcome, ", success: "Success!" }
+  };
+  
+  let currentLang = 'ar';
   let currentUser = null;
+
+  // Supabase Client
+  const supa = window.supabase.createClient("https://xncapmzlwuisupkjlftb.supabase.co", "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS");
+
+  // Pi SDK Initialization
+  if (window.Pi) { window.Pi.init({ version: "2.0", sandbox: false }); }
 
   async function authenticateUser() {
     try {
-      const auth = await Pi.authenticate(['username', 'payments'], (p) => console.log("Payment process"));
-      currentUser = auth.user || auth;
+      const auth = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
+      currentUser = auth.user;
+      document.getElementById('auth-area').innerHTML = `
+        <div class="user-profile">
+          <div class="user-avatar">${currentUser.username[0].toUpperCase()}</div>
+          <span style="font-weight:700">@${currentUser.username}</span>
+        </div>`;
       await supa.from("pi_users").upsert({ pi_uid: currentUser.uid, username: currentUser.username });
-      $("auth-btn-container").style.display = "none";
-      $("user-section").style.display = "block";
-      $("display-username").textContent = currentUser.username;
-      $("pOwner").value = currentUser.username;
-      showToast("مرحباً بك!");
+      showToast(langData[currentLang].welcome + currentUser.username);
       fetchProjects();
-    } catch (err) { alert("عذراً، يجب فتح الموقع من متصفح Pi Browser"); }
+    } catch (err) { showToast("Please use Pi Browser"); }
+  }
+
+  function onIncompletePaymentFound(payment) {
+    fetch("/api/pi/complete", { method: "POST", body: JSON.stringify({ paymentId: payment.identifier, txid: payment.transaction.txid }) });
   }
 
   async function fetchProjects() {
-    const { data, error } = await supa.from("projects").select("*").order("created_at", { ascending: false });
-    if (error) return;
-    const grid = $("projects-grid");
+    const { data } = await supa.from("projects").select("*").order("created_at", { ascending: false });
+    const grid = document.getElementById("projects-grid");
     grid.innerHTML = "";
-    
+    const t = langData[currentLang];
+
     data.forEach(p => {
-      const raised = p.raised_pi || 0;
-      const pct = Math.min(100, Math.round((raised / p.goal_pi) * 100));
+      const raised = Number(p.raised_pi) || 0;
+      const goal = Number(p.goal_pi) || 1;
+      const pct = Math.min(100, Math.floor((raised / goal) * 100));
       const isOwner = currentUser && (p.owner_pi_uid === currentUser.uid);
 
-      const el = document.createElement("div");
-      el.className = "card";
-      el.innerHTML = `
-        <span style="color:var(--primary); font-weight:bold; font-size:12px"># ${escapeHtml(p.category)}</span>
-        <h3 style="margin:8px 0">${escapeHtml(p.name)}</h3>
-        <p style="font-size:14px; color:#555; min-height:60px">${escapeHtml(p.description)}</p>
-        
-        <div style="font-size:13px; display:flex; justify-content:space-between; margin-bottom:5px">
-          <span>المجموع: <b>${raised} π</b></span>
-          <span>الهدف: ${p.goal_pi} π</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-        
-        <button class="btn btn-primary" style="width:100%; margin-top:10px; justify-content:center" 
-          onclick="supportProject('${p.id}', '${escapeHtml(p.name)}')">دعم بـ Pi</button>
-        
-        ${isOwner ? `
-          <div class="owner-actions">
-            <button class="btn btn-outline" style="flex:1; padding:5px" onclick="editProject('${p.id}')">تعديل</button>
-            <button class="btn btn-danger" style="flex:1; padding:5px" onclick="deleteProject('${p.id}')">حذف</button>
+      grid.innerHTML += `
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <span class="category-badge">${p.category}</span>
+            <span style="font-size:10px; color:#999">${new Date(p.created_at).toLocaleDateString()}</span>
           </div>
-        ` : `<div style="font-size:11px; color:#999; margin-top:10px">الناشر: ${p.owner_username}</div>`}
-      `;
-      grid.appendChild(el);
+          <h3 style="margin:15px 0 10px; font-size:20px">${p.name}</h3>
+          <p style="font-size:14px; color:var(--text-muted); height:45px; overflow:hidden">${p.description}</p>
+          <div class="equity-tag">${t.equityT} ${p.equity_pct}%</div>
+          <div class="progress-container">
+            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px">
+              <span><b>${raised} π</b> ${t.raisedT}</span>
+              <span style="color:var(--primary); font-weight:bold">${pct}%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
+            <div style="font-size:11px; color:#999; margin-top:8px">${t.targetT} ${goal} Pi | ${t.byT} ${p.owner_username}</div>
+          </div>
+          <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="supportProject('${p.id}', '${p.name}')">${t.investB}</button>
+          ${isOwner ? `
+            <div class="owner-actions">
+              <button class="btn btn-outline" style="flex:1" onclick="editProject('${p.id}')">${t.editB}</button>
+              <button class="btn btn-danger" style="flex:1" onclick="deleteProject('${p.id}')">${t.delB}</button>
+            </div>` : ''}
+        </div>`;
     });
   }
 
-  async function supportProject(projectId, projectName) {
-    if (!currentUser) return authenticateUser();
-    const amount = prompt(`أدخل مبلغ الـ Pi لدعم "${projectName}":`);
-    if (!amount || isNaN(amount) || amount <= 0) return;
-
-    try {
-      Pi.createPayment({
-        amount: Number(amount),
-        memo: `دعم مشروع: ${projectName}`,
-        metadata: { projectId: projectId }
-      }, {
-        onReadyForServerApproval: (id) => fetch("/api/pi/approve", { method: "POST", body: JSON.stringify({ paymentId: id }) }),
-        onReadyForServerCompletion: (id, tx) => fetch("/api/pi/complete", { method: "POST", body: JSON.stringify({ paymentId: id, txid: tx }) })
-            .then(() => { showToast("تم الدعم بنجاح!"); fetchProjects(); }),
-        onCancel: (id) => {},
-        onError: (err, id) => showToast("حدث خطأ")
-      });
-    } catch (e) { console.error(e); }
-  }
-
   async function saveProject() {
-    const id = $("edit-id").value;
+    if (!currentUser) return authenticateUser();
+    const id = document.getElementById('edit-id').value;
     const projectData = {
-      name: $("pName").value,
-      category: $("pCategory").value,
-      description: $("pDesc").value,
-      goal_pi: Number($("pGoal").value),
+      name: document.getElementById('pName').value,
+      category: document.getElementById('pCategory').value,
+      description: document.getElementById('pDesc').value,
+      goal_pi: Number(document.getElementById('pGoal').value),
+      equity_pct: Number(document.getElementById('pEquity').value),
       owner_pi_uid: currentUser.uid,
       owner_username: currentUser.username
     };
 
-    let res;
-    if (id) {
-      res = await supa.from("projects").update(projectData).eq("id", id);
-    } else {
-      res = await supa.from("projects").insert(projectData);
-    }
-
-    if (!res.error) {
-      showToast("تم الحفظ");
-      toggleAddProject();
-      fetchProjects();
+    const res = id ? await supa.from("projects").update(projectData).eq("id", id) : await supa.from("projects").insert(projectData);
+    if (!res.error) { 
+      showToast(langData[currentLang].success);
+      closeModal(); 
+      fetchProjects(); 
     }
   }
 
-  async function editProject(id) {
-    const { data } = await supa.from("projects").select("*").eq("id", id).single();
-    if (data) {
-      $("edit-id").value = data.id;
-      $("pName").value = data.name;
-      $("pCategory").value = data.category;
-      $("pDesc").value = data.description;
-      $("pGoal").value = data.goal_pi;
-      $("form-title").textContent = "تعديل المشروع";
-      $("add-project-box").style.display = "block";
-      window.scrollTo(0, 0);
-    }
+  async function supportProject(id, name) {
+    if (!currentUser) return authenticateUser();
+    const amount = prompt(langData[currentLang].promptAmt + name);
+    if (!amount || isNaN(amount) || amount <= 0) return;
+
+    try {
+      await window.Pi.createPayment({
+        amount: Number(amount),
+        memo: `Investment in ${name}`,
+        metadata: { projectId: id }
+      }, {
+        onReadyForServerApproval: (pid) => fetch("/api/pi/approve", { method: "POST", body: JSON.stringify({ paymentId: pid }) }),
+        onReadyForServerCompletion: (pid, txid) => {
+          fetch("/api/pi/complete", { method: "POST", body: JSON.stringify({ paymentId: pid, txid: txid }) })
+            .then(() => { showToast(langData[currentLang].success); fetchProjects(); });
+        }
+      });
+    } catch (err) { showToast("Payment Error"); }
+  }
+
+  function editProject(id) {
+    supa.from("projects").select("*").eq("id", id).single().then(({data}) => {
+      document.getElementById('edit-id').value = data.id;
+      document.getElementById('pName').value = data.name;
+      document.getElementById('pCategory').value = data.category;
+      document.getElementById('pDesc').value = data.description;
+      document.getElementById('pGoal').value = data.goal_pi;
+      document.getElementById('pEquity').value = data.equity_pct;
+      openModal();
+    });
   }
 
   async function deleteProject(id) {
-    if (confirm("حذف المشروع نهائياً؟")) {
-      await supa.from("projects").delete().eq("id", id);
-      showToast("تم الحذف");
-      fetchProjects();
-    }
+    if (confirm("Delete?")) { await supa.from("projects").delete().eq("id", id); fetchProjects(); }
   }
 
-  function toggleAddProject() {
-    const box = $("add-project-box");
-    if (box.style.display === "none") {
-      $("edit-id").value = "";
-      $("pName").value = ""; $("pDesc").value = ""; $("pGoal").value = "";
-      $("form-title").textContent = "نشر مشروع جديد";
-      box.style.display = "block";
-    } else {
-      box.style.display = "none";
-    }
+  function toggleLanguage() {
+    currentLang = currentLang === 'ar' ? 'en' : 'ar';
+    const t = langData[currentLang];
+    document.getElementById('mainBody').className = currentLang === 'en' ? 'ltr' : '';
+    document.getElementById('mainBody').dir = currentLang === 'en' ? 'ltr' : 'rtl';
+    document.getElementById('langSwitcher').innerText = currentLang === 'en' ? 'العربية' : 'English';
+    document.getElementById('heroTitle').innerText = t.heroT;
+    document.getElementById('heroSub').innerText = t.heroS;
+    document.getElementById('startBtn').innerText = t.start;
+    fetchProjects();
   }
 
-  function showToast(m) { const t = $("toast"); t.textContent = m; t.className = "show"; setTimeout(()=>t.className="", 3000); }
-  function escapeHtml(t) { const e = document.createElement('div'); e.innerText = t; return e.innerHTML; }
+  function openModal() { document.getElementById('modalOverlay').style.display = 'flex'; }
+  function closeModal() { 
+    document.getElementById('modalOverlay').style.display = 'none'; 
+    document.getElementById('edit-id').value = '';
+    document.getElementById('pName').value = '';
+    document.getElementById('pDesc').value = '';
+  }
   
+  function showToast(m) { const t = document.getElementById("toast"); t.innerText = m; t.className = "show"; setTimeout(() => t.className = "", 3000); }
+
   fetchProjects();
 </script>
 </body>
