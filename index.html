@@ -532,53 +532,48 @@ async function addProject() {
     alert("لازم تسجل دخول الأول");
     return;
   }
-
-  // ✅ لو uid مش موجود، هنمنع الإضافة بدل ما يفشل في DB
-  if(!piUser?.uid){
-    alert("مش قادر أجيب Pi UID. جرّب تسجل دخول تاني من Pi Browser.");
+  
+  if (!piUser?.uid) {
+    alert("مش قادر أجيب Pi UID");
     return;
   }
-
+  
   const titleInput = document.getElementById('proj-title');
-  const descInput  = document.getElementById('proj-desc');
-
+  const descInput = document.getElementById('proj-desc');
+  
   const title = (titleInput.value || '').trim();
-  const desc  = (descInput.value  || '').trim();
-
+  const desc = (descInput.value || '').trim();
+  
   if (!title) {
     alert("يرجى كتابة اسم المشروع");
     return;
   }
-
-  // ✅ مهم: projects عندك محتاج owner_pi_uid NOT NULL
+  
   const payload = {
-    title,
-    desc,
+    name: title, // ✅ الحل هنا
+    desc: desc,
     pi_username: piUser.username,
     owner_pi_uid: piUser.uid
   };
-
+  
   console.log("INSERT payload =>", payload);
-
+  
   const { data, error } = await sb
     .from('projects')
     .insert(payload)
     .select();
-
+  
   if (error) {
     console.error("Supabase insert error =>", error);
-    alert("فشل إضافة المشروع: " + (error.message || "Unknown error"));
+    alert("فشل إضافة المشروع: " + error.message);
     return;
   }
-
-  console.log("Inserted =>", data);
-
+  
   titleInput.value = '';
-  descInput.value  = '';
-
+  descInput.value = '';
+  
   await renderProjects();
 }
-
 /* ===================== RATE PROJECT ===================== */
 async function rateProject(id, rating) {
   if(!requireLogin()) return;
