@@ -1,294 +1,568 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pi Login + Save to DB</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة المطورين v1</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-  <!-- Pi SDK -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <!-- Pi SDK -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --bg-color: #f5f6fa;
+            --text-color: #2d3436;
+            --white: #ffffff;
+        }
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-  <!-- Fallback لو CDN اتحجب -->
-  <script>
-    (function(){
-      function ok(){
-        return (window.supabaseJs?.createClient || window.supabase?.createClient);
-      }
-      function fallback(){
-        var s=document.createElement("script");
-        s.src="https://unpkg.com/@supabase/supabase-js@2";
-        document.head.appendChild(s);
-      }
-      setTimeout(()=>{ if(!ok()) fallback(); }, 400);
-    })();
-  </script>
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding-bottom: 80px; /* مسافة للبار السفلي */
+        }
 
-  <style>
-    *{box-sizing:border-box;font-family:Tahoma,Arial}
-    body{margin:0;background:#f4f0ff;color:#1f1230;min-height:100vh;display:flex;flex-direction:column}
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-    header{
-      background:#6a1b9a;color:#fff;padding:14px 16px;
-      display:flex;justify-content:space-between;align-items:center;gap:10px;
-      position:sticky;top:0;z-index:10;box-shadow:0 10px 25px rgba(0,0,0,.18);
-    }
-    .brand{display:flex;gap:10px;align-items:center}
-    .logo{font-size:22px}
-    .title{font-weight:900}
-    .sub{font-size:12px;opacity:.9}
+        /* Header layout + login button */
+        .header-inner{
+            max-width: 600px;
+            margin: 0 auto;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+        }
+        .header-title{
+            flex: 1;
+            text-align:center;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+        .header-left{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            min-width: 170px;
+            justify-content:flex-start; /* في RTL ده هيبقى ناحية الشمال فعلاً */
+        }
 
-    .badge{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:6px 10px;border-radius:999px;
-      font-size:12px;font-weight:800;
-      border:1px solid rgba(255,255,255,.35);
-      background:rgba(255,255,255,.15);
-      color:#fff;
-    }
-    .ok{color:#b6ffcc}
-    .bad{color:#ffd1d1}
+        .pi-btn{
+            background: rgba(255,255,255,.18);
+            border: 1px solid rgba(255,255,255,.28);
+            color: var(--white);
+            padding: 8px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-weight: 700;
+            font-size: .9rem;
+            transition: .15s ease-in-out;
+            white-space: nowrap;
+        }
+        .pi-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.22); }
+        .pi-user{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.24);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: .85rem;
+            white-space: nowrap;
+        }
+        .pi-dot{
+            width:10px;height:10px;border-radius:50%;
+            background:#00d084;
+            box-shadow: 0 0 0 3px rgba(0,208,132,.2);
+        }
+        .pi-logout{
+            background: rgba(0,0,0,.18);
+            border: 1px solid rgba(255,255,255,.22);
+            color: var(--white);
+            padding: 6px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: .85rem;
+        }
 
-    main{flex:1;display:flex;align-items:center;justify-content:center;padding:18px}
-    .card{
-      width:min(560px,94vw);
-      background:#fff;border:1px solid rgba(106,27,154,.14);
-      border-radius:16px;padding:16px;
-      box-shadow:0 14px 40px rgba(0,0,0,.10);
-    }
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+        /* Containers */
+        .container {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-    .btn{
-      border:none;cursor:pointer;
-      padding:11px 14px;border-radius:12px;font-weight:800;
-      background:#6a1b9a;color:#fff;
-      box-shadow:0 10px 22px rgba(0,0,0,.10);
-      transition:.15s transform;
-    }
-    .btn:hover{transform:translateY(-1px)}
-    .btn:active{transform:translateY(0)}
-    .btn-ghost{
-      background:#fff;color:#6a1b9a;
-      border:1px solid rgba(106,27,154,.22);
-      box-shadow:none;
-    }
+        .page {
+            display: none; /* إخفاء جميع الصفحات افتراضياً */
+            animation: fadeIn 0.3s ease-in-out;
+        }
 
-    .hint{
-      margin-top:12px;font-size:12.5px;line-height:1.7;
-      color:rgba(31,18,48,.78);
-      background:#faf7ff;border:1px dashed rgba(106,27,154,.22);
-      padding:10px;border-radius:12px;
-    }
+        .page.active {
+            display: block; /* إظهار الصفحة النشطة */
+        }
 
-    .profile{
-      display:flex;gap:12px;align-items:center;
-      padding:12px;border-radius:14px;background:#faf7ff;
-      border:1px solid rgba(106,27,154,.12);
-      margin-top:12px;
-    }
-    .avatar{width:54px;height:54px;border-radius:50%;border:2px solid rgba(106,27,154,.25);background:#fff}
-    .name{font-weight:900;color:#4a1770}
-    .meta{font-size:12px;opacity:.78;margin-top:2px}
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-    code{
-      display:block;margin-top:12px;
-      padding:10px;border-radius:12px;
-      background:#0f0b18;color:#e9ddff;
-      border:1px solid rgba(255,255,255,.10);
-      font-size:12px;white-space:pre-wrap;word-break:break-word;
-      max-height:260px;overflow:auto;
-    }
-  </style>
+        /* Cards Styles */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        /* Forms */
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        button.btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        button.btn-primary:hover {
+            background-color: #5b4cc4;
+        }
+
+        /* Project Actions */
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .btn-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #636e72;
+            font-size: 14px;
+        }
+
+        .btn-paypal {
+            color: #003087;
+            font-weight: bold;
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 10px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        .comment {
+            border-bottom: 1px solid #eee;
+            padding: 5px 0;
+        }
+
+        /* Code Snippets */
+        .code-block {
+            background: #2d3436;
+            color: #00cec9;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: monospace;
+            direction: ltr;
+            margin-top: 5px;
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            border: none;
+            background: none;
+            color: #b2bec3;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .nav-item span {
+            font-size: 0.7rem;
+            margin-top: 4px;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        /* Rating Stars */
+        .stars {
+            color: #dfe6e9;
+            cursor: pointer;
+        }
+        .stars .fa-star.checked {
+            color: #f1c40f;
+        }
+
+    </style>
 </head>
-
 <body>
-<header>
-  <div class="brand">
-    <div class="logo">💜</div>
-    <div>
-      <div class="title">Pi Login + DB</div>
-      <div class="sub">Login بـ Pi وبعدها حفظ uid/username في Supabase</div>
-    </div>
-  </div>
 
-  <div class="row">
-    <span id="piState" class="badge">Pi: ...</span>
-    <span id="dbState" class="badge">DB: ...</span>
-  </div>
-</header>
+    <header>
+        <div class="header-inner">
+            <!-- left (on screen) area in RTL -->
+            <div class="header-left" id="piArea">
+                <button class="pi-btn" id="piLoginBtn" onclick="piLogin()">
+                    <i class="fa-brands fa-pied-piper-alt"></i>
+                    تسجيل دخول Pi
+                </button>
+            </div>
 
-<main>
-  <div class="card">
-    <div class="row">
-      <button class="btn" id="loginBtn">دخول عبر Pi</button>
-      <button class="btn btn-ghost" id="logoutBtn" style="display:none">تسجيل خروج</button>
-    </div>
+            <div class="header-title">
+                DevHub <i class="fa fa-code-branch"></i>
+            </div>
 
-    <div class="hint">
-      ✅ افتح من <b>Pi Browser</b>.<br>
-      ✅ Pi شغال <b>sandbox: false</b>.<br>
-      ✅ بعد اللوجين هنحفظ بياناتك في جدول <b>profiles</b>.
-    </div>
+            <!-- spacer to keep title centered -->
+            <div style="min-width:170px;"></div>
+        </div>
+    </header>
 
-    <div id="profileBox" class="profile" style="display:none">
-      <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=Pi" alt="avatar" />
-      <div>
-        <div class="name" id="username">—</div>
-        <div class="meta" id="userid">—</div>
-        <div class="meta" id="saveMsg">—</div>
-      </div>
+    <div id="home-page" class="page container active">
+        <div class="card">
+            <h3><i class="fa fa-plus-circle"></i> إضافة مشروع جديد</h3>
+            <input type="text" id="proj-title" placeholder="اسم المشروع">
+            <textarea id="proj-desc" rows="3" placeholder="وصف المشروع..."></textarea>
+            <button class="btn-primary" onclick="addProject()">نشر المشروع</button>
+        </div>
+
+        <div id="projects-container">
+            </div>
     </div>
 
-    <code id="rawBox" style="display:none"></code>
-  </div>
-</main>
+    <div id="community-page" class="page container">
+        <div class="card" style="text-align: center;">
+            <h3><i class="fa fa-users"></i> مجتمع المطورين</h3>
+            <p>تواصل مع المطورين الآخرين هنا</p>
+            <br>
+            <button class="btn-primary" onclick="alert('تم إنشاء مجموعة جديدة!')">
+                <i class="fa fa-plus"></i> إنشاء مجموعة
+            </button>
+        </div>
 
-<script>
-  // ====== CONFIG ======
-  const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
-  const PI_SANDBOX = false;
+        <div class="card">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="background:#ddd; width:40px; height:40px; border-radius:50%;"></div>
+                <div>
+                    <h4>مطورين جافا سكريبت</h4>
+                    <small>150 عضو</small>
+                </div>
+                <button style="margin-right:auto; padding:5px 10px; border:1px solid #ddd; background:white; border-radius:4px;">انضمام</button>
+            </div>
+        </div>
 
-  // ====== UI ======
-  const piState = document.getElementById("piState");
-  const dbState = document.getElementById("dbState");
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const profileBox = document.getElementById("profileBox");
-  const usernameEl = document.getElementById("username");
-  const useridEl = document.getElementById("userid");
-  const saveMsgEl = document.getElementById("saveMsg");
-  const avatarEl = document.getElementById("avatar");
-  const rawBox = document.getElementById("rawBox");
+        <div class="card">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="background:#ddd; width:40px; height:40px; border-radius:50%;"></div>
+                <div>
+                    <h4>مصممين UI/UX</h4>
+                    <small>89 عضو</small>
+                </div>
+                <button style="margin-right:auto; padding:5px 10px; border:1px solid #ddd; background:white; border-radius:4px;">انضمام</button>
+            </div>
+        </div>
+    </div>
 
-  let supabase = null;
-  let currentUser = null;
+    <div id="code-page" class="page container">
+        <div class="card">
+            <h3><i class="fa fa-file-code"></i> أكواد جاهزة</h3>
+            <p>انسخ الأكواد واستخدمها في مشاريعك</p>
+        </div>
 
-  function showError(where, err){
-    const msg = err?.message || String(err || "Unknown error");
-    alert("المشكلة في: " + where + "\n\n" + msg);
-    console.error("ERROR @", where, err);
-  }
+        <div class="card">
+            <h4>زر مع تأثير هوفر (CSS)</h4>
+            <div class="code-block">
+.btn:hover {
+  transform: scale(1.1);
+  background: #333;
+}
+            </div>
+            <button class="btn-action" onclick="alert('تم نسخ الكود!')" style="margin-top:5px; color:var(--primary-color);">
+                <i class="fa fa-copy"></i> نسخ
+            </button>
+        </div>
 
-  function setPiState(){
-    piState.innerHTML = window.Pi ? `Pi: <span class="ok">جاهز</span>` : `Pi: <span class="bad">مش موجود</span>`;
-  }
-  function setDbState(ok){
-    dbState.innerHTML = ok ? `DB: <span class="ok">جاهز</span>` : `DB: <span class="bad">مش جاهز</span>`;
-  }
-  setPiState();
+        <div class="card">
+            <h4>دالة حساب المجموع (JS)</h4>
+            <div class="code-block">
+function sum(a, b) {
+  return a + b;
+}
+            </div>
+            <button class="btn-action" onclick="alert('تم نسخ الكود!')" style="margin-top:5px; color:var(--primary-color);">
+                <i class="fa fa-copy"></i> نسخ
+            </button>
+        </div>
+    </div>
 
-  // ====== Supabase init (supports supabaseJs or supabase) ======
-  function getSupabaseGlobal(){
-    if (window.supabaseJs?.createClient) return window.supabaseJs;
-    if (window.supabase?.createClient) return window.supabase;
-    return null;
-  }
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="switchPage('code-page', this)">
+            <i class="fa fa-terminal"></i>
+            <span>أكواد</span>
+        </button>
 
-  async function waitForSupabase(timeout=3500){
-    const start = Date.now();
-    while(Date.now()-start < timeout){
-      const g = getSupabaseGlobal();
-      if(g) return g;
-      await new Promise(r=>setTimeout(r,100));
-    }
-    return null;
-  }
+        <button class="nav-item" onclick="switchPage('community-page', this)">
+            <i class="fa fa-users"></i>
+            <span>المجتمع</span>
+        </button>
 
-  (async function boot(){
-    const g = await waitForSupabase();
-    if(!g){
-      setDbState(false);
-      showError("Supabase Init", "Supabase library not loaded");
-      return;
-    }
-    try{
-      supabase = g.createClient(SUPABASE_URL, SUPABASE_KEY);
-      setDbState(true);
-    }catch(e){
-      setDbState(false);
-      showError("Supabase Init", e);
-      return;
-    }
-  })();
+        <button class="nav-item active" onclick="switchPage('home-page', this)">
+            <i class="fa fa-home"></i>
+            <span>المنزل</span>
+        </button>
+    </nav>
 
-  // ====== Pi login ======
-  async function loginWithPi(){
-    try{
-      if(!window.Pi) return showError("Pi Login", "افتح الموقع من Pi Browser");
+    <script>
+        // === Data Storage (Simulated Database) ===
+        let projects = [
+            {
+                id: 1,
+                title: "تطبيق إدارة المهام",
+                desc: "تطبيق بسيط لتنظيم الوقت باستخدام React.",
+                rating: 4,
+                comments: ["مشروع رائع!", "أحسنت العمل"]
+            }
+        ];
 
-      // init safe
-      try{ Pi.init({ version:"2.0", sandbox: PI_SANDBOX }); }catch{}
+        // === Pi Auth State ===
+        let piUser = null;
 
-      const auth = await Pi.authenticate(["username"], () => {});
-      if(!auth?.user?.uid || !auth?.user?.username){
-        return showError("Pi Login", "auth رجع بدون uid/username");
-      }
+        // Safe init for Pi SDK (works only in Pi Browser)
+        function initPiSdk(){
+            try{
+                if (!window.Pi) return false;
+                // sandbox:false لو بتشغل على Mainnet / وضع حقيقي
+                // خليها true لو بتجرب في بيئة Sandbox (حسب احتياجك)
+                window.Pi.init({ version: "2.0", sandbox: false });
+                return true;
+            }catch(e){
+                return false;
+            }
+        }
 
-      currentUser = auth.user;
+        function renderPiHeader(){
+            const area = document.getElementById('piArea');
+            if(!area) return;
 
-      // UI
-      loginBtn.style.display = "none";
-      logoutBtn.style.display = "inline-block";
-      profileBox.style.display = "flex";
-      rawBox.style.display = "block";
+            if(piUser){
+                area.innerHTML = `
+                    <div class="pi-user" title="تم تسجيل الدخول">
+                        <span class="pi-dot"></span>
+                        <span>${piUser.username || 'Pi User'}</span>
+                    </div>
+                    <button class="pi-logout" onclick="piLogout()">
+                        <i class="fa fa-right-from-bracket"></i> خروج
+                    </button>
+                `;
+            }else{
+                area.innerHTML = `
+                    <button class="pi-btn" id="piLoginBtn" onclick="piLogin()">
+                        <i class="fa-brands fa-pied-piper-alt"></i>
+                        تسجيل دخول Pi
+                    </button>
+                `;
+            }
+        }
 
-      usernameEl.textContent = "@" + currentUser.username;
-      useridEl.textContent = "uid: " + currentUser.uid;
-      avatarEl.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser.username);
-      rawBox.textContent = JSON.stringify(auth, null, 2);
+        async function piLogin(){
+            const ok = initPiSdk();
+            if(!ok){
+                alert("لازم تفتح الموقع من داخل Pi Browser علشان تسجيل الدخول يشتغل.");
+                return;
+            }
 
-      // Save to DB
-      await saveProfile();
+            try{
+                // scopes حسب احتياجك: ['username'] شائع
+                const auth = await window.Pi.authenticate(['username'], () => {});
+                piUser = auth.user || null;
+                renderPiHeader();
+                alert("تم تسجيل الدخول ✅");
+            }catch(e){
+                console.log(e);
+                alert("فشل تسجيل الدخول. تأكد أنك داخل Pi Browser وحاول مرة تانية.");
+            }
+        }
 
-    }catch(e){
-      showError("Pi Login", e);
-    }
-  }
+        function piLogout(){
+            piUser = null;
+            renderPiHeader();
+            alert("تم تسجيل الخروج");
+        }
 
-  async function saveProfile(){
-    try{
-      if(!supabase) return showError("DB Save", "Supabase client مش جاهز");
+        // === Navigation Logic ===
+        function switchPage(pageId, btnElement) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
 
-      saveMsgEl.textContent = "جاري حفظ بياناتك في DB...";
+            // Update Nav Buttons
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
 
-      const payload = {
-        pi_uid: String(currentUser.uid),
-        username: currentUser.username,
-        last_login: new Date().toISOString()
-      };
+        // === Project Logic ===
+        
+        // Render Projects
+        function renderProjects() {
+            const container = document.getElementById('projects-container');
+            container.innerHTML = ''; // Clear current
 
-      const { error } = await supabase
-        .from("profiles")
-        .upsert(payload, { onConflict: "pi_uid" });
+            projects.forEach(proj => {
+                let starsHtml = '';
+                for(let i=1; i<=5; i++) {
+                    starsHtml += `<i class="fa fa-star ${i <= proj.rating ? 'checked' : ''}" onclick="rateProject(${proj.id}, ${i})"></i>`;
+                }
 
-      if(error){
-        saveMsgEl.textContent = "فشل الحفظ ❌";
-        return showError("DB Save (profiles upsert)", error);
-      }
+                let commentsHtml = proj.comments.map(c => `<div class="comment">${c}</div>`).join('');
 
-      saveMsgEl.textContent = "تم حفظ بياناتك ✅";
-    }catch(e){
-      saveMsgEl.textContent = "فشل الحفظ ❌";
-      showError("DB Save", e);
-    }
-  }
+                const html = `
+                    <div class="card">
+                        <h3>${proj.title}</h3>
+                        <p>${proj.desc}</p>
+                        
+                        <div class="actions">
+                            <div class="stars">${starsHtml}</div>
+                            <button class="btn-action btn-paypal" onclick="donate('${proj.title}')">
+                                <i class="fab fa-paypal"></i> دعم
+                            </button>
+                        </div>
 
-  function logout(){
-    currentUser = null;
-    loginBtn.style.display = "inline-block";
-    logoutBtn.style.display = "none";
-    profileBox.style.display = "none";
-    rawBox.style.display = "none";
-  }
+                        <div class="comments-section">
+                            <h5>التعليقات (${proj.comments.length})</h5>
+                            <div id="comments-list-${proj.id}">${commentsHtml}</div>
+                            <div style="display:flex; margin-top:5px; gap:5px;">
+                                <input type="text" id="input-comment-${proj.id}" placeholder="اكتب تعليقاً..." style="margin-bottom:0;">
+                                <button onclick="addComment(${proj.id})" style="padding:0 10px; background:var(--primary-color); color:white; border:none; border-radius:4px;"><i class="fa fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html; // Note: In production, create elements to prevent XSS
+            });
+        }
 
-  loginBtn.addEventListener("click", loginWithPi);
-  logoutBtn.addEventListener("click", logout);
+        // Add New Project
+        function addProject() {
+            const titleInput = document.getElementById('proj-title');
+            const descInput = document.getElementById('proj-desc');
 
-  setInterval(setPiState, 1500);
-</script>
+            if (titleInput.value.trim() === "") {
+                alert("يرجى كتابة اسم المشروع");
+                return;
+            }
 
+            const newProj = {
+                id: Date.now(),
+                title: titleInput.value,
+                desc: descInput.value,
+                rating: 0,
+                comments: []
+            };
+
+            projects.unshift(newProj); // Add to top
+            renderProjects();
+            
+            // Clear inputs
+            titleInput.value = '';
+            descInput.value = '';
+        }
+
+        // Rate Project
+        function rateProject(id, rating) {
+            const proj = projects.find(p => p.id === id);
+            if (proj) {
+                proj.rating = rating;
+                renderProjects();
+            }
+        }
+
+        // Add Comment
+        function addComment(id) {
+            const input = document.getElementById(`input-comment-${id}`);
+            const text = input.value;
+            if (text.trim()) {
+                const proj = projects.find(p => p.id === id);
+                if (proj) {
+                    proj.comments.push(text);
+                    renderProjects();
+                }
+            }
+        }
+
+        // Donate Simulation
+        function donate(title) {
+            alert(`جاري توجيهك إلى PayPal لدعم مشروع: ${title}`);
+        }
+
+        // Initial Render
+        renderProjects();
+        renderPiHeader();
+    </script>
 </body>
 </html>
