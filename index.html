@@ -506,27 +506,50 @@ function sum(a, b) {
             return data || [];
         }
 
-        async function addProject(){
-            if(!requireLogin()) return;
-
-            const titleInput = document.getElementById('proj-title');
-            const descInput = document.getElementById('proj-desc');
-
-            if (titleInput.value.trim() === "") return;
-
-            const payload = {
-              title: titleInput.value.trim(),
-              desc: descInput.value.trim(),
-              pi_username: piUser.username
-            };
-
-            const { error } = await sb.from('projects').insert(payload);
-            if(error){ console.log(error); return; }
-
-            titleInput.value = '';
-            descInput.value = '';
-            renderProjects(); // refresh
-        }
+        async function addProject() {
+  if (!requireLogin()) {
+    alert("لازم تسجل دخول الأول");
+    return;
+  }
+  
+  const titleInput = document.getElementById('proj-title');
+  const descInput = document.getElementById('proj-desc');
+  
+  const title = (titleInput.value || '').trim();
+  const desc = (descInput.value || '').trim();
+  
+  if (!title) {
+    alert("يرجى كتابة اسم المشروع");
+    return;
+  }
+  
+  const payload = {
+    title,
+    desc, // مهم: لازم العمود اسمه desc في Supabase
+    pi_username: piUser.username
+  };
+  
+  console.log("INSERT payload =>", payload);
+  
+  const { data, error } = await sb
+    .from('projects')
+    .insert(payload)
+    .select(); // عشان يرجّع الصف المضاف
+  
+  if (error) {
+    console.error("Supabase insert error =>", error);
+    alert("فشل إضافة المشروع: " + (error.message || "Unknown error"));
+    return;
+  }
+  
+  console.log("Inserted =>", data);
+  
+  // clear inputs
+  titleInput.value = '';
+  descInput.value = '';
+  
+  await renderProjects(); // refresh
+}
 
         async function rateProject(id, rating) {
             if(!requireLogin()) return;
