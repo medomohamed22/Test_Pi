@@ -8,6 +8,9 @@
 
     <!-- Pi SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         :root {
@@ -97,16 +100,6 @@
             width:10px;height:10px;border-radius:50%;
             background:#00d084;
             box-shadow: 0 0 0 3px rgba(0,208,132,.2);
-        }
-        .pi-logout{
-            background: rgba(0,0,0,.18);
-            border: 1px solid rgba(255,255,255,.22);
-            color: var(--white);
-            padding: 6px 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: .85rem;
         }
 
         /* Containers */
@@ -260,6 +253,21 @@
             color: #f1c40f;
         }
 
+        /* ✅ Lock UI until login */
+        .locked{
+            opacity:.45;
+            pointer-events:none;
+            filter: grayscale(0.15);
+        }
+        .login-hint{
+            background: rgba(108,92,231,.10);
+            border: 1px dashed rgba(108,92,231,.35);
+            color: #3d3a56;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-size: .9rem;
+        }
     </style>
 </head>
 <body>
@@ -284,19 +292,24 @@
     </header>
 
     <div id="home-page" class="page container active">
-        <div class="card">
+
+        <!-- ✅ Hint -->
+        <div id="loginHint" class="login-hint">
+            لازم تسجل دخول بـ Pi علشان تقدر تنشر / تقيّم / تكتب تعليق أو تستخدم أي أزرار.
+        </div>
+
+        <div id="home-actions" class="card locked">
             <h3><i class="fa fa-plus-circle"></i> إضافة مشروع جديد</h3>
             <input type="text" id="proj-title" placeholder="اسم المشروع">
             <textarea id="proj-desc" rows="3" placeholder="وصف المشروع..."></textarea>
             <button class="btn-primary" onclick="addProject()">نشر المشروع</button>
         </div>
 
-        <div id="projects-container">
-            </div>
+        <div id="projects-container"></div>
     </div>
 
     <div id="community-page" class="page container">
-        <div class="card" style="text-align: center;">
+        <div class="card locked" id="community-actions" style="text-align: center;">
             <h3><i class="fa fa-users"></i> مجتمع المطورين</h3>
             <p>تواصل مع المطورين الآخرين هنا</p>
             <br>
@@ -305,7 +318,7 @@
             </button>
         </div>
 
-        <div class="card">
+        <div class="card locked">
             <div style="display:flex; align-items:center; gap:10px;">
                 <div style="background:#ddd; width:40px; height:40px; border-radius:50%;"></div>
                 <div>
@@ -316,7 +329,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card locked">
             <div style="display:flex; align-items:center; gap:10px;">
                 <div style="background:#ddd; width:40px; height:40px; border-radius:50%;"></div>
                 <div>
@@ -334,7 +347,7 @@
             <p>انسخ الأكواد واستخدمها في مشاريعك</p>
         </div>
 
-        <div class="card">
+        <div class="card locked">
             <h4>زر مع تأثير هوفر (CSS)</h4>
             <div class="code-block">
 .btn:hover {
@@ -347,7 +360,7 @@
             </button>
         </div>
 
-        <div class="card">
+        <div class="card locked">
             <h4>دالة حساب المجموع (JS)</h4>
             <div class="code-block">
 function sum(a, b) {
@@ -378,26 +391,18 @@ function sum(a, b) {
     </nav>
 
     <script>
-        // === Data Storage (Simulated Database) ===
-        let projects = [
-            {
-                id: 1,
-                title: "تطبيق إدارة المهام",
-                desc: "تطبيق بسيط لتنظيم الوقت باستخدام React.",
-                rating: 4,
-                comments: ["مشروع رائع!", "أحسنت العمل"]
-            }
-        ];
+        /* ===================== SUPABASE ===================== */
+        const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // === Pi Auth State ===
+        /* ===================== STATE ===================== */
         let piUser = null;
 
-        // Safe init for Pi SDK (works only in Pi Browser)
+        /* ===================== PI SDK ===================== */
         function initPiSdk(){
             try{
                 if (!window.Pi) return false;
-                // sandbox:false لو بتشغل على Mainnet / وضع حقيقي
-                // خليها true لو بتجرب في بيئة Sandbox (حسب احتياجك)
                 window.Pi.init({ version: "2.0", sandbox: false });
                 return true;
             }catch(e){
@@ -410,14 +415,12 @@ function sum(a, b) {
             if(!area) return;
 
             if(piUser){
+                // ✅ اسم المستخدم فقط + بدون زر خروج
                 area.innerHTML = `
                     <div class="pi-user" title="تم تسجيل الدخول">
                         <span class="pi-dot"></span>
                         <span>${piUser.username || 'Pi User'}</span>
                     </div>
-                    <button class="pi-logout" onclick="piLogout()">
-                        <i class="fa fa-right-from-bracket"></i> خروج
-                    </button>
                 `;
             }else{
                 area.innerHTML = `
@@ -432,137 +435,209 @@ function sum(a, b) {
         async function piLogin(){
             const ok = initPiSdk();
             if(!ok){
+                // نسيب ده بس كتنبيه لو مش داخل Pi Browser
                 alert("لازم تفتح الموقع من داخل Pi Browser علشان تسجيل الدخول يشتغل.");
                 return;
             }
 
             try{
-                // scopes حسب احتياجك: ['username'] شائع
                 const auth = await window.Pi.authenticate(['username'], () => {});
                 piUser = auth.user || null;
                 renderPiHeader();
-                alert("تم تسجيل الدخول ✅");
+
+                // ✅ بدون أي اشعار بعد تسجيل الدخول
+                unlockUI();
+                await syncUserToSupabase();
             }catch(e){
                 console.log(e);
-                alert("فشل تسجيل الدخول. تأكد أنك داخل Pi Browser وحاول مرة تانية.");
             }
         }
 
-        function piLogout(){
-            piUser = null;
-            renderPiHeader();
-            alert("تم تسجيل الخروج");
+        /* ===================== LOCK / UNLOCK UI ===================== */
+        function lockUI(){
+            document.querySelectorAll('.locked').forEach(el => el.classList.add('locked'));
+            // فوق احنا بالفعل مستخدمين class locked على العناصر، فهنعمل Disable عملي:
+            document.querySelectorAll('#home-actions, #community-actions, #code-page .card.locked, #community-page .card.locked')
+              .forEach(el => el.classList.add('locked'));
         }
 
-        // === Navigation Logic ===
-        function switchPage(pageId, btnElement) {
-            // Hide all pages
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            // Show selected page
-            document.getElementById(pageId).classList.add('active');
-
-            // Update Nav Buttons
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            btnElement.classList.add('active');
+        function unlockUI(){
+            document.getElementById('loginHint')?.remove();
+            document.querySelectorAll('.locked').forEach(el => el.classList.remove('locked'));
         }
 
-        // === Project Logic ===
-        
-        // Render Projects
-        function renderProjects() {
+        function requireLogin(){
+            return !!piUser;
+        }
+
+        /* ===================== DB: users sync ===================== */
+        async function syncUserToSupabase(){
+            if(!piUser?.username) return;
+            // upsert user
+            await sb.from('users')
+              .upsert({ pi_username: piUser.username }, { onConflict: 'pi_username' });
+        }
+
+        /* ===================== Projects Data (Supabase) ===================== */
+        async function fetchProjects(){
+            const { data, error } = await sb
+                .from('projects')
+                .select('id,title,desc,rating,pi_username,created_at,comments(count)')
+                .order('created_at', { ascending: false });
+
+            if(error){
+                console.log(error);
+                return [];
+            }
+            return data || [];
+        }
+
+        async function fetchComments(projectId){
+            const { data, error } = await sb
+              .from('comments')
+              .select('id,content,pi_username,created_at')
+              .eq('project_id', projectId)
+              .order('created_at', { ascending: true });
+
+            if(error){
+                console.log(error);
+                return [];
+            }
+            return data || [];
+        }
+
+        async function addProject(){
+            if(!requireLogin()) return;
+
+            const titleInput = document.getElementById('proj-title');
+            const descInput = document.getElementById('proj-desc');
+
+            if (titleInput.value.trim() === "") return;
+
+            const payload = {
+              title: titleInput.value.trim(),
+              desc: descInput.value.trim(),
+              pi_username: piUser.username
+            };
+
+            const { error } = await sb.from('projects').insert(payload);
+            if(error){ console.log(error); return; }
+
+            titleInput.value = '';
+            descInput.value = '';
+            renderProjects(); // refresh
+        }
+
+        async function rateProject(id, rating) {
+            if(!requireLogin()) return;
+            const { error } = await sb
+              .from('projects')
+              .update({ rating })
+              .eq('id', id);
+
+            if(error){ console.log(error); return; }
+            renderProjects();
+        }
+
+        async function addComment(id) {
+            if(!requireLogin()) return;
+            const input = document.getElementById(`input-comment-${id}`);
+            const text = (input?.value || '').trim();
+            if(!text) return;
+
+            const { error } = await sb.from('comments').insert({
+              project_id: id,
+              content: text,
+              pi_username: piUser.username
+            });
+
+            if(error){ console.log(error); return; }
+            input.value = '';
+            renderProjects();
+        }
+
+        /* ===================== UI Render ===================== */
+        async function renderProjects() {
             const container = document.getElementById('projects-container');
-            container.innerHTML = ''; // Clear current
+            container.innerHTML = '';
 
-            projects.forEach(proj => {
+            const projects = await fetchProjects();
+
+            for (const proj of projects) {
+                // stars
                 let starsHtml = '';
                 for(let i=1; i<=5; i++) {
-                    starsHtml += `<i class="fa fa-star ${i <= proj.rating ? 'checked' : ''}" onclick="rateProject(${proj.id}, ${i})"></i>`;
+                    starsHtml += `<i class="fa fa-star ${i <= (proj.rating || 0) ? 'checked' : ''}" onclick="rateProject('${proj.id}', ${i})"></i>`;
                 }
 
-                let commentsHtml = proj.comments.map(c => `<div class="comment">${c}</div>`).join('');
+                // comments load
+                const comments = await fetchComments(proj.id);
+                const commentsHtml = comments.map(c => `<div class="comment">${escapeHtml(c.content)}</div>`).join('');
 
                 const html = `
                     <div class="card">
-                        <h3>${proj.title}</h3>
-                        <p>${proj.desc}</p>
+                        <h3>${escapeHtml(proj.title)}</h3>
+                        <p>${escapeHtml(proj.desc || '')}</p>
                         
-                        <div class="actions">
+                        <div class="actions ${!piUser ? 'locked' : ''}">
                             <div class="stars">${starsHtml}</div>
-                            <button class="btn-action btn-paypal" onclick="donate('${proj.title}')">
+                            <button class="btn-action btn-paypal" onclick="donate('${escapeHtml(proj.title)}')">
                                 <i class="fab fa-paypal"></i> دعم
                             </button>
                         </div>
 
-                        <div class="comments-section">
-                            <h5>التعليقات (${proj.comments.length})</h5>
+                        <div class="comments-section ${!piUser ? 'locked' : ''}">
+                            <h5>التعليقات (${comments.length})</h5>
                             <div id="comments-list-${proj.id}">${commentsHtml}</div>
                             <div style="display:flex; margin-top:5px; gap:5px;">
                                 <input type="text" id="input-comment-${proj.id}" placeholder="اكتب تعليقاً..." style="margin-bottom:0;">
-                                <button onclick="addComment(${proj.id})" style="padding:0 10px; background:var(--primary-color); color:white; border:none; border-radius:4px;"><i class="fa fa-paper-plane"></i></button>
+                                <button onclick="addComment('${proj.id}')" style="padding:0 10px; background:var(--primary-color); color:white; border:none; border-radius:4px;"><i class="fa fa-paper-plane"></i></button>
                             </div>
+                        </div>
+
+                        <div style="margin-top:8px; font-size:.8rem; color:#636e72;">
+                          بواسطة: <b>${escapeHtml(proj.pi_username || '—')}</b>
                         </div>
                     </div>
                 `;
-                container.innerHTML += html; // Note: In production, create elements to prevent XSS
-            });
-        }
-
-        // Add New Project
-        function addProject() {
-            const titleInput = document.getElementById('proj-title');
-            const descInput = document.getElementById('proj-desc');
-
-            if (titleInput.value.trim() === "") {
-                alert("يرجى كتابة اسم المشروع");
-                return;
+                container.innerHTML += html;
             }
 
-            const newProj = {
-                id: Date.now(),
-                title: titleInput.value,
-                desc: descInput.value,
-                rating: 0,
-                comments: []
-            };
-
-            projects.unshift(newProj); // Add to top
-            renderProjects();
-            
-            // Clear inputs
-            titleInput.value = '';
-            descInput.value = '';
-        }
-
-        // Rate Project
-        function rateProject(id, rating) {
-            const proj = projects.find(p => p.id === id);
-            if (proj) {
-                proj.rating = rating;
-                renderProjects();
+            // lock UI initially if not logged in
+            if(!piUser){
+              document.querySelectorAll('.actions, .comments-section').forEach(el => el.classList.add('locked'));
+              document.getElementById('home-actions')?.classList.add('locked');
+              document.getElementById('community-actions')?.classList.add('locked');
+              document.querySelectorAll('#community-page .card').forEach(el => el.classList.add('locked'));
+              document.querySelectorAll('#code-page .card').forEach((el,idx)=>{ if(idx>0) el.classList.add('locked'); });
             }
         }
 
-        // Add Comment
-        function addComment(id) {
-            const input = document.getElementById(`input-comment-${id}`);
-            const text = input.value;
-            if (text.trim()) {
-                const proj = projects.find(p => p.id === id);
-                if (proj) {
-                    proj.comments.push(text);
-                    renderProjects();
-                }
-            }
-        }
-
-        // Donate Simulation
         function donate(title) {
+            // تقدر تغيره لاحقًا لـ Pi Payments
             alert(`جاري توجيهك إلى PayPal لدعم مشروع: ${title}`);
         }
 
+        function escapeHtml(str){
+            return String(str || '')
+              .replaceAll('&','&amp;')
+              .replaceAll('<','&lt;')
+              .replaceAll('>','&gt;')
+              .replaceAll('"','&quot;')
+              .replaceAll("'","&#039;");
+        }
+
+        // === Navigation Logic ===
+        function switchPage(pageId, btnElement) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
         // Initial Render
-        renderProjects();
         renderPiHeader();
+        renderProjects();
     </script>
 </body>
 </html>
