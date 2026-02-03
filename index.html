@@ -24,7 +24,6 @@
     .badge{font-size:12px;padding:4px 10px;border-radius:999px;background:#1e293b}
     .danger{background:#ef4444}
     .ok{color:#22c55e}
-    .warn{color:#f59e0b}
   </style>
 </head>
 <body>
@@ -52,7 +51,6 @@
       </div>
     </div>
 
-    <!-- Create Sell Ad = requires Deposit -->
     <div class="card">
       <h3>📢 نشر إعلان بيع (يتطلب إيداع Pi للـ Escrow)</h3>
       <input id="adPi" type="number" placeholder="كمية Pi للبيع (هتودع نفس الكمية للمنصة)">
@@ -61,20 +59,17 @@
       <p class="mut" style="margin:10px 0 0">الإعلان مش هيظهر للناس إلا بعد نجاح الإيداع ✅</p>
     </div>
 
-    <!-- Market -->
     <div class="card">
       <h3>🔁 سوق الإعلانات</h3>
       <div id="ads"></div>
     </div>
 
-    <!-- Seller Trades -->
     <div class="card">
       <h3>🧾 صفقاتي كبائع (في انتظار الإفراج)</h3>
       <div id="sellerTrades"></div>
       <p class="mut">بعد ما تستلم الجنيه من المشتري، اضغط “إفراج” علشان يتحول Pi لرصيد المشتري على المنصة.</p>
     </div>
 
-    <!-- Withdraw -->
     <div class="card">
       <h3>📤 سحب Pi لمحفظتك</h3>
       <input id="wAddr" placeholder="عنوان محفظتك (G...)">
@@ -86,7 +81,6 @@
   </div>
 
 <script>
-  // ====== Supabase Frontend (publishable ok) ======
   const SUPABASE_URL = 'https://xncapmzlwuisupkjlftb.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS';
   const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -94,15 +88,16 @@
   let user=null;
   let piUsd=0, usdEgp=0;
 
-  window.onload = () => {
-    try{ Pi.init({version:"2.0"}); }catch(e){}
-    loadPrices();
-  };
+  window.onload = () => { loadPrices(); };
 
   async function login(){
     try{
+      // ✅ تأكد إن Pi.init اتنفذ قبل authenticate
+      try { Pi.init({version:"2.0"}); } catch(e){}
+
       const auth = await Pi.authenticate(['username','payments']);
       user = auth.user;
+
       loginCard.style.display="none";
       app.style.display="block";
       userTag.innerText = "@"+user.username;
@@ -189,14 +184,12 @@
     await loadSellerTrades();
   }
 
-  // ====== Create Ad -> Deposit Pi escrow via Pi.createPayment ======
   async function createAdWithDeposit(){
     if(!user) return alert("سجل دخول الأول");
     const pi = Number(adPi.value);
     const egp = Number(adEgp.value);
     if(pi<=0||egp<=0) return alert("قيم غير صحيحة");
 
-    // 1) create pending ad
     const ins = await db.from("p2p_ads").insert([{
       seller_uid: user.uid,
       seller_username: user.username,
@@ -208,7 +201,6 @@
     if(ins.error) return alert(ins.error.message);
     const ad = ins.data;
 
-    // 2) deposit to escrow
     try{
       await Pi.createPayment({
         amount: pi,
@@ -233,9 +225,11 @@
             headers: {"Content-Type":"application/json"},
             body: JSON.stringify({ paymentId, txid })
           }).then(async (r)=>{
+            const j = await r.json().catch(()=>({}));
             if(!r.ok){
-              const j=await r.json().catch(()=>({}));
-              alert("Complete error: "+(j.error?.message || JSON.stringify(j.error||j)));
+              // ✅ عرض أخطاء Pi بشكل صحيح
+              const msg = j?.error_message || j?.error?.error_message || j?.error?.message || JSON.stringify(j);
+              alert("Complete error: " + msg);
               return;
             }
             alert("تم الإيداع ✅ والإعلان اتفتح للناس");
@@ -259,16 +253,17 @@
     }
   }
 
-  // ====== Buyer buys ad => trade + lock escrow ======
   async function buyAd(adId){
     if(!user) return;
     const adRes = await db.from("p2p_ads").select("*").eq("id", adId).single();
     if(adRes.error) return alert(adRes.error.message);
     const ad = adRes.data;
 
+    // ✅ منع شراء إعلانك
+    if(ad.seller_uid === user.uid) return alert("مينفعش تشتري إعلانك");
+
     if(!confirm(`شراء ${ad.pi_amount}π مقابل ${ad.price_egp} EGP ؟`)) return;
 
-    // create trade
     const t = await db.from("trades").insert([{
       ad_id: ad.id,
       seller_uid: ad.seller_uid,
@@ -280,15 +275,14 @@
 
     if(t.error) return alert(t.error.message);
 
-    // lock escrow to buyer
     const e = await db.from("escrows").update({
       buyer_uid: user.uid,
       status: "locked_to_buyer"
-    }).eq("ad_id", ad.id);
+    }).eq("ad_id", ad.id).select();
 
     if(e.error) return alert(e.error.message);
+    if(!e.data || e.data.length===0) return alert("Escrow not found for this ad (deposit not recorded).");
 
-    // lock ad
     const a = await db.from("p2p_ads").update({status:"locked"}).eq("id", ad.id);
     if(a.error) return alert(a.error.message);
 
@@ -296,7 +290,6 @@
     refreshAll();
   }
 
-  // ====== Seller releases => buyer gets platform balance (donations credit) ======
   async function releaseTrade(tradeId){
     if(!user) return;
 
@@ -313,7 +306,6 @@
     refreshAll();
   }
 
-  // ====== Withdraw (real testnet transfer) ======
   async function withdraw(){
     if(!user) return alert("سجل دخول الأول");
     const walletAddress = wAddr.value.trim();
@@ -324,12 +316,7 @@
     const res = await fetch("/api/withdraw",{
       method:"POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        uid: user.uid,
-        username: user.username,
-        amount,
-        walletAddress
-      })
+      body: JSON.stringify({ uid: user.uid, username: user.username, amount, walletAddress })
     });
 
     const j = await res.json().catch(()=>({}));
