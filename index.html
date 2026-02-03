@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -43,9 +41,15 @@
         <div>
           <div class="mut">حسابك</div>
           <div id="userTag" style="font-weight:800"></div>
-          <div class="mut" style="margin-top:6px">رصيدك على المنصة</div>
+
+          <div class="mut" style="margin-top:6px">رصيدك المتاح على المنصة</div>
           <div style="font-size:26px;font-weight:900"><span id="balance">0.00</span> π</div>
+
+          <!-- ✅ NEW: Locked in Escrow -->
+          <div class="mut" style="margin-top:10px">محجوز في الإسكرو</div>
+          <div style="font-size:18px;font-weight:900"><span id="locked">0.00</span> π</div>
         </div>
+
         <div style="text-align:left">
           <div class="mut">سعر Pi</div>
           <div id="piPrice" style="font-weight:900">Loading...</div>
@@ -83,23 +87,24 @@
   </div>
 
 <script>
-// ===== Supabase URL (split) =====
-const SUPABASE_URL = [
-  "https://",
-  "xncapmzlw",
-  "uisupkjlftb",
-  ".supabase.co"
-].join("");
+  // ===== Supabase URL (split) =====
+  const SUPABASE_URL = [
+    "https://",
+    "xncapmzlw",
+    "uisupkjlftb",
+    ".supabase.co"
+  ].join("");
 
-// ===== Supabase Publishable Key (split) =====
-const SUPABASE_KEY = [
-  "sb_publishable_zPECXAiI_",
-  "bDbeLtRYe3vIw_IEt_",
-  "p_AS"
-].join("");
+  // ===== Supabase Publishable Key (split) =====
+  const SUPABASE_KEY = [
+    "sb_publishable_zPECXAiI_",
+    "bDbeLtRYe3vIw_IEt_",
+    "p_AS"
+  ].join("");
 
-// ===== Create Client =====
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // ===== Create Client =====
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   let user=null;
   let piUsd=0, usdEgp=0;
 
@@ -107,7 +112,6 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   async function login(){
     try{
-      // ✅ تأكد إن Pi.init اتنفذ قبل authenticate
       try { Pi.init({version:"2.0"}); } catch(e){}
 
       const auth = await Pi.authenticate(['username','payments']);
@@ -141,12 +145,23 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   async function refreshBalance(){
     if(!user) return;
+
+    // available balance = donations - withdrawals
     const {data:din}=await db.from("donations").select("amount").eq("pi_user_id", user.uid);
     const {data:dout}=await db.from("withdrawals").select("amount").eq("pi_user_id", user.uid);
 
     const tin=(din||[]).reduce((s,r)=>s+Number(r.amount||0),0);
     const tout=(dout||[]).reduce((s,r)=>s+Number(r.amount||0),0);
     balance.innerText = (tin-tout).toFixed(2);
+
+    // locked in escrow for seller
+    const {data:esc} = await db.from("escrows")
+      .select("pi_amount,status")
+      .eq("seller_uid", user.uid)
+      .in("status", ["funded","locked_to_buyer"]);
+
+    const lockedSum = (esc||[]).reduce((s,r)=>s+Number(r.pi_amount||0),0);
+    locked.innerText = lockedSum.toFixed(2);
   }
 
   async function loadAds(){
@@ -242,7 +257,6 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
           }).then(async (r)=>{
             const j = await r.json().catch(()=>({}));
             if(!r.ok){
-              // ✅ عرض أخطاء Pi بشكل صحيح
               const msg = j?.error_message || j?.error?.error_message || j?.error?.message || JSON.stringify(j);
               alert("Complete error: " + msg);
               return;
@@ -274,9 +288,7 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     if(adRes.error) return alert(adRes.error.message);
     const ad = adRes.data;
 
-    // ✅ منع شراء إعلانك
     if(ad.seller_uid === user.uid) return alert("مينفعش تشتري إعلانك");
-
     if(!confirm(`شراء ${ad.pi_amount}π مقابل ${ad.price_egp} EGP ؟`)) return;
 
     const t = await db.from("trades").insert([{
@@ -305,20 +317,32 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     refreshAll();
   }
 
+  // ✅ UPDATED: fetch /api/p2p/release
   async function releaseTrade(tradeId){
-    if(!user) return;
+    if(!user) return alert("سجل دخول الأول");
+    if(!confirm("هل أنت متأكد إنك استلمت الجنيه من المشتري؟")) return;
 
-    const res = await fetch("/api/p2p/release",{
-      method:"POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ tradeId, sellerUid: user.uid })
-    });
+    try{
+      const res = await fetch("/api/p2p/release", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tradeId: tradeId, sellerUid: user.uid })
+      });
 
-    const j = await res.json().catch(()=>({}));
-    if(!res.ok) return alert(j.error || j.details || "Release failed");
+      const data = await res.json().catch(()=>({}));
 
-    alert("تم الإفراج ✅ (رصيد المشتري اتضاف على المنصة)");
-    refreshAll();
+      if(!res.ok){
+        console.error("Release error:", data);
+        return alert(data.error || data.details || "Release failed");
+      }
+
+      alert("تم الإفراج ✅\nرصيد Pi اتضاف للمشتري على المنصة");
+      await refreshAll();
+
+    }catch(err){
+      console.error(err);
+      alert("خطأ في الاتصال بالسيرفر");
+    }
   }
 
   async function withdraw(){
