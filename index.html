@@ -3,95 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سوق إكس - Pi Network Edition</title>
+    <title>سوق إكس برو - Pi Network</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
     <style>
-        :root { 
-            --primary: #002f34; 
-            --accent: #3a77ff; 
-            --pi-color: #ffda00; 
-            --bg: #f2f4f5; 
-            --surface: #ffffff; 
-        }
+        :root { --primary: #002f34; --accent: #3a77ff; --pi: #ffda00; --bg: #f2f4f5; --surface: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background: var(--bg); color: var(--primary); padding-bottom: 50px; }
-        
+        body { background: var(--bg); color: var(--primary); padding-bottom: 60px; }
         header { background: var(--surface); padding: 12px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .nav { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 24px; font-weight: 900; color: var(--primary); text-decoration: none; }
         .logo span { color: var(--accent); }
-
-        .btn-login { background: var(--pi-color); color: #674818; border: none; padding: 10px 18px; border-radius: 50px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(255, 218, 0, 0.4); }
-        .user-profile { display: flex; align-items: center; gap: 10px; font-weight: bold; }
-
-        .search-section { text-align: center; margin: 25px 0; }
-        .search-input { width: 100%; max-width: 600px; padding: 15px 25px; border-radius: 50px; border: 1px solid #ddd; font-size: 16px; margin-bottom: 15px; }
+        .btn-pi { background: var(--pi); color: #674818; border: none; padding: 10px 18px; border-radius: 50px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         
-        /* Category Pills */
-        .categories-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
-        .cat-pill { background: white; padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; cursor: pointer; transition: 0.3s; font-weight: 500; }
-        .cat-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .search-section { margin: 25px 0; display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        .search-bar { display: flex; gap: 10px; width: 100%; max-width: 800px; }
+        .search-input { flex: 1; padding: 12px 20px; border-radius: 50px; border: 1px solid #ddd; }
+        .loc-select { padding: 10px; border-radius: 50px; border: 1px solid #ddd; background: white; }
+
+        .categories-bar { display: flex; gap: 8px; overflow-x: auto; width: 100%; padding: 10px 0; scrollbar-width: none; }
+        .cat-pill { background: white; padding: 8px 18px; border-radius: 20px; border: 1px solid #ddd; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+        .cat-pill.active { background: var(--primary); color: white; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-        .card { background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        .card-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
+        .card { background: var(--surface); border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; }
+        .card-img { width: 100%; height: 180px; object-fit: cover; }
+        .fav-btn { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.8); border: none; width: 35px; height: 35px; border-radius: 50%; color: #ff4757; cursor: pointer; z-index: 5; }
         .card-body { padding: 15px; }
-        .card-price { font-size: 19px; font-weight: 800; color: var(--primary); }
+        .card-meta { display: flex; justify-content: space-between; font-size: 11px; color: #777; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
 
-        .fab { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; border: none; box-shadow: 0 4px 15px rgba(58, 119, 255, 0.4); z-index: 99; cursor: pointer; }
+        .fab { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 99; cursor: pointer; }
+        
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; }
 
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
-        
-        .badge-cat { display: inline-block; background: #e8f0fe; color: var(--accent); padding: 4px 12px; border-radius: 50px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
-        
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div id="loader">
-    <div class="spinner"></div>
-    <p style="margin-top:15px;">جاري تحميل سوق إكس...</p>
-</div>
+<div id="loader"><div class="spinner"></div><p style="margin-top:15px;">جاري تحميل سوق إكس برو...</p></div>
 
 <header>
     <div class="container nav">
         <a href="#" class="logo" onclick="location.reload()">سوق <span>إكس</span></a>
         <div id="authContainer">
-            <button class="btn-login" onclick="app.loginWithPi()">
-                <i class="fab fa-pi"></i> دخول بـ Pi
-            </button>
+            <button class="btn-pi" onclick="app.loginWithPi()"><i class="fab fa-pi"></i> دخول بـ Pi</button>
         </div>
     </div>
 </header>
 
 <div class="container">
     <div class="search-section">
-        <input type="text" id="searchInput" class="search-input" placeholder="عن ماذا تبحث اليوم؟" onkeyup="app.fetchAds()">
-        
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="عن ماذا تبحث؟" onkeyup="app.fetchAds()">
+            <select id="locFilter" class="loc-select" onchange="app.fetchAds()">
+                <option value="all">كل المحافظات</option>
+                <option value="القاهرة">القاهرة</option>
+                <option value="الإسكندرية">الإسكندرية</option>
+                <option value="الجيزة">الجيزة</option>
+            </select>
+        </div>
         <div class="categories-bar">
             <div class="cat-pill active" onclick="app.filterCat('all', this)">الكل</div>
             <div class="cat-pill" onclick="app.filterCat('cars', this)">سيارات</div>
             <div class="cat-pill" onclick="app.filterCat('electronics', this)">إلكترونيات</div>
             <div class="cat-pill" onclick="app.filterCat('properties', this)">عقارات</div>
             <div class="cat-pill" onclick="app.filterCat('furniture', this)">أثاث</div>
+            <div class="cat-pill" onclick="app.filterCat('fav', this)"><i class="fas fa-heart"></i> المفضلة</div>
         </div>
     </div>
-
     <div class="grid" id="productGrid"></div>
 </div>
 
@@ -112,20 +101,25 @@
                     <option value="furniture">أثاث</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label>الموقع (المحافظة)</label>
+                <select id="pLoc">
+                    <option value="القاهرة">القاهرة</option>
+                    <option value="الإسكندرية">الإسكندرية</option>
+                    <option value="الجيزة">الجيزة</option>
+                </select>
+            </div>
             <div class="form-group"><label>رقم التواصل</label><input type="tel" id="pPhone" required></div>
-            <div class="form-group"><label>الوصف بالتفصيل</label><textarea id="pDesc" rows="3" required></textarea></div>
-            <div class="form-group"><label>صورة المنتج</label><input type="file" id="pImage" accept="image/*" required></div>
-            <button type="submit" class="btn-login" style="width:100%; justify-content:center; background:var(--accent); color:white;" id="submitBtn">نشر الآن</button>
+            <div class="form-group"><label>الوصف</label><textarea id="pDesc" rows="3" required></textarea></div>
+            <div class="form-group"><label>الصورة</label><input type="file" id="pImage" accept="image/*" required></div>
+            <button type="submit" class="btn-pi" style="width:100%; justify-content:center; background:var(--accent); color:white;" id="submitBtn">نشر الآن</button>
             <button type="button" onclick="toggleModal('addModal', false)" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer; color:#777;">إلغاء</button>
         </form>
     </div>
 </div>
 
 <div id="detailModal" class="modal">
-    <div class="modal-content">
-        <div id="detailContent"></div>
-        <button onclick="toggleModal('detailModal', false)" style="width:100%; background:#f2f2f2; border:none; padding:12px; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer;">إغلاق</button>
-    </div>
+    <div class="modal-content" id="detailContent"></div>
 </div>
 
 <script>
@@ -138,6 +132,7 @@
     const app = {
         currentUser: null,
         currentCat: 'all',
+        userFavs: [],
 
         async init() {
             await this.fetchAds();
@@ -148,17 +143,20 @@
             try {
                 const auth = await Pi.authenticate(['username'], (pay) => {});
                 this.currentUser = auth.user;
+                await this.loadFavs();
                 this.updateUI();
             } catch (e) { alert("خطأ في تسجيل دخول Pi"); }
         },
 
+        async loadFavs() {
+            if (!this.currentUser) return;
+            const { data } = await client.from('favorites').select('ad_id').eq('user_id', this.currentUser.username);
+            this.userFavs = data.map(f => f.ad_id);
+        },
+
         updateUI() {
             if(this.currentUser) {
-                document.getElementById('authContainer').innerHTML = `
-                    <div class="user-profile">
-                        <span>${this.currentUser.username}</span>
-                        <i class="fas fa-check-circle" style="color:var(--accent)"></i>
-                    </div>`;
+                document.getElementById('authContainer').innerHTML = `<div class="user-profile"><span>${this.currentUser.username}</span> <i class="fas fa-check-circle" style="color:var(--accent)"></i></div>`;
             }
         },
 
@@ -171,9 +169,18 @@
 
         async fetchAds() {
             const search = document.getElementById('searchInput').value;
-            let query = client.from('ads').select('*').order('created_at', { ascending: false });
+            const loc = document.getElementById('locFilter').value;
             
-            if (this.currentCat !== 'all') query = query.eq('category', this.currentCat);
+            let query = client.from('ads').select('*').order('updated_at', { ascending: false });
+            
+            if (this.currentCat === 'fav') {
+                if (!this.currentUser) { alert("سجل دخولك لرؤية المفضلة"); return; }
+                query = query.in('id', this.userFavs);
+            } else if (this.currentCat !== 'all') {
+                query = query.eq('category', this.currentCat);
+            }
+
+            if (loc !== 'all') query = query.eq('location', loc);
             if (search) query = query.ilike('name', `%${search}%`);
 
             const { data, error } = await query;
@@ -182,42 +189,69 @@
 
         render(items) {
             const grid = document.getElementById('productGrid');
-            grid.innerHTML = items.length ? '' : '<p style="grid-column:1/-1; text-align:center; padding:40px;">لا توجد نتائج مطابقة</p>';
+            grid.innerHTML = items.length ? '' : '<p style="grid-column:1/-1; text-align:center; padding:40px;">لا توجد نتائج</p>';
             items.forEach(item => {
+                const isFav = this.userFavs.includes(item.id);
                 grid.innerHTML += `
-                    <div class="card" onclick="app.showDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})">
-                        <img src="${item.image_url}" class="card-img">
-                        <div class="card-body">
-                            <div class="card-price">${item.price} ج.م</div>
-                            <div style="font-weight:bold; margin:5px 0;">${item.name}</div>
-                            <div style="font-size:12px; color:#777;">${this.getCatName(item.category)}</div>
+                    <div class="card">
+                        <button class="fav-btn" onclick="app.toggleFav(${item.id}, event)">
+                            <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+                        </button>
+                        <div onclick="app.showDetails(${item.id})">
+                            <img src="${item.image_url}" class="card-img">
+                            <div class="card-body">
+                                <div class="card-price">${item.price} ج.م</div>
+                                <div style="font-weight:bold; margin:5px 0;">${item.name}</div>
+                                <div style="font-size:12px; color:#777;"><i class="fas fa-map-marker-alt"></i> ${item.location}</div>
+                                <div class="card-meta">
+                                    <span><i class="fas fa-eye"></i> ${item.views_count || 0}</span>
+                                    <span><i class="fas fa-clock"></i> ${new Date(item.updated_at).toLocaleDateString('ar-EG')}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>`;
             });
         },
 
-        getCatName(c) {
-            const map = { cars:'سيارات', electronics:'إلكترونيات', properties:'عقارات', furniture:'أثاث' };
-            return map[c] || 'أخرى';
+        async toggleFav(id, e) {
+            e.stopPropagation();
+            if (!this.currentUser) return alert("سجل دخولك أولاً");
+            
+            if (this.userFavs.includes(id)) {
+                await client.from('favorites').delete().eq('user_id', this.currentUser.username).eq('ad_id', id);
+                this.userFavs = this.userFavs.filter(favId => favId !== id);
+            } else {
+                await client.from('favorites').insert({ user_id: this.currentUser.username, ad_id: id });
+                this.userFavs.push(id);
+            }
+            this.fetchAds();
         },
 
-        showDetails(item) {
+        async showDetails(id) {
+            const { data: item } = await client.from('ads').select('*').eq('id', id).single();
+            // زيادة عدد المشاهدات
+            await client.from('ads').update({ views_count: (item.views_count || 0) + 1 }).eq('id', id);
+            
             const content = document.getElementById('detailContent');
             content.innerHTML = `
-                <img src="${item.image_url}" style="width:100%; border-radius:10px; margin-bottom:15px;">
-                <span class="badge-cat">${this.getCatName(item.category)}</span>
-                <h2 style="margin-bottom:5px;">${item.name}</h2>
-                <h3 style="color:var(--accent); margin-bottom:15px;">${item.price} ج.م</h3>
-                <div style="background:#f9f9f9; padding:15px; border-radius:8px;">
-                    <strong style="display:block; margin-bottom:5px;">الوصف:</strong>
-                    <p style="font-size:14px; color:#555; line-height:1.6;">${item.description}</p>
+                <img src="${item.image_url}" style="width:100%; border-radius:10px;">
+                <h2 style="margin:15px 0 5px;">${item.name}</h2>
+                <h3 style="color:var(--accent);">${item.price} ج.م</h3>
+                <p style="margin:10px 0; font-size:14px; color:#555; line-height:1.6;">${item.description}</p>
+                <div style="font-size:13px; color:#777; margin-bottom:15px;">
+                    <i class="fas fa-user"></i> البائع: ${item.seller_user} | <i class="fas fa-map-marker-alt"></i> ${item.location}
                 </div>
-                <div style="margin:15px 0; font-size:13px; color:#777;">بواسطة: ${item.seller_user || 'عضو Pi'}</div>
-                <a href="tel:${item.phone}" style="display:block; text-align:center; background:#25D366; color:white; padding:12px; border-radius:8px; text-decoration:none; font-weight:bold;">
-                    <i class="fas fa-phone"></i> اتصال
-                </a>
+                ${this.currentUser && this.currentUser.username === item.seller_user ? 
+                    `<button onclick="app.bumpAd(${item.id})" class="btn-pi" style="width:100%; background:#2ed573; color:white; margin-bottom:10px;">تحديث الإعلان (Bump)</button>` : ''}
+                <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:var(--accent); color:white; text-decoration:none;">اتصال بالبائع</a>
+                <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer;">إغلاق</button>
             `;
             toggleModal('detailModal', true);
+        },
+
+        async bumpAd(id) {
+            const { error } = await client.from('ads').update({ updated_at: new Date() }).eq('id', id);
+            if (!error) { alert("تم رفع الإعلان للأعلى!"); location.reload(); }
         },
 
         checkAuth() {
@@ -226,35 +260,32 @@
         }
     };
 
-    // رفع الإعلان
     document.getElementById('addForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
-        btn.disabled = true; btn.innerText = 'جاري الرفع...';
-
+        btn.disabled = true;
         try {
             const file = document.getElementById('pImage').files[0];
             const name = `${Date.now()}_${file.name}`;
             await client.storage.from('ad_images').upload(name, file);
             const { data: { publicUrl } } = client.storage.from('ad_images').getPublicUrl(name);
 
-            const { error } = await client.from('ads').insert({
+            await client.from('ads').insert({
                 name: document.getElementById('pName').value,
                 price: document.getElementById('pPrice').value,
                 category: document.getElementById('pCat').value,
+                location: document.getElementById('pLoc').value,
                 description: document.getElementById('pDesc').value,
                 phone: document.getElementById('pPhone').value,
                 image_url: publicUrl,
-                seller_user: app.currentUser.username
+                seller_user: app.currentUser.username,
+                updated_at: new Date()
             });
-
-            if(error) throw error;
             location.reload();
         } catch (err) { alert(err.message); btn.disabled = false; }
     };
 
     function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
-
     app.init();
 </script>
 </body>
