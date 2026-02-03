@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سوق إكس برو - Pi Network</title>
+    <title>سوق إكس برو - إدارة الإعلانات</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
-        :root { --primary: #002f34; --accent: #3a77ff; --pi: #ffda00; --bg: #f2f4f5; --surface: #ffffff; }
+        :root { --primary: #002f34; --accent: #3a77ff; --danger: #eb4d4b; --pi: #ffda00; --bg: #f2f4f5; --surface: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
         body { background: var(--bg); color: var(--primary); padding-bottom: 60px; }
         header { background: var(--surface); padding: 12px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
@@ -31,9 +31,8 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
         .card { background: var(--surface); border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; }
         .card-img { width: 100%; height: 180px; object-fit: cover; }
-        .fav-btn { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.8); border: none; width: 35px; height: 35px; border-radius: 50%; color: #ff4757; cursor: pointer; z-index: 5; }
+        .fav-btn { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.8); border: none; width: 35px; height: 35px; border-radius: 50%; color: #ff4757; z-index: 5; }
         .card-body { padding: 15px; }
-        .card-meta { display: flex; justify-content: space-between; font-size: 11px; color: #777; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
 
         .fab { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 99; cursor: pointer; }
         
@@ -46,11 +45,16 @@
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* أزرار الإدارة */
+        .admin-tools { display: flex; gap: 10px; margin-top: 15px; border-top: 2px dashed #eee; padding-top: 15px; }
+        .btn-bump { flex: 1; background: #2ed573; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-delete { flex: 1; background: var(--danger); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div><p style="margin-top:15px;">جاري تحميل سوق إكس برو...</p></div>
+<div id="loader"><div class="spinner"></div><p style="margin-top:15px;">جاري تحميل سوق إكس...</p></div>
 
 <header>
     <div class="container nav">
@@ -64,9 +68,9 @@
 <div class="container">
     <div class="search-section">
         <div class="search-bar">
-            <input type="text" id="searchInput" class="search-input" placeholder="عن ماذا تبحث؟" onkeyup="app.fetchAds()">
+            <input type="text" id="searchInput" class="search-input" placeholder="ابحث هنا..." onkeyup="app.fetchAds()">
             <select id="locFilter" class="loc-select" onchange="app.fetchAds()">
-                <option value="all">كل المحافظات</option>
+                <option value="all">كل المواقع</option>
                 <option value="القاهرة">القاهرة</option>
                 <option value="الإسكندرية">الإسكندرية</option>
                 <option value="الجيزة">الجيزة</option>
@@ -74,10 +78,6 @@
         </div>
         <div class="categories-bar">
             <div class="cat-pill active" onclick="app.filterCat('all', this)">الكل</div>
-            <div class="cat-pill" onclick="app.filterCat('cars', this)">سيارات</div>
-            <div class="cat-pill" onclick="app.filterCat('electronics', this)">إلكترونيات</div>
-            <div class="cat-pill" onclick="app.filterCat('properties', this)">عقارات</div>
-            <div class="cat-pill" onclick="app.filterCat('furniture', this)">أثاث</div>
             <div class="cat-pill" onclick="app.filterCat('fav', this)"><i class="fas fa-heart"></i> المفضلة</div>
         </div>
     </div>
@@ -86,40 +86,25 @@
 
 <button class="fab" onclick="app.checkAuth()"><i class="fas fa-plus"></i></button>
 
+<div id="detailModal" class="modal">
+    <div class="modal-content" id="detailContent"></div>
+</div>
+
 <div id="addModal" class="modal">
     <div class="modal-content">
         <h3>إضافة إعلان جديد</h3>
         <form id="addForm" style="margin-top:15px;">
-            <div class="form-group"><label>عنوان الإعلان</label><input type="text" id="pName" required></div>
-            <div class="form-group"><label>السعر (ج.م)</label><input type="number" id="pPrice" required></div>
-            <div class="form-group">
-                <label>القسم</label>
-                <select id="pCat">
-                    <option value="cars">سيارات</option>
-                    <option value="electronics">إلكترونيات</option>
-                    <option value="properties">عقارات</option>
-                    <option value="furniture">أثاث</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>الموقع (المحافظة)</label>
-                <select id="pLoc">
-                    <option value="القاهرة">القاهرة</option>
-                    <option value="الإسكندرية">الإسكندرية</option>
-                    <option value="الجيزة">الجيزة</option>
-                </select>
-            </div>
-            <div class="form-group"><label>رقم التواصل</label><input type="tel" id="pPhone" required></div>
+            <div class="form-group"><label>العنوان</label><input type="text" id="pName" required></div>
+            <div class="form-group"><label>السعر</label><input type="number" id="pPrice" required></div>
+            <div class="form-group"><label>القسم</label><select id="pCat"><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option></select></div>
+            <div class="form-group"><label>الموقع</label><select id="pLoc"><option value="القاهرة">القاهرة</option><option value="الإسكندرية">الإسكندرية</option></select></div>
+            <div class="form-group"><label>الهاتف</label><input type="tel" id="pPhone" required></div>
             <div class="form-group"><label>الوصف</label><textarea id="pDesc" rows="3" required></textarea></div>
             <div class="form-group"><label>الصورة</label><input type="file" id="pImage" accept="image/*" required></div>
-            <button type="submit" class="btn-pi" style="width:100%; justify-content:center; background:var(--accent); color:white;" id="submitBtn">نشر الآن</button>
-            <button type="button" onclick="toggleModal('addModal', false)" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer; color:#777;">إلغاء</button>
+            <button type="submit" class="btn-pi" style="width:100%; background:var(--accent); color:white;" id="submitBtn">نشر الآن</button>
+            <button type="button" onclick="toggleModal('addModal', false)" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer;">إلغاء</button>
         </form>
     </div>
-</div>
-
-<div id="detailModal" class="modal">
-    <div class="modal-content" id="detailContent"></div>
 </div>
 
 <script>
@@ -131,7 +116,6 @@
 
     const app = {
         currentUser: null,
-        currentCat: 'all',
         userFavs: [],
 
         async init() {
@@ -145,106 +129,65 @@
                 this.currentUser = auth.user;
                 await this.loadFavs();
                 this.updateUI();
-            } catch (e) { alert("خطأ في تسجيل دخول Pi"); }
+                this.fetchAds();
+            } catch (e) { console.log("Login failed"); }
         },
 
         async loadFavs() {
             if (!this.currentUser) return;
             const { data } = await client.from('favorites').select('ad_id').eq('user_id', this.currentUser.username);
-            this.userFavs = data.map(f => f.ad_id);
+            this.userFavs = data ? data.map(f => f.ad_id) : [];
         },
 
         updateUI() {
             if(this.currentUser) {
-                document.getElementById('authContainer').innerHTML = `<div class="user-profile"><span>${this.currentUser.username}</span> <i class="fas fa-check-circle" style="color:var(--accent)"></i></div>`;
+                document.getElementById('authContainer').innerHTML = `<div class="user-profile"><span>${this.currentUser.username}</span></div>`;
             }
-        },
-
-        filterCat(cat, el) {
-            this.currentCat = cat;
-            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-            el.classList.add('active');
-            this.fetchAds();
         },
 
         async fetchAds() {
-            const search = document.getElementById('searchInput').value;
-            const loc = document.getElementById('locFilter').value;
-            
             let query = client.from('ads').select('*').order('updated_at', { ascending: false });
-            
-            if (this.currentCat === 'fav') {
-                if (!this.currentUser) { alert("سجل دخولك لرؤية المفضلة"); return; }
-                query = query.in('id', this.userFavs);
-            } else if (this.currentCat !== 'all') {
-                query = query.eq('category', this.currentCat);
-            }
-
-            if (loc !== 'all') query = query.eq('location', loc);
-            if (search) query = query.ilike('name', `%${search}%`);
-
-            const { data, error } = await query;
-            if (!error) this.render(data);
+            const { data } = await query;
+            this.render(data || []);
         },
 
         render(items) {
             const grid = document.getElementById('productGrid');
-            grid.innerHTML = items.length ? '' : '<p style="grid-column:1/-1; text-align:center; padding:40px;">لا توجد نتائج</p>';
+            grid.innerHTML = '';
             items.forEach(item => {
-                const isFav = this.userFavs.includes(item.id);
                 grid.innerHTML += `
-                    <div class="card">
-                        <button class="fav-btn" onclick="app.toggleFav(${item.id}, event)">
-                            <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
-                        </button>
-                        <div onclick="app.showDetails(${item.id})">
-                            <img src="${item.image_url}" class="card-img">
-                            <div class="card-body">
-                                <div class="card-price">${item.price} ج.م</div>
-                                <div style="font-weight:bold; margin:5px 0;">${item.name}</div>
-                                <div style="font-size:12px; color:#777;"><i class="fas fa-map-marker-alt"></i> ${item.location}</div>
-                                <div class="card-meta">
-                                    <span><i class="fas fa-eye"></i> ${item.views_count || 0}</span>
-                                    <span><i class="fas fa-clock"></i> ${new Date(item.updated_at).toLocaleDateString('ar-EG')}</span>
-                                </div>
-                            </div>
+                    <div class="card" onclick="app.showDetails(${item.id})">
+                        <img src="${item.image_url}" class="card-img">
+                        <div class="card-body">
+                            <div style="font-weight:bold;">${item.name}</div>
+                            <div style="color:var(--accent); font-weight:900;">${item.price} ج.م</div>
+                            <div style="font-size:11px; color:#777; margin-top:5px;"><i class="fas fa-user"></i> ${item.seller_user}</div>
                         </div>
                     </div>`;
             });
         },
 
-        async toggleFav(id, e) {
-            e.stopPropagation();
-            if (!this.currentUser) return alert("سجل دخولك أولاً");
-            
-            if (this.userFavs.includes(id)) {
-                await client.from('favorites').delete().eq('user_id', this.currentUser.username).eq('ad_id', id);
-                this.userFavs = this.userFavs.filter(favId => favId !== id);
-            } else {
-                await client.from('favorites').insert({ user_id: this.currentUser.username, ad_id: id });
-                this.userFavs.push(id);
-            }
-            this.fetchAds();
-        },
-
         async showDetails(id) {
             const { data: item } = await client.from('ads').select('*').eq('id', id).single();
-            // زيادة عدد المشاهدات
-            await client.from('ads').update({ views_count: (item.views_count || 0) + 1 }).eq('id', id);
+            const isOwner = this.currentUser && this.currentUser.username === item.seller_user;
             
             const content = document.getElementById('detailContent');
             content.innerHTML = `
                 <img src="${item.image_url}" style="width:100%; border-radius:10px;">
-                <h2 style="margin:15px 0 5px;">${item.name}</h2>
+                <h2 style="margin-top:15px;">${item.name}</h2>
                 <h3 style="color:var(--accent);">${item.price} ج.م</h3>
-                <p style="margin:10px 0; font-size:14px; color:#555; line-height:1.6;">${item.description}</p>
-                <div style="font-size:13px; color:#777; margin-bottom:15px;">
-                    <i class="fas fa-user"></i> البائع: ${item.seller_user} | <i class="fas fa-map-marker-alt"></i> ${item.location}
-                </div>
-                ${this.currentUser && this.currentUser.username === item.seller_user ? 
-                    `<button onclick="app.bumpAd(${item.id})" class="btn-pi" style="width:100%; background:#2ed573; color:white; margin-bottom:10px;">تحديث الإعلان (Bump)</button>` : ''}
-                <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:var(--accent); color:white; text-decoration:none;">اتصال بالبائع</a>
-                <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer;">إغلاق</button>
+                <p style="margin:10px 0; color:#555;">${item.description}</p>
+                
+                <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:var(--accent); color:white; text-decoration:none; margin-top:15px;">اتصال</a>
+
+                ${isOwner ? `
+                    <div class="admin-tools">
+                        <button onclick="app.bumpAd(${item.id})" class="btn-bump"><i class="fas fa-arrow-up"></i> تحديث</button>
+                        <button onclick="app.deleteAd(${item.id})" class="btn-delete"><i class="fas fa-trash"></i> حذف</button>
+                    </div>
+                ` : ''}
+
+                <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:15px; cursor:pointer; color:#999;">إغلاق</button>
             `;
             toggleModal('detailModal', true);
         },
@@ -254,12 +197,21 @@
             if (!error) { alert("تم رفع الإعلان للأعلى!"); location.reload(); }
         },
 
+        async deleteAd(id) {
+            if (confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً؟")) {
+                const { error } = await client.from('ads').delete().eq('id', id);
+                if (!error) { alert("تم الحذف بنجاح"); location.reload(); }
+                else { alert("فشل الحذف: " + error.message); }
+            }
+        },
+
         checkAuth() {
             if(!this.currentUser) { alert("سجل دخولك أولاً"); this.loginWithPi(); }
             else toggleModal('addModal', true);
         }
     };
 
+    // معالجة رفع الإعلان
     document.getElementById('addForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
