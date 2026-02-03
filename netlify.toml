@@ -1,20 +1,24 @@
 [build]
-  publish = "."
+  publish = "." 
   functions = "netlify/functions"
 
-[build.processing.secrets_scanner]
-  enabled = false  # هذا سيعطل الفحص ويسمح بالبناء بنجاح
-
+# توجيه الموافقة على الدفع
 [[redirects]]
   from = "/api/pi/approve"
   to = "/.netlify/functions/approve"
   status = 200
   force = true
 
+# توجيه إكمال الدفع
 [[redirects]]
   from = "/api/pi/complete"
   to = "/.netlify/functions/complete"
   status = 200
   force = true
 
-
+# التوجيه الجديد لعملية السحب (Withdraw)
+[[redirects]]
+  from = "/api/withdraw"
+  to = "/.netlify/functions/withdraw"
+  status = 200
+  force = true
