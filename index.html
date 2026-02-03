@@ -1,373 +1,280 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Nexus Wallet P2P</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Nexus Wallet P2P</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    :root{--p:#6c5ce7;--bg:#0f172a;--card:rgba(255,255,255,.06);--bd:rgba(255,255,255,.12)}
-    *{box-sizing:border-box;font-family:Inter,Tajawal}
-    body{margin:0;background:var(--bg);color:#fff;padding:18px}
-    .card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:12px 0}
-    h3{margin:0 0 10px}
-    input{width:100%;padding:12px;border-radius:14px;border:1px solid var(--bd);background:#020617;color:#fff;margin:7px 0}
-    button{width:100%;padding:12px;border:none;border-radius:14px;background:var(--p);color:#fff;font-weight:700;cursor:pointer}
-    .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .small{width:auto;padding:8px 12px;font-size:13px}
-    .mut{opacity:.7}
-    .item{padding:12px 0;border-bottom:1px solid var(--bd)}
-    .badge{font-size:12px;padding:4px 10px;border-radius:999px;background:#1e293b}
-    .danger{background:#ef4444}
-    .ok{color:#22c55e}
-  </style>
+<style>
+:root{--p:#6c5ce7;--bg:#0f172a;--card:rgba(255,255,255,.06);--bd:rgba(255,255,255,.12)}
+*{box-sizing:border-box;font-family:Inter,Tajawal}
+body{margin:0;background:var(--bg);color:#fff;padding:18px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:12px 0}
+h3,h4{margin:0 0 10px}
+input,textarea{width:100%;padding:12px;border-radius:14px;border:1px solid var(--bd);background:#020617;color:#fff;margin:7px 0}
+button{width:100%;padding:12px;border:none;border-radius:14px;background:var(--p);color:#fff;font-weight:700;cursor:pointer}
+.small{width:auto;padding:6px 10px;font-size:12px}
+.row{display:flex;justify-content:space-between;gap:10px}
+.mut{opacity:.7}
+.badge{background:#1e293b;padding:4px 10px;border-radius:999px;font-size:12px}
+.ok{color:#22c55e}.warn{color:#f59e0b}.danger{background:#ef4444}
+
+/* PART 2 */
+.chat-box{max-height:220px;overflow:auto;border:1px solid var(--bd);border-radius:14px;padding:10px}
+.msg{margin:6px 0;font-size:13px}
+.msg.me{text-align:right;color:#a5b4fc}
+.msg.other{text-align:left;color:#f1f5f9}
+.timer{font-size:13px;color:#f59e0b}
+#tradeModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;padding:20px;overflow:auto}
+</style>
 </head>
+
 <body>
 
-  <div class="card" id="loginCard">
-    <h3>🔐 Nexus Wallet P2P</h3>
-    <p class="mut">سوق P2P وسيط (Escrow) — بيع Pi بالجنيه واستلم رصيد على المنصة ثم اسحب لمحفظتك</p>
-    <button onclick="login()">تسجيل دخول بـ Pi</button>
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+  <h3>🔐 Nexus Wallet P2P</h3>
+  <p class="mut">منصة P2P بوسيط Escrow آمن</p>
+  <button onclick="login()">تسجيل دخول بـ Pi</button>
+</div>
+
+<div id="app" style="display:none">
+
+<!-- ACCOUNT -->
+<div class="card">
+  <div class="row">
+    <div>
+      <b id="userTag"></b>
+      <div class="mut">رصيدك المتاح</div>
+      <div style="font-size:24px"><span id="balance">0.00</span> π</div>
+      <div class="mut">محجوز في الإسكرو</div>
+      <div><span id="locked">0.00</span> π</div>
+    </div>
+    <div>
+      <div class="mut">سعر Pi</div>
+      <b id="piPrice">...</b>
+    </div>
   </div>
+</div>
 
-  <div id="app" style="display:none">
+<!-- CREATE AD -->
+<div class="card">
+  <h3>📢 نشر إعلان بيع</h3>
+  <input id="adPi" type="number" placeholder="كمية Pi">
+  <input id="adEgp" type="number" placeholder="السعر بالجنيه">
+  <div class="mut">سعر مقترح: <span id="autoPrice">-</span></div>
+  <button onclick="createAdWithDeposit()">نشر + إيداع</button>
+</div>
 
-    <div class="card">
-      <div class="row">
-        <div>
-          <div class="mut">حسابك</div>
-          <div id="userTag" style="font-weight:800"></div>
+<!-- MARKET -->
+<div class="card">
+  <h3>🔁 سوق الإعلانات</h3>
+  <div id="ads"></div>
+</div>
 
-          <div class="mut" style="margin-top:6px">رصيدك المتاح على المنصة</div>
-          <div style="font-size:26px;font-weight:900"><span id="balance">0.00</span> π</div>
+<!-- SELLER TRADES -->
+<div class="card">
+  <h3>🧾 صفقاتي كبائع</h3>
+  <div id="sellerTrades"></div>
+</div>
 
-          <!-- ✅ NEW: Locked in Escrow -->
-          <div class="mut" style="margin-top:10px">محجوز في الإسكرو</div>
-          <div style="font-size:18px;font-weight:900"><span id="locked">0.00</span> π</div>
-        </div>
+<!-- WITHDRAW -->
+<div class="card">
+  <h3>📤 سحب Pi</h3>
+  <input id="wAddr" placeholder="عنوان المحفظة">
+  <input id="wAmt" type="number" placeholder="الكمية">
+  <button class="danger" onclick="withdraw()">سحب</button>
+  <div id="wMsg" class="mut"></div>
+</div>
 
-        <div style="text-align:left">
-          <div class="mut">سعر Pi</div>
-          <div id="piPrice" style="font-weight:900">Loading...</div>
-        </div>
-      </div>
+</div>
+
+<!-- ================== TRADE MODAL (PART 2) ================== -->
+<div id="tradeModal">
+  <div class="card">
+    <h3>📦 تفاصيل الصفقة</h3>
+    <div id="tradeInfo" class="mut"></div>
+    <div class="timer">⏱️ الوقت المتبقي: <span id="tradeTimer">--</span></div>
+
+    <h4>💬 شات الصفقة</h4>
+    <div class="chat-box" id="chatBox"></div>
+    <input id="chatInput" placeholder="اكتب رسالة">
+    <button class="small" onclick="sendMessage()">إرسال</button>
+
+    <div style="margin-top:10px">
+      <button class="small warn" onclick="openDispute()">⚖️ فتح نزاع</button>
+      <button class="small" onclick="tradeModal.style.display='none'">إغلاق</button>
     </div>
-
-    <div class="card">
-      <h3>📢 نشر إعلان بيع (يتطلب إيداع Pi للـ Escrow)</h3>
-      <input id="adPi" type="number" placeholder="كمية Pi للبيع (هتودع نفس الكمية للمنصة)">
-      <input id="adEgp" type="number" placeholder="السعر بالجنيه المصري">
-      <button onclick="createAdWithDeposit()">نشر الإعلان + إيداع Pi</button>
-      <p class="mut" style="margin:10px 0 0">الإعلان مش هيظهر للناس إلا بعد نجاح الإيداع ✅</p>
-    </div>
-
-    <div class="card">
-      <h3>🔁 سوق الإعلانات</h3>
-      <div id="ads"></div>
-    </div>
-
-    <div class="card">
-      <h3>🧾 صفقاتي كبائع (في انتظار الإفراج)</h3>
-      <div id="sellerTrades"></div>
-      <p class="mut">بعد ما تستلم الجنيه من المشتري، اضغط “إفراج” علشان يتحول Pi لرصيد المشتري على المنصة.</p>
-    </div>
-
-    <div class="card">
-      <h3>📤 سحب Pi لمحفظتك</h3>
-      <input id="wAddr" placeholder="عنوان محفظتك (G...)">
-      <input id="wAmt" type="number" placeholder="الكمية">
-      <button class="danger" onclick="withdraw()">سحب الآن</button>
-      <div id="wMsg" class="mut" style="margin-top:10px"></div>
-    </div>
-
   </div>
+</div>
 
 <script>
-  // ===== Supabase URL (split) =====
-  const SUPABASE_URL = [
-    "https://",
-    "xncapmzlw",
-    "uisupkjlftb",
-    ".supabase.co"
-  ].join("");
+// ================== SUPABASE ==================
+const SUPABASE_URL=["https://","xncapmzlw","uisupkjlftb",".supabase.co"].join("");
+const SUPABASE_KEY=["sb_publishable_zPECXAiI_","bDbeLtRYe3vIw_IEt_","p_AS"].join("");
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-  // ===== Supabase Publishable Key (split) =====
-  const SUPABASE_KEY = [
-    "sb_publishable_zPECXAiI_",
-    "bDbeLtRYe3vIw_IEt_",
-    "p_AS"
-  ].join("");
+let user=null,piUsd=0,usdEgp=0;
+let activeTrade=null,timerInt=null;
 
-  // ===== Create Client =====
-  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ================== LOGIN ==================
+async function login(){
+ try{
+  Pi.init({version:"2.0"});
+  const a=await Pi.authenticate(['username','payments']);
+  user=a.user;
+  loginCard.style.display="none";
+  app.style.display="block";
+  userTag.innerText="@"+user.username;
+  await db.from("users").upsert({pi_uid:user.uid,username:user.username},{onConflict:"pi_uid"});
+  refreshAll();
+ }catch{alert("افتح من Pi Browser")}
+}
 
-  let user=null;
-  let piUsd=0, usdEgp=0;
+// ================== PRICES ==================
+async function loadPrices(){
+ const okx=await fetch("https://www.okx.com/api/v5/market/ticker?instId=PI-USDT").then(r=>r.json());
+ piUsd=parseFloat(okx?.data?.[0]?.last||0);
+ const fx=await fetch("https://open.er-api.com/v6/latest/USD").then(r=>r.json());
+ usdEgp=fx?.rates?.EGP||0;
+ piPrice.innerText=`1π ≈ ${(piUsd*usdEgp).toFixed(2)} EGP`;
+}
 
-  window.onload = () => { loadPrices(); };
+// AUTO PRICE
+adPi.oninput=()=>{
+ if(!piUsd||!usdEgp) return;
+ const p=(adPi.value*piUsd*usdEgp*1.02).toFixed(2);
+ autoPrice.innerText=p+" EGP";
+ adEgp.value=p;
+};
 
-  async function login(){
-    try{
-      try { Pi.init({version:"2.0"}); } catch(e){}
+// ================== BALANCE ==================
+async function refreshBalance(){
+ const {data:d}=await db.from("donations").select("amount").eq("pi_user_id",user.uid);
+ const {data:w}=await db.from("withdrawals").select("amount").eq("pi_user_id",user.uid);
+ balance.innerText=((d||[]).reduce((s,r)=>s+Number(r.amount),0)-(w||[]).reduce((s,r)=>s+Number(r.amount),0)).toFixed(2);
 
-      const auth = await Pi.authenticate(['username','payments']);
-      user = auth.user;
+ const {data:e}=await db.from("escrows").select("pi_amount").eq("seller_uid",user.uid);
+ locked.innerText=(e||[]).reduce((s,r)=>s+Number(r.pi_amount),0).toFixed(2);
+}
 
-      loginCard.style.display="none";
-      app.style.display="block";
-      userTag.innerText = "@"+user.username;
+// ================== ADS ==================
+async function loadAds(){
+ const {data}=await db.from("p2p_ads").select("*").eq("status","open");
+ ads.innerHTML=(data||[]).map(a=>`
+  <div class="row">
+    <div>
+      <b>@${a.seller_username}</b>
+      <div class="mut">${a.pi_amount}π → ${a.price_egp} EGP</div>
+    </div>
+    ${a.seller_uid!==user.uid?`<button class="small" onclick="buyAd(${a.id})">شراء</button>`:`<span class="badge">إعلانك</span>`}
+  </div>
+ `).join("");
+}
 
-      await db.from("users").upsert({pi_uid:user.uid, username:user.username},{onConflict:"pi_uid"});
-      await refreshAll();
-    }catch(e){
-      alert("افتح من Pi Browser");
-    }
-  }
+// ================== SELLER TRADES ==================
+async function loadSellerTrades(){
+ const {data}=await db.from("trades").select("*").eq("seller_uid",user.uid).eq("status","waiting_release");
+ sellerTrades.innerHTML=(data||[]).map(t=>`
+  <div class="row">
+    <div>
+      <b>Trade #${t.id}</b>
+      <div class="mut">${t.pi_amount}π مقابل ${t.egp_amount} EGP</div>
+    </div>
+    <button class="small" onclick="openTrade(${t.id})">فتح</button>
+  </div>
+ `).join("");
+}
 
-  async function loadPrices(){
-    try{
-      const okx = await fetch('https://www.okx.com/api/v5/market/ticker?instId=PI-USDT').then(r=>r.json());
-      piUsd = parseFloat(okx?.data?.[0]?.last || "0");
+// ================== REFRESH ==================
+async function refreshAll(){
+ await loadPrices();
+ await refreshBalance();
+ await loadAds();
+ await loadSellerTrades();
+}
 
-      const fx = await fetch('https://open.er-api.com/v6/latest/USD').then(r=>r.json());
-      usdEgp = fx?.rates?.EGP || 0;
+// ================== CREATE AD + DEPOSIT ==================
+async function createAdWithDeposit(){
+ const pi=Number(adPi.value),egp=Number(adEgp.value);
+ if(pi<=0||egp<=0) return alert("قيم غير صحيحة");
 
-      const egp = (piUsd*usdEgp).toFixed(2);
-      piPrice.innerText = `1π ≈ ${egp} EGP`;
-    }catch(e){
-      piPrice.innerText = "Price unavailable";
-    }
-  }
+ const {data:ad}=await db.from("p2p_ads").insert([{seller_uid:user.uid,seller_username:user.username,pi_amount:pi,price_egp:egp,status:"pending_deposit"}]).select().single();
 
-  async function refreshBalance(){
-    if(!user) return;
+ await Pi.createPayment({amount:pi,memo:"P2P Escrow Deposit",metadata:{ad_id:ad.id}},{
+  onReadyForServerApproval:id=>fetch("/api/pi/approve",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({paymentId:id})}),
+  onReadyForServerCompletion:(id,txid)=>fetch("/api/pi/complete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({paymentId:id,txid})}).then(()=>{alert("تم الإيداع");refreshAll();})
+ });
+}
 
-    // available balance = donations - withdrawals
-    const {data:din}=await db.from("donations").select("amount").eq("pi_user_id", user.uid);
-    const {data:dout}=await db.from("withdrawals").select("amount").eq("pi_user_id", user.uid);
+// ================== BUY ==================
+async function buyAd(id){
+ if(!confirm("تأكيد الشراء؟")) return;
+ await db.from("trades").insert([{ad_id:id,buyer_uid:user.uid,status:"waiting_release"}]);
+ await db.from("p2p_ads").update({status:"locked"}).eq("id",id);
+ refreshAll();
+}
 
-    const tin=(din||[]).reduce((s,r)=>s+Number(r.amount||0),0);
-    const tout=(dout||[]).reduce((s,r)=>s+Number(r.amount||0),0);
-    balance.innerText = (tin-tout).toFixed(2);
+// ================== TRADE MODAL ==================
+async function openTrade(id){
+ const {data:t}=await db.from("trades").select("*").eq("id",id).single();
+ activeTrade=t;
+ tradeModal.style.display="block";
+ tradeInfo.innerText=`${t.pi_amount}π مقابل ${t.egp_amount} EGP`;
+ startTimer(t.created_at);
+ loadChat();
+}
 
-    // locked in escrow for seller
-    const {data:esc} = await db.from("escrows")
-      .select("pi_amount,status")
-      .eq("seller_uid", user.uid)
-      .in("status", ["funded","locked_to_buyer"]);
+function startTimer(c){
+ clearInterval(timerInt);
+ const end=new Date(c).getTime()+86400000;
+ timerInt=setInterval(()=>{
+  const d=end-Date.now();
+  tradeTimer.innerText=d<=0?"انتهى":Math.floor(d/3600000)+"h";
+ },1000);
+}
 
-    const lockedSum = (esc||[]).reduce((s,r)=>s+Number(r.pi_amount||0),0);
-    locked.innerText = lockedSum.toFixed(2);
-  }
+// ================== CHAT ==================
+async function loadChat(){
+ const {data}=await db.from("trade_messages").select("*").eq("trade_id",activeTrade.id).order("created_at");
+ chatBox.innerHTML=(data||[]).map(m=>`<div class="msg ${m.sender_uid===user.uid?'me':'other'}">${m.message}</div>`).join("");
+}
 
-  async function loadAds(){
-    const {data} = await db.from("p2p_ads")
-      .select("*")
-      .eq("status","open")
-      .order("created_at",{ascending:false});
+async function sendMessage(){
+ if(!chatInput.value) return;
+ await db.from("trade_messages").insert([{trade_id:activeTrade.id,sender_uid:user.uid,message:chatInput.value}]);
+ chatInput.value="";
+ loadChat();
+}
 
-    ads.innerHTML = (data||[]).map(a=>`
-      <div class="item">
-        <div class="row">
-          <div>
-            <b>@${a.seller_username}</b>
-            <div class="mut">${a.pi_amount} π مقابل ${a.price_egp} EGP</div>
-          </div>
-          ${a.seller_uid!==user.uid
-            ? `<button class="small" onclick="buyAd(${a.id})">شراء</button>`
-            : `<span class="badge">إعلانك</span>`}
-        </div>
-      </div>
-    `).join("") || `<div class="mut">لا يوجد إعلانات حالياً</div>`;
-  }
+// ================== DISPUTE ==================
+async function openDispute(){
+ await db.from("disputes").insert([{trade_id:activeTrade.id,opened_by:user.uid,status:"open"}]);
+ alert("تم فتح نزاع");
+}
 
-  async function loadSellerTrades(){
-    if(!user) return;
-    const {data} = await db.from("trades")
-      .select("*")
-      .eq("seller_uid", user.uid)
-      .eq("status","waiting_release")
-      .order("created_at",{ascending:false});
+// ================== RELEASE ==================
+async function releaseTrade(id){
+ if(!confirm("تأكيد الإفراج؟")) return;
+ await fetch("/api/p2p/release",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tradeId:id,sellerUid:user.uid})});
+ alert("تم الإفراج");
+ tradeModal.style.display="none";
+ refreshAll();
+}
 
-    sellerTrades.innerHTML = (data||[]).map(t=>`
-      <div class="item">
-        <div class="row">
-          <div>
-            <b>Trade #${t.id}</b>
-            <div class="mut">بيع ${t.pi_amount}π مقابل ${t.egp_amount} EGP</div>
-            <div class="mut">Buyer UID: ${t.buyer_uid}</div>
-          </div>
-          <button class="small" onclick="releaseTrade(${t.id})">إفراج</button>
-        </div>
-      </div>
-    `).join("") || `<div class="mut">لا يوجد صفقات في انتظار الإفراج</div>`;
-  }
-
-  async function refreshAll(){
-    await loadPrices();
-    await refreshBalance();
-    await loadAds();
-    await loadSellerTrades();
-  }
-
-  async function createAdWithDeposit(){
-    if(!user) return alert("سجل دخول الأول");
-    const pi = Number(adPi.value);
-    const egp = Number(adEgp.value);
-    if(pi<=0||egp<=0) return alert("قيم غير صحيحة");
-
-    const ins = await db.from("p2p_ads").insert([{
-      seller_uid: user.uid,
-      seller_username: user.username,
-      pi_amount: pi,
-      price_egp: egp,
-      status: "pending_deposit"
-    }]).select().single();
-
-    if(ins.error) return alert(ins.error.message);
-    const ad = ins.data;
-
-    try{
-      await Pi.createPayment({
-        amount: pi,
-        memo: "P2P Escrow Deposit",
-        metadata: {
-          type: "p2p_escrow_deposit",
-          ad_id: ad.id,
-          seller_uid: user.uid,
-          seller_username: user.username
-        }
-      },{
-        onReadyForServerApproval: (paymentId) =>
-          fetch("/api/pi/approve", {
-            method:"POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({ paymentId })
-          }),
-
-        onReadyForServerCompletion: (paymentId, txid) =>
-          fetch("/api/pi/complete", {
-            method:"POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({ paymentId, txid })
-          }).then(async (r)=>{
-            const j = await r.json().catch(()=>({}));
-            if(!r.ok){
-              const msg = j?.error_message || j?.error?.error_message || j?.error?.message || JSON.stringify(j);
-              alert("Complete error: " + msg);
-              return;
-            }
-            alert("تم الإيداع ✅ والإعلان اتفتح للناس");
-            adPi.value=""; adEgp.value="";
-            refreshAll();
-          }),
-
-        onCancel: async () => {
-          await db.from("p2p_ads").update({status:"cancelled"}).eq("id", ad.id);
-          alert("تم الإلغاء");
-        },
-
-        onError: async () => {
-          await db.from("p2p_ads").update({status:"cancelled"}).eq("id", ad.id);
-          alert("خطأ في الدفع");
-        }
-      });
-    }catch(e){
-      await db.from("p2p_ads").update({status:"cancelled"}).eq("id", ad.id);
-      alert("افتح من Pi Browser أو حدث خطأ");
-    }
-  }
-
-  async function buyAd(adId){
-    if(!user) return;
-    const adRes = await db.from("p2p_ads").select("*").eq("id", adId).single();
-    if(adRes.error) return alert(adRes.error.message);
-    const ad = adRes.data;
-
-    if(ad.seller_uid === user.uid) return alert("مينفعش تشتري إعلانك");
-    if(!confirm(`شراء ${ad.pi_amount}π مقابل ${ad.price_egp} EGP ؟`)) return;
-
-    const t = await db.from("trades").insert([{
-      ad_id: ad.id,
-      seller_uid: ad.seller_uid,
-      buyer_uid: user.uid,
-      pi_amount: ad.pi_amount,
-      egp_amount: ad.price_egp,
-      status: "waiting_release"
-    }]);
-
-    if(t.error) return alert(t.error.message);
-
-    const e = await db.from("escrows").update({
-      buyer_uid: user.uid,
-      status: "locked_to_buyer"
-    }).eq("ad_id", ad.id).select();
-
-    if(e.error) return alert(e.error.message);
-    if(!e.data || e.data.length===0) return alert("Escrow not found for this ad (deposit not recorded).");
-
-    const a = await db.from("p2p_ads").update({status:"locked"}).eq("id", ad.id);
-    if(a.error) return alert(a.error.message);
-
-    alert("تم إنشاء الصفقة ✅\nادفع الجنيه للبائع، وبعدها البائع هيفرج الـ Pi ليك على المنصة.");
-    refreshAll();
-  }
-
-  // ✅ UPDATED: fetch /api/p2p/release
-  async function releaseTrade(tradeId){
-    if(!user) return alert("سجل دخول الأول");
-    if(!confirm("هل أنت متأكد إنك استلمت الجنيه من المشتري؟")) return;
-
-    try{
-      const res = await fetch("/api/p2p/release", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tradeId: tradeId, sellerUid: user.uid })
-      });
-
-      const data = await res.json().catch(()=>({}));
-
-      if(!res.ok){
-        console.error("Release error:", data);
-        return alert(data.error || data.details || "Release failed");
-      }
-
-      alert("تم الإفراج ✅\nرصيد Pi اتضاف للمشتري على المنصة");
-      await refreshAll();
-
-    }catch(err){
-      console.error(err);
-      alert("خطأ في الاتصال بالسيرفر");
-    }
-  }
-
-  async function withdraw(){
-    if(!user) return alert("سجل دخول الأول");
-    const walletAddress = wAddr.value.trim();
-    const amount = Number(wAmt.value);
-    if(!walletAddress || amount<=0) return alert("اكتب العنوان والكمية");
-
-    wMsg.innerText = "جاري السحب...";
-    const res = await fetch("/api/withdraw",{
-      method:"POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ uid: user.uid, username: user.username, amount, walletAddress })
-    });
-
-    const j = await res.json().catch(()=>({}));
-    if(!res.ok){
-      wMsg.innerText = "";
-      return alert(j.error || j.details || "Withdraw failed");
-    }
-
-    wMsg.innerHTML = `تم السحب ✅ TX: <span class="ok">${j.txid}</span>`;
-    wAddr.value=""; wAmt.value="";
-    refreshAll();
-  }
+// ================== WITHDRAW ==================
+async function withdraw(){
+ const addr=wAddr.value,amt=Number(wAmt.value);
+ const r=await fetch("/api/withdraw",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({uid:user.uid,username:user.username,amount:amt,walletAddress:addr})});
+ const j=await r.json();
+ wMsg.innerText=r.ok?"تم السحب":"خطأ";
+ refreshAll();
+}
 </script>
+
 </body>
 </html>
