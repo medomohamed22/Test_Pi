@@ -166,7 +166,7 @@
   Pi.init({ version: "2.0", sandbox: false });
 
   // =======================
-  // ✅ نظام إظهار أخطاء الدفع فقط
+  // ✅ نظام إظهار أخطاء الدفع فقط (مفصل)
   // =======================
   function normalizePiError(err){
     if(!err) return { code: 'UNKNOWN', message: 'Unknown error' };
@@ -190,7 +190,6 @@
   }
 
   function explainServerError(j, where){
-    // يحاول يجيب رسالة مفهومة من أي شكل رد
     const d = j?.data || {};
     const e = d?.error || d?.errors || d;
     const msg =
@@ -250,19 +249,22 @@
     },
 
     async loginWithPi() {
-  try {
-    const auth = await Pi.authenticate(['username', 'payments'], () => {});
-    this.currentUser = auth.user;
-    
-    await this.loadFavs();
-    this.updateUI();
-    this.showToast(`مرحباً ${this.currentUser.username}`, 'success');
-    this.fetchAds();
-  } catch (e) {
-    console.error(e);
-    this.showToast("فشل تسجيل الدخول بـ Pi", 'error');
-  }
-},
+      try {
+        // ✅ لازم payments scope عشان createPayment يشتغل
+        const auth = await Pi.authenticate(['username', 'payments'], () => {});
+        this.currentUser = auth.user;
+
+        await this.loadFavs();
+        this.updateUI();
+        this.showToast(`مرحباً ${this.currentUser.username}`, 'success');
+        this.fetchAds();
+      } catch (e) {
+        console.error(e);
+        const n = normalizePiError(e);
+        this.showToast(`فشل تسجيل الدخول بـ Pi: ${n.message}`, 'error');
+      }
+    },
+
     async loadFavs() {
       if (!this.currentUser) return;
       const { data, error } = await client
@@ -384,14 +386,27 @@
 
     // ✅✅✅ الدفع: يظهر الخطأ بالتفصيل فقط لو حصل خطأ
     async promoteAd(adId) {
+      const self = this;               // ✅ حل مشكلة this داخل callbacks
       const btn = document.getElementById('promoteBtn');
+
+      // helper لإظهار خطأ واضح مرة واحدة
+      const showPayError = (title, errObj) => {
+        const n = normalizePiError(errObj);
+        self.showToast(`${title}: (${n.code}) ${n.message}`, "error");
+      };
+
       try {
-        if(!this.currentUser?.username){
-          this.showToast("سجل دخول بـ Pi الأول", "info");
+        if(!self.currentUser?.username){
+          self.showToast("سجل دخول بـ Pi الأول", "info");
           return;
         }
 
-        setBtnBusy(btn, true, "جاري بدء الدفع...");
+        setBtnBusy(btn, true, "جاري بدء الدفع...", "تمييز الإعلان · 3 أيام");
+
+        // ✅ مهم: لو المستخدم دخل قبل كده بدون payments scope، نعيد authenticate هنا بشكل صامت
+        try{
+          await Pi.authenticate(['payments'], () => {});
+        }catch(_){ /* مش لازم نوقف هنا، createPayment هيحدد */ }
 
         await Pi.createPayment(
           {
@@ -400,12 +415,12 @@
             metadata: { adId }
           },
           {
-            // ====== APPROVE ======
+            // ====== APPROVE (إجباري) ======
             onReadyForServerApproval: async (paymentId) => {
               try {
-                setBtnBusy(btn, true, "جاري موافقة السيرفر...");
+                setBtnBusy(btn, true, "جاري موافقة السيرفر...", "تمييز الإعلان · 3 أيام");
 
-                const res = await fetch(`${location.origin}/api/pi/approve`, {
+                const res = await fetch(`/api/pi/approve`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ paymentId })
@@ -415,36 +430,35 @@
                 console.log('approve result:', j);
 
                 if(!j.ok){
-                  // ✅ اظهار السبب بالظبط
-                  this.showToast(explainServerError(j, "Approve"), "error");
+                  self.showToast(explainServerError(j, "Approve"), "error");
                   setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
-                  return false; // ✅ مهم جدًا
+                  return false; // ✅ لازم ترجع false لو فشل
                 }
 
-                return true; // ✅ مهم جدًا
+                return true; // ✅ لازم ترجع true لو تمام
               } catch (e) {
                 console.error('approve exception:', e);
-                this.showToast(`Approve Exception: ${e.message || e}`, "error");
+                showPayError("Approve Exception", e);
                 setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                 return false;
               }
             },
 
-            // ====== COMPLETE ======
+            // ====== COMPLETE (إجباري) ======
             onReadyForServerCompletion: async (paymentId, tx) => {
               try {
-                setBtnBusy(btn, true, "جاري إتمام الدفع...");
+                setBtnBusy(btn, true, "جاري إتمام الدفع...", "تمييز الإعلان · 3 أيام");
 
                 console.log('completion tx raw:', tx);
                 const txid = pickTxid(tx);
 
                 if(!txid){
-                  this.showToast("خطأ: txid مش واصل من Pi SDK (راجع Console)", "error");
+                  self.showToast("خطأ: txid غير موجود من Pi SDK (راجع Console)", "error");
                   setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                   return;
                 }
 
-                const res = await fetch(`${location.origin}/api/pi/complete`, {
+                const res = await fetch(`/api/pi/complete`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ paymentId, txid })
@@ -454,13 +468,13 @@
                 console.log('complete result:', j);
 
                 if(!j.ok){
-                  this.showToast(explainServerError(j, "Complete"), "error");
+                  self.showToast(explainServerError(j, "Complete"), "error");
                   setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                   return;
                 }
 
                 // ====== تحديث الإعلان ======
-                setBtnBusy(btn, true, "جاري تفعيل التمييز...");
+                setBtnBusy(btn, true, "جاري تفعيل التمييز...", "تمييز الإعلان · 3 أيام");
 
                 const expiry = new Date();
                 expiry.setDate(expiry.getDate() + 3);
@@ -476,28 +490,26 @@
 
                 if(up.error){
                   console.error('supabase update error:', up.error);
-                  this.showToast(`Supabase Update Error: ${up.error.message || JSON.stringify(up.error)}`, "error");
+                  self.showToast(`Supabase Update Error: ${up.error.message || JSON.stringify(up.error)}`, "error");
                   setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                   return;
                 }
 
-                this.showToast("تم تمييز الإعلان بنجاح ⭐", "success");
+                self.showToast("تم تمييز الإعلان بنجاح ⭐", "success");
                 setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                 toggleModal('detailModal', false);
 
               } catch (e) {
                 console.error('completion exception:', e);
-                this.showToast(`Complete Exception: ${e.message || e}`, "error");
+                showPayError("Complete Exception", e);
                 setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
               }
             },
 
-            // ====== Pi SDK Error ======
+            // ====== onError (إجباري) ======
             onError: (err) => {
               console.error('Pi onError:', err);
-              const n = normalizePiError(err);
-              // ✅ هنا هتعرف نوع الخطأ من Pi SDK
-              this.showToast(`Pi Error (${n.code}): ${n.message}`, "error");
+              showPayError("Pi Error", err);
               setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
             }
           }
@@ -505,8 +517,7 @@
 
       } catch (err) {
         console.error('createPayment exception:', err);
-        const n = normalizePiError(err);
-        this.showToast(`CreatePayment Failed (${n.code}): ${n.message}`, "error");
+        showPayError("CreatePayment Failed", err);
         setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
       }
     },
