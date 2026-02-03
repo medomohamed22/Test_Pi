@@ -1,281 +1,347 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Wallet</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --primary: #6c5ce7;
-            --dark-bg: #0f172a;
-            --glass: rgba(255, 255, 255, 0.05);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Nexus Wallet P2P</title>
 
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.3s ease; }
-        body { 
-            background: var(--dark-bg); color: white; 
-            font-family: 'Inter', 'Tajawal', sans-serif; 
-            min-height: 100vh; padding: 20px; 
-        }
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        /* شاشة الدخول والشعار العائم */
-        #login-overlay {
-            position: fixed; inset: 0; background: var(--dark-bg);
-            z-index: 9999; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center;
-        }
-
-        .floating-pi {
-            width: 100px; height: 100px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; font-weight: bold; color: white;
-            box-shadow: 0 0 30px var(--primary);
-            animation: float 4s ease-in-out infinite;
-            margin-bottom: 30px;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(10deg); }
-        }
-
-        /* زر تبديل اللغة */
-        .lang-switch {
-            position: fixed; top: 20px; right: 20px;
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
-            color: white; padding: 10px 15px; border-radius: 50px;
-            cursor: pointer; z-index: 10000; font-size: 1.2rem;
-        }
-
-        /* البطاقة */
-        .vault-card {
-            background: linear-gradient(135deg, var(--primary), #a29bfe);
-            border-radius: 24px; padding: 30px; height: 200px;
-            display: flex; flex-direction: column; justify-content: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin-top: 50px;
-        }
-
-        .balance-label { font-size: 0.9rem; opacity: 0.8; margin-bottom: 5px; }
-        .balance-value { font-size: 2.8rem; font-weight: 700; }
-
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0; }
-        .action-btn {
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
-            padding: 20px; border-radius: 20px; text-align: center; cursor: pointer;
-        }
-
-        /* المودال */
-        .modal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-            z-index: 1000; justify-content: center; align-items: flex-end;
-        }
-        .modal-content {
-            background: #1e293b; width: 100%; border-radius: 30px 30px 0 0;
-            padding: 40px 25px;
-        }
-
-        input {
-            width: 100%; background: #0f172a; border: 1px solid #334155;
-            padding: 15px; border-radius: 15px; color: white; margin-bottom: 15px;
-            text-align: center; font-size: 1.1rem;
-        }
-
-        .confirm-btn {
-            width: 100%; padding: 16px; border-radius: 15px; border: none;
-            background: var(--primary); color: white; font-weight: 700;
-        }
-
-        .history-section { background: var(--glass); border-radius: 25px; padding: 20px; }
-        .history-item {
-            display: flex; justify-content: space-between; padding: 15px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        /* RTL Support */
-        [dir="rtl"] .lang-switch { right: auto; left: 20px; }
-    </style>
+  <style>
+    :root{--p:#6c5ce7;--bg:#0f172a;--card:rgba(255,255,255,.06);--bd:rgba(255,255,255,.12)}
+    *{box-sizing:border-box;font-family:Inter,Tajawal}
+    body{margin:0;background:var(--bg);color:#fff;padding:18px}
+    .card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:12px 0}
+    h3{margin:0 0 10px}
+    input{width:100%;padding:12px;border-radius:14px;border:1px solid var(--bd);background:#020617;color:#fff;margin:7px 0}
+    button{width:100%;padding:12px;border:none;border-radius:14px;background:var(--p);color:#fff;font-weight:700;cursor:pointer}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .small{width:auto;padding:8px 12px;font-size:13px}
+    .mut{opacity:.7}
+    .item{padding:12px 0;border-bottom:1px solid var(--bd)}
+    .badge{font-size:12px;padding:4px 10px;border-radius:999px;background:#1e293b}
+    .danger{background:#ef4444}
+    .ok{color:#22c55e}
+    .warn{color:#f59e0b}
+  </style>
 </head>
-<body dir="ltr">
+<body>
 
-    <button class="lang-switch" onclick="toggleLang()">🌐</button>
+  <div class="card" id="loginCard">
+    <h3>🔐 Nexus Wallet P2P</h3>
+    <p class="mut">سوق P2P وسيط (Escrow) — بيع Pi بالجنيه واستلم رصيد على المنصة ثم اسحب لمحفظتك</p>
+    <button onclick="login()">تسجيل دخول بـ Pi</button>
+  </div>
 
-    <div id="login-overlay">
-        <div class="floating-pi">π</div>
-        <h1 id="t-welcome">Nexus Wallet</h1>
-        <p id="t-subwelcome" style="opacity: 0.6; margin: 15px 0 30px;">Secure your Pi Assets</p>
-        <button onclick="login()" class="confirm-btn" style="width: 200px;" id="t-login-btn">Secure Login</button>
-    </div>
+  <div id="app" style="display:none">
 
-    <div class="vault-card">
-        <div class="balance-label" id="t-balance-label">Available Balance</div>
-        <div class="balance-value"><span id="main-balance">0.00</span> <span style="font-size: 1.2rem;">π</span></div>
-        <div id="user-display" style="margin-top: 15px; opacity: 0.7; font-size: 0.9rem;"></div>
-    </div>
-
-    <div class="action-grid">
-        <div class="action-btn" onclick="openModal('deposit')">
-            <span id="t-deposit-btn">📥 Deposit</span>
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="mut">حسابك</div>
+          <div id="userTag" style="font-weight:800"></div>
+          <div class="mut" style="margin-top:6px">رصيدك على المنصة</div>
+          <div style="font-size:26px;font-weight:900"><span id="balance">0.00</span> π</div>
         </div>
-        <div class="action-btn" onclick="openModal('withdraw')">
-            <span id="t-withdraw-btn">📤 Withdraw</span>
+        <div style="text-align:left">
+          <div class="mut">سعر Pi</div>
+          <div id="piPrice" style="font-weight:900">Loading...</div>
         </div>
+      </div>
     </div>
 
-    <div class="history-section">
-        <h4 id="t-history-title" style="margin-bottom: 15px; opacity: 0.7;">Recent Activity</h4>
-        <div id="history-list"></div>
+    <!-- Create Sell Ad = requires Deposit -->
+    <div class="card">
+      <h3>📢 نشر إعلان بيع (يتطلب إيداع Pi للـ Escrow)</h3>
+      <input id="adPi" type="number" placeholder="كمية Pi للبيع (هتودع نفس الكمية للمنصة)">
+      <input id="adEgp" type="number" placeholder="السعر بالجنيه المصري">
+      <button onclick="createAdWithDeposit()">نشر الإعلان + إيداع Pi</button>
+      <p class="mut" style="margin:10px 0 0">الإعلان مش هيظهر للناس إلا بعد نجاح الإيداع ✅</p>
     </div>
 
-    <div id="deposit-modal" class="modal" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 id="t-dep-title" style="margin-bottom: 20px; text-align: center;">Deposit Pi</h2>
-            <input type="number" id="dep-amount" placeholder="Amount π">
-            <button id="btn-dep" class="confirm-btn" onclick="executeDeposit()">Confirm Deposit</button>
+    <!-- Market -->
+    <div class="card">
+      <h3>🔁 سوق الإعلانات</h3>
+      <div id="ads"></div>
+    </div>
+
+    <!-- Seller Trades -->
+    <div class="card">
+      <h3>🧾 صفقاتي كبائع (في انتظار الإفراج)</h3>
+      <div id="sellerTrades"></div>
+      <p class="mut">بعد ما تستلم الجنيه من المشتري، اضغط “إفراج” علشان يتحول Pi لرصيد المشتري على المنصة.</p>
+    </div>
+
+    <!-- Withdraw -->
+    <div class="card">
+      <h3>📤 سحب Pi لمحفظتك</h3>
+      <input id="wAddr" placeholder="عنوان محفظتك (G...)">
+      <input id="wAmt" type="number" placeholder="الكمية">
+      <button class="danger" onclick="withdraw()">سحب الآن</button>
+      <div id="wMsg" class="mut" style="margin-top:10px"></div>
+    </div>
+
+  </div>
+
+<script>
+  // ====== Supabase Frontend (publishable ok) ======
+  const SUPABASE_URL = 'https://xncapmzlwuisupkjlftb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS';
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let user=null;
+  let piUsd=0, usdEgp=0;
+
+  window.onload = () => {
+    try{ Pi.init({version:"2.0"}); }catch(e){}
+    loadPrices();
+  };
+
+  async function login(){
+    try{
+      const auth = await Pi.authenticate(['username','payments']);
+      user = auth.user;
+      loginCard.style.display="none";
+      app.style.display="block";
+      userTag.innerText = "@"+user.username;
+
+      await db.from("users").upsert({pi_uid:user.uid, username:user.username},{onConflict:"pi_uid"});
+      await refreshAll();
+    }catch(e){
+      alert("افتح من Pi Browser");
+    }
+  }
+
+  async function loadPrices(){
+    try{
+      const okx = await fetch('https://www.okx.com/api/v5/market/ticker?instId=PI-USDT').then(r=>r.json());
+      piUsd = parseFloat(okx?.data?.[0]?.last || "0");
+
+      const fx = await fetch('https://open.er-api.com/v6/latest/USD').then(r=>r.json());
+      usdEgp = fx?.rates?.EGP || 0;
+
+      const egp = (piUsd*usdEgp).toFixed(2);
+      piPrice.innerText = `1π ≈ ${egp} EGP`;
+    }catch(e){
+      piPrice.innerText = "Price unavailable";
+    }
+  }
+
+  async function refreshBalance(){
+    if(!user) return;
+    const {data:din}=await db.from("donations").select("amount").eq("pi_user_id", user.uid);
+    const {data:dout}=await db.from("withdrawals").select("amount").eq("pi_user_id", user.uid);
+
+    const tin=(din||[]).reduce((s,r)=>s+Number(r.amount||0),0);
+    const tout=(dout||[]).reduce((s,r)=>s+Number(r.amount||0),0);
+    balance.innerText = (tin-tout).toFixed(2);
+  }
+
+  async function loadAds(){
+    const {data} = await db.from("p2p_ads")
+      .select("*")
+      .eq("status","open")
+      .order("created_at",{ascending:false});
+
+    ads.innerHTML = (data||[]).map(a=>`
+      <div class="item">
+        <div class="row">
+          <div>
+            <b>@${a.seller_username}</b>
+            <div class="mut">${a.pi_amount} π مقابل ${a.price_egp} EGP</div>
+          </div>
+          ${a.seller_uid!==user.uid
+            ? `<button class="small" onclick="buyAd(${a.id})">شراء</button>`
+            : `<span class="badge">إعلانك</span>`}
         </div>
-    </div>
+      </div>
+    `).join("") || `<div class="mut">لا يوجد إعلانات حالياً</div>`;
+  }
 
-    <div id="withdraw-modal" class="modal" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 id="t-wit-title" style="margin-bottom: 20px; text-align: center;">Withdraw Pi</h2>
-            <input type="text" id="wit-address" placeholder="Wallet Address G...">
-            <input type="number" id="wit-amount" placeholder="Amount">
-            <button id="btn-wit" class="confirm-btn" style="background: #ef4444;" onclick="executeWithdraw()">Confirm Withdrawal</button>
+  async function loadSellerTrades(){
+    if(!user) return;
+    const {data} = await db.from("trades")
+      .select("*")
+      .eq("seller_uid", user.uid)
+      .eq("status","waiting_release")
+      .order("created_at",{ascending:false});
+
+    sellerTrades.innerHTML = (data||[]).map(t=>`
+      <div class="item">
+        <div class="row">
+          <div>
+            <b>Trade #${t.id}</b>
+            <div class="mut">بيع ${t.pi_amount}π مقابل ${t.egp_amount} EGP</div>
+            <div class="mut">Buyer UID: ${t.buyer_uid}</div>
+          </div>
+          <button class="small" onclick="releaseTrade(${t.id})">إفراج</button>
         </div>
-    </div>
+      </div>
+    `).join("") || `<div class="mut">لا يوجد صفقات في انتظار الإفراج</div>`;
+  }
 
-    <script>
-        const SUPABASE_URL = 'https://xncapmzlwuisupkjlftb.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS';
-        const _db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let user = null;
-        let currentLang = 'en';
+  async function refreshAll(){
+    await loadPrices();
+    await refreshBalance();
+    await loadAds();
+    await loadSellerTrades();
+  }
 
-        const i18n = {
-            en: {
-                welcome: "Nexus Wallet", sub: "Secure your Pi Assets", login: "Secure Login",
-                bal_lbl: "Available Balance", dep: "📥 Deposit", wit: "📤 Withdraw",
-                hist: "Recent Activity", dep_t: "Deposit Pi", wit_t: "Withdraw Pi",
-                conf_dep: "Confirm Deposit", conf_wit: "Confirm Withdrawal",
-                success_dep: "Deposit Successful!", success_wit: "Withdrawal Requested!",
-                wait: "Processing...", low_bal: "Insufficient balance"
-            },
-            ar: {
-                welcome: "محفظة نيكسوس", sub: "أمن أصولك من عملة باي", login: "دخول آمن",
-                bal_lbl: "الرصيد المتاح", dep: "📥 إيداع", wit: "📤 سحب",
-                hist: "العمليات الأخيرة", dep_t: "إيداع باي", wit_t: "سحب باي",
-                conf_dep: "تأكيد الإيداع", conf_wit: "تأكيد السحب",
-                success_dep: "تم الإيداع بنجاح!", success_wit: "تم طلب السحب!",
-                wait: "جاري المعالجة...", low_bal: "الرصيد غير كافٍ"
+  // ====== Create Ad -> Deposit Pi escrow via Pi.createPayment ======
+  async function createAdWithDeposit(){
+    if(!user) return alert("سجل دخول الأول");
+    const pi = Number(adPi.value);
+    const egp = Number(adEgp.value);
+    if(pi<=0||egp<=0) return alert("قيم غير صحيحة");
+
+    // 1) create pending ad
+    const ins = await db.from("p2p_ads").insert([{
+      seller_uid: user.uid,
+      seller_username: user.username,
+      pi_amount: pi,
+      price_egp: egp,
+      status: "pending_deposit"
+    }]).select().single();
+
+    if(ins.error) return alert(ins.error.message);
+    const ad = ins.data;
+
+    // 2) deposit to escrow
+    try{
+      await Pi.createPayment({
+        amount: pi,
+        memo: "P2P Escrow Deposit",
+        metadata: {
+          type: "p2p_escrow_deposit",
+          ad_id: ad.id,
+          seller_uid: user.uid,
+          seller_username: user.username
+        }
+      },{
+        onReadyForServerApproval: (paymentId) =>
+          fetch("/api/pi/approve", {
+            method:"POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ paymentId })
+          }),
+
+        onReadyForServerCompletion: (paymentId, txid) =>
+          fetch("/api/pi/complete", {
+            method:"POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ paymentId, txid })
+          }).then(async (r)=>{
+            if(!r.ok){
+              const j=await r.json().catch(()=>({}));
+              alert("Complete error: "+(j.error?.message || JSON.stringify(j.error||j)));
+              return;
             }
-        };
+            alert("تم الإيداع ✅ والإعلان اتفتح للناس");
+            adPi.value=""; adEgp.value="";
+            refreshAll();
+          }),
 
-        function toggleLang() {
-            currentLang = currentLang === 'en' ? 'ar' : 'en';
-            document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-            const t = i18n[currentLang];
-            document.getElementById('t-welcome').innerText = t.welcome;
-            document.getElementById('t-subwelcome').innerText = t.sub;
-            document.getElementById('t-login-btn').innerText = t.login;
-            document.getElementById('t-balance-label').innerText = t.bal_lbl;
-            document.getElementById('t-deposit-btn').innerText = t.dep;
-            document.getElementById('t-withdraw-btn').innerText = t.wit;
-            document.getElementById('t-history-title').innerText = t.hist;
-            document.getElementById('t-dep-title').innerText = t.dep_t;
-            document.getElementById('t-wit-title').innerText = t.wit_t;
-            document.getElementById('btn-dep').innerText = t.conf_dep;
-            document.getElementById('btn-wit').innerText = t.conf_wit;
+        onCancel: async () => {
+          await db.from("p2p_ads").update({status:"cancelled"}).eq("id", ad.id);
+          alert("تم الإلغاء");
+        },
+
+        onError: async () => {
+          await db.from("p2p_ads").update({status:"cancelled"}).eq("id", ad.id);
+          alert("خطأ في الدفع");
         }
+      });
+    }catch(e){
+      await db.from("p2p_ads").update({status:"cancelled"}).eq("id", ad.id);
+      alert("افتح من Pi Browser أو حدث خطأ");
+    }
+  }
 
-        async function login() {
-            try {
-                const auth = await window.Pi.authenticate(['username', 'payments'], onIncomplete);
-                user = auth.user;
-                document.getElementById('login-overlay').style.display = 'none';
-                document.getElementById('user-display').innerText = `@${user.username}`;
-                refreshData();
-            } catch (e) { alert("Use Pi Browser"); }
-        }
+  // ====== Buyer buys ad => trade + lock escrow ======
+  async function buyAd(adId){
+    if(!user) return;
+    const adRes = await db.from("p2p_ads").select("*").eq("id", adId).single();
+    if(adRes.error) return alert(adRes.error.message);
+    const ad = adRes.data;
 
-        async function refreshData() {
-            if (!user) return;
-            const { data: d } = await _db.from('donations').select('*').eq('pi_user_id', user.uid);
-            const { data: w } = await _db.from('withdrawals').select('*').eq('pi_user_id', user.uid);
-            
-            const totalIn = d?.reduce((s, r) => s + parseFloat(r.amount), 0) || 0;
-            const totalOut = w?.reduce((s, r) => s + parseFloat(r.amount), 0) || 0;
-            document.getElementById('main-balance').innerText = (totalIn - totalOut).toFixed(2);
-            
-            const list = document.getElementById('history-list');
-            const all = [...(d || []), ...(w || [])].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-            list.innerHTML = all.slice(0, 5).map(i => `
-                <div class="history-item">
-                    <span>${i.wallet_address ? i18n[currentLang].wit : i18n[currentLang].dep}</span>
-                    <span style="color:${i.wallet_address ? '#ff7675' : '#55efc4'}">${i.wallet_address?'-':'+'}${parseFloat(i.amount).toFixed(2)}</span>
-                </div>
-            `).join('');
-        }
+    if(!confirm(`شراء ${ad.pi_amount}π مقابل ${ad.price_egp} EGP ؟`)) return;
 
-        async function executeDeposit() {
-            const amt = parseFloat(document.getElementById('dep-amount').value);
-            if (!amt || amt <= 0) return;
-            const btn = document.getElementById('btn-dep');
-            btn.disabled = true; btn.innerText = i18n[currentLang].wait;
+    // create trade
+    const t = await db.from("trades").insert([{
+      ad_id: ad.id,
+      seller_uid: ad.seller_uid,
+      buyer_uid: user.uid,
+      pi_amount: ad.pi_amount,
+      egp_amount: ad.price_egp,
+      status: "waiting_release"
+    }]);
 
-            try {
-                await window.Pi.createPayment({ amount: amt, memo: "Deposit to Nexus Wallet", metadata: { type: "deposit" } }, {
-                    onReadyForServerApproval: (id) => fetch('/api/pi/approve', { method: 'POST', body: JSON.stringify({ paymentId: id }) }),
-                    onReadyForServerCompletion: async (id, txid) => {
-                        await _db.from('donations').insert([{ pi_user_id: user.uid, username: user.username, amount: amt, payment_id: id }]);
-                        await fetch('/api/pi/complete', { method: 'POST', body: JSON.stringify({ paymentId: id, txid: txid }) });
-                        alert(i18n[currentLang].success_dep);
-                        closeAllModals();
-                        refreshData(); 
-                    },
-                    onCancel: () => { btn.disabled = false; btn.innerText = i18n[currentLang].conf_dep; },
-                    onError: () => { btn.disabled = false; }
-                });
-            } catch (e) { btn.disabled = false; }
-        }
+    if(t.error) return alert(t.error.message);
 
-        async function executeWithdraw() {
-            const addr = document.getElementById('wit-address').value;
-            const amt = parseFloat(document.getElementById('wit-amount').value);
-            const bal = parseFloat(document.getElementById('main-balance').innerText);
+    // lock escrow to buyer
+    const e = await db.from("escrows").update({
+      buyer_uid: user.uid,
+      status: "locked_to_buyer"
+    }).eq("ad_id", ad.id);
 
-            if (!addr || amt <= 0) return;
-            if (amt > bal) return alert(i18n[currentLang].low_bal);
+    if(e.error) return alert(e.error.message);
 
-            const btn = document.getElementById('btn-wit');
-            btn.disabled = true; btn.innerText = i18n[currentLang].wait;
+    // lock ad
+    const a = await db.from("p2p_ads").update({status:"locked"}).eq("id", ad.id);
+    if(a.error) return alert(a.error.message);
 
-            try {
-                const res = await fetch('/api/withdraw', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ uid: user.uid, username: user.username, amount: amt, walletAddress: addr })
-                });
-                if (res.ok) {
-                    alert(i18n[currentLang].success_wit);
-                    closeAllModals();
-                    refreshData();
-                } else {
-                    const err = await res.json();
-                    alert(err.details);
-                }
-            } catch (e) { alert("Server Error"); }
-            btn.disabled = false;
-        }
+    alert("تم إنشاء الصفقة ✅\nادفع الجنيه للبائع، وبعدها البائع هيفرج الـ Pi ليك على المنصة.");
+    refreshAll();
+  }
 
-        function openModal(type) { document.getElementById(`${type}-modal`).style.display = 'flex'; }
-        function closeModal(e) { e.target.style.display = 'none'; }
-        function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-        async function onIncomplete(p) { fetch('/api/pi/complete', { method: 'POST', body: JSON.stringify({ paymentId: p.identifier, txid: p.transaction.txid }) }); }
-        window.onload = () => { window.Pi.init({version: "2.0"}); };
-    </script>
+  // ====== Seller releases => buyer gets platform balance (donations credit) ======
+  async function releaseTrade(tradeId){
+    if(!user) return;
+
+    const res = await fetch("/api/p2p/release",{
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ tradeId, sellerUid: user.uid })
+    });
+
+    const j = await res.json().catch(()=>({}));
+    if(!res.ok) return alert(j.error || j.details || "Release failed");
+
+    alert("تم الإفراج ✅ (رصيد المشتري اتضاف على المنصة)");
+    refreshAll();
+  }
+
+  // ====== Withdraw (real testnet transfer) ======
+  async function withdraw(){
+    if(!user) return alert("سجل دخول الأول");
+    const walletAddress = wAddr.value.trim();
+    const amount = Number(wAmt.value);
+    if(!walletAddress || amount<=0) return alert("اكتب العنوان والكمية");
+
+    wMsg.innerText = "جاري السحب...";
+    const res = await fetch("/api/withdraw",{
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        uid: user.uid,
+        username: user.username,
+        amount,
+        walletAddress
+      })
+    });
+
+    const j = await res.json().catch(()=>({}));
+    if(!res.ok){
+      wMsg.innerText = "";
+      return alert(j.error || j.details || "Withdraw failed");
+    }
+
+    wMsg.innerHTML = `تم السحب ✅ TX: <span class="ok">${j.txid}</span>`;
+    wAddr.value=""; wAmt.value="";
+    refreshAll();
+  }
+</script>
 </body>
 </html>
