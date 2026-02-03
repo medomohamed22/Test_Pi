@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
-        :root { --primary: #002f34; --accent: #3a77ff; --pi: #ffda00; --bg: #f2f4f5; --surface: #ffffff; --danger: #eb4d4b; }
+        :root { --primary: #002f34; --accent: #3a77ff; --pi: #ffda00; --bg: #f2f4f5; --surface: #ffffff; --danger: #eb4d4b; --success: #2ed573; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
         body { background: var(--bg); color: var(--primary); padding-bottom: 70px; }
         
@@ -33,25 +33,24 @@
         .card { background: var(--surface); border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; }
         .card-img { width: 100%; height: 170px; object-fit: cover; }
         
-        /* علامة إعلان مميز */
-        .featured-badge { position: absolute; top: 10px; right: 10px; background: var(--pi); color: #000; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 5; }
+        .featured-badge { position: absolute; top: 10px; right: 10px; background: var(--pi); color: #000; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 5; border: 1px solid rgba(0,0,0,0.1); }
         
         .fav-btn { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); border: none; width: 32px; height: 32px; border-radius: 50%; color: #ff4757; z-index: 10; display: flex; align-items: center; justify-content: center; }
         .card-body { padding: 12px; }
         .card-price { font-size: 18px; font-weight: 800; color: var(--primary); }
-        .card-meta { display: flex; justify-content: space-between; font-size: 11px; color: #777; margin-top: 8px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
 
         .fab { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 99; cursor: pointer; border: none; }
 
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
-
-        .admin-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 15px; }
-        .btn-action { border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 13px; }
-        .btn-promote { grid-column: 1 / -1; background: #000; color: var(--pi); display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
+        /* تحسين أزرار التحكم للتاجر */
+        .admin-tools { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; border-top: 2px dashed #eee; padding-top: 20px; }
+        .btn-action { border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; color: white; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .btn-promote { background: #000; color: var(--pi); border: 2px solid var(--pi); order: -1; } /* التمييز دائماً في الأعلى */
+        .btn-promote:hover { background: #222; transform: scale(1.02); }
+        .btn-bump { background: var(--success); }
+        .btn-delete { background: var(--danger); }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -60,7 +59,7 @@
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div><p style="margin-top:15px;">جاري تشغيل النظام...</p></div>
+<div id="loader"><div class="spinner"></div><p style="margin-top:15px;">جاري تشغيل النظام المباشر...</p></div>
 
 <header>
     <div class="container nav">
@@ -103,14 +102,8 @@
         <form id="addForm" style="margin-top:15px;">
             <div class="form-group"><label>العنوان</label><input type="text" id="pName" required></div>
             <div class="form-group"><label>السعر (ج.م)</label><input type="number" id="pPrice" required></div>
-            <div class="form-group">
-                <label>القسم</label>
-                <select id="pCat"><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option><option value="properties">عقارات</option></select>
-            </div>
-            <div class="form-group">
-                <label>الموقع</label>
-                <select id="pLoc"><option value="القاهرة">القاهرة</option><option value="الإسكندرية">الإسكندرية</option><option value="الجيزة">الجيزة</option></select>
-            </div>
+            <div class="form-group"><label>القسم</label><select id="pCat"><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option><option value="properties">عقارات</option></select></div>
+            <div class="form-group"><label>الموقع</label><select id="pLoc"><option value="القاهرة">القاهرة</option><option value="الإسكندرية">الإسكندرية</option><option value="الجيزة">الجيزة</option></select></div>
             <div class="form-group"><label>الهاتف</label><input type="tel" id="pPhone" required></div>
             <div class="form-group"><label>الوصف</label><textarea id="pDesc" rows="3" required></textarea></div>
             <div class="form-group"><label>الصورة</label><input type="file" id="pImage" accept="image/*" required></div>
@@ -144,7 +137,7 @@
         },
 
         setupRealtime() {
-            client.channel('live').on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, () => {
+            client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, () => {
                 this.fetchAds();
             }).subscribe();
         },
@@ -156,7 +149,7 @@
                 await this.loadFavs();
                 this.updateUI();
                 this.fetchAds();
-            } catch (e) { console.log("Login Error"); }
+            } catch (e) { console.log("Pi Login Error"); }
         },
 
         async loadFavs() {
@@ -175,7 +168,6 @@
             const search = document.getElementById('searchInput').value;
             const loc = document.getElementById('locFilter').value;
             
-            // ترتيب الإعلانات: المميزة أولاً ثم الأحدث
             let query = client.from('ads').select('*')
                 .order('is_featured', { ascending: false })
                 .order('updated_at', { ascending: false });
@@ -196,22 +188,19 @@
             grid.innerHTML = '';
             this.adsData.forEach(item => {
                 const isFav = this.userFavs.includes(item.id);
-                // التحقق من صلاحية التمييز (إذا انتهت الـ 3 أيام)
                 const isFeatured = item.is_featured && new Date(item.featured_until) > new Date();
 
                 grid.innerHTML += `
-                    <div class="card">
-                        ${isFeatured ? '<div class="featured-badge">إعلان مميز</div>' : ''}
+                    <div class="card" onclick="app.showDetails(${item.id})">
+                        ${isFeatured ? '<div class="featured-badge"><i class="fas fa-star"></i> مميز</div>' : ''}
                         <button class="fav-btn" onclick="app.toggleFav(${item.id}, event)">
                             <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
                         </button>
-                        <div onclick="app.showDetails(${item.id})">
-                            <img src="${item.image_url}" class="card-img">
-                            <div class="card-body">
-                                <div class="card-price">${item.price} ج.م</div>
-                                <div style="font-weight:bold; margin:5px 0;">${item.name}</div>
-                                <div style="font-size:12px; color:#777;"><i class="fas fa-map-marker-alt"></i> ${item.location}</div>
-                            </div>
+                        <img src="${item.image_url}" class="card-img">
+                        <div class="card-body">
+                            <div class="card-price">${item.price} ج.م</div>
+                            <div style="font-weight:bold; margin:5px 0;">${item.name}</div>
+                            <div style="font-size:12px; color:#777;"><i class="fas fa-map-marker-alt"></i> ${item.location}</div>
                         </div>
                     </div>`;
             });
@@ -223,63 +212,55 @@
             const content = document.getElementById('detailContent');
             
             content.innerHTML = `
-                <img src="${item.image_url}" style="width:100%; border-radius:12px;">
-                <h2 style="margin:15px 0 5px;">${item.name}</h2>
-                <h3 style="color:var(--accent);">${item.price} ج.م</h3>
-                <p style="background:#f9f9f9; padding:10px; border-radius:8px;">${item.description}</p>
-                <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:#25D366; color:white; text-decoration:none; margin-top:10px;">اتصال</a>
+                <img src="${item.image_url}" style="width:100%; border-radius:12px; height:250px; object-fit:cover;">
+                <div style="margin-top:15px;">
+                    <h2 style="margin-bottom:5px;">${item.name}</h2>
+                    <h3 style="color:var(--accent); font-size:24px;">${item.price} ج.م</h3>
+                    <p style="background:#f8f8f8; padding:15px; border-radius:10px; margin:15px 0; line-height:1.6;">${item.description}</p>
+                    <div style="font-size:13px; color:#666; margin-bottom:15px;">
+                        <i class="fas fa-user"></i> البائع: ${item.seller_user} | <i class="fas fa-map-marker-alt"></i> ${item.location}
+                    </div>
+                </div>
                 
+                <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:#25D366; color:white; text-decoration:none; height:50px;">
+                    <i class="fas fa-phone"></i> اتصل بالبائع
+                </a>
+
                 ${isOwner ? `
                     <div class="admin-tools">
-                        <button onclick="app.promoteAd(${item.id})" class="btn-promote btn-action">
-                            <i class="fab fa-pi"></i> تمييز الإعلان (3 Pi / 3 أيام)
+                        <button onclick="app.promoteAd(${item.id})" class="btn-action btn-promote">
+                            <i class="fab fa-pi"></i> تمييز الإعلان (3 Pi لمدة 3 أيام)
                         </button>
-                        <button onclick="app.bumpAd(${item.id})" class="btn-action" style="background:#2ed573">تحديث</button>
-                        <button onclick="app.deleteAd(${item.id})" class="btn-action" style="background:var(--danger)">حذف</button>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <button onclick="app.bumpAd(${item.id})" class="btn-action btn-bump"><i class="fas fa-arrow-up"></i> تحديث</button>
+                            <button onclick="app.deleteAd(${item.id})" class="btn-action btn-delete"><i class="fas fa-trash"></i> حذف</button>
+                        </div>
                     </div>
                 ` : ''}
-                <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:15px; cursor:pointer;">إغلاق</button>
+                
+                <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:20px; cursor:pointer; color:#999; font-weight:bold;">إغلاق</button>
             `;
             toggleModal('detailModal', true);
         },
 
-        // --- نظام دفع Pi لتمييز الإعلان ---
         async promoteAd(adId) {
             try {
                 const payment = await Pi.createPayment({
                     amount: 3.0,
-                    memo: "تمييز إعلان في سوق إكس لمدة 3 أيام",
+                    memo: "تمييز إعلان لمدة 3 أيام في سوق إكس",
                     metadata: { adId: adId },
                 }, {
-                    onReadyForServerApproval: async (paymentId) => {
-                        await fetch('/api/pi/approve', {
-                            method: 'POST',
-                            body: JSON.stringify({ paymentId })
-                        });
-                    },
-                    onReadyForServerCompletion: async (paymentId, txid) => {
-                        await fetch('/api/pi/complete', {
-                            method: 'POST',
-                            body: JSON.stringify({ paymentId, txid })
-                        });
-                        
-                        // بعد نجاح الدفع، نحدث جدول Supabase
-                        const expiryDate = new Date();
-                        expiryDate.setDate(expiryDate.getDate() + 3); // إضافة 3 أيام
-
-                        await client.from('ads').update({
-                            is_featured: true,
-                            featured_until: expiryDate,
-                            updated_at: new Date() // رفعه للأعلى أيضاً
-                        }).eq('id', adId);
-
-                        alert("مبروك! أصبح إعلانك مميزاً لمدة 3 أيام.");
+                    onReadyForServerApproval: async (pId) => fetch('/api/pi/approve', { method: 'POST', body: JSON.stringify({ paymentId: pId }) }),
+                    onReadyForServerCompletion: async (pId, tx) => {
+                        await fetch('/api/pi/complete', { method: 'POST', body: JSON.stringify({ paymentId: pId, txid: tx }) });
+                        const expiry = new Date(); expiry.setDate(expiry.getDate() + 3);
+                        await client.from('ads').update({ is_featured: true, featured_until: expiry, updated_at: new Date() }).eq('id', adId);
+                        alert("تم تمييز الإعلان بنجاح!");
                         toggleModal('detailModal', false);
                     },
-                    onCancel: () => console.log("Payment Cancelled"),
-                    onError: (error) => alert("خطأ في الدفع: " + error.message),
+                    onError: (err) => alert("خطأ في الدفع: " + err.message)
                 });
-            } catch (err) { alert("حدث خطأ في نظام الدفع"); }
+            } catch (err) { alert("فشل نظام الدفع"); }
         },
 
         async toggleFav(id, e) {
@@ -298,10 +279,11 @@
         async bumpAd(id) {
             await client.from('ads').update({ updated_at: new Date() }).eq('id', id);
             toggleModal('detailModal', false);
+            alert("تم تحديث تاريخ الإعلان لرفعه في النتائج");
         },
 
         async deleteAd(id) {
-            if (confirm("حذف الإعلان؟")) {
+            if (confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً؟")) {
                 await client.from('ads').delete().eq('id', id);
                 toggleModal('detailModal', false);
             }
@@ -311,6 +293,13 @@
             this.currentCat = cat;
             document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
             el.classList.add('active');
+            this.fetchAds();
+        },
+
+        resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('locFilter').value = 'all';
+            this.currentCat = 'all';
             this.fetchAds();
         },
 
@@ -324,6 +313,7 @@
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
+        btn.innerText = "جاري النشر...";
         try {
             const file = document.getElementById('pImage').files[0];
             const name = `${Date.now()}_${file.name}`;
@@ -343,8 +333,10 @@
             });
             toggleModal('addModal', false);
             document.getElementById('addForm').reset();
+            alert("تم نشر إعلانك بنجاح!");
         } catch (err) { alert("خطأ في الرفع"); }
         btn.disabled = false;
+        btn.innerText = "نشر الآن";
     };
 
     function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
