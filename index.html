@@ -60,10 +60,16 @@
       border-radius: 14px;
       font-size: 15px;
       box-shadow: 0 6px 15px rgba(0,0,0,.25);
+      width: 100%;
     }
     .promote-pro:hover{
       transform: translateY(-1px) scale(1.01);
       background: linear-gradient(135deg,#111,#2a2a2a);
+    }
+    .promote-pro[disabled]{
+      opacity: .7;
+      cursor: not-allowed;
+      transform: none !important;
     }
     .promote-chip{
       display:inline-flex;
@@ -77,8 +83,8 @@
       margin-right: 6px;
     }
 
-    #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
-    .toast { background: white; color: var(--primary); padding: 15px 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 10px; display: flex; align-items: center; gap: 12px; font-weight: bold; border-right: 5px solid var(--accent); animation: slideDown 0.3s ease; }
+    #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 420px; }
+    .toast { background: white; color: var(--primary); padding: 15px 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 10px; display: flex; align-items: center; gap: 12px; font-weight: bold; border-right: 5px solid var(--accent); animation: slideDown 0.3s ease; line-height: 1.5; }
     .toast.success { border-right-color: var(--success); }
     .toast.error { border-right-color: var(--danger); }
     @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -159,16 +165,53 @@
   const Pi = window.Pi;
   Pi.init({ version: "2.0", sandbox: false });
 
-  // ✅ أدوات Debug صغيرة (هتساعدك تعرف المشكلة بسرعة)
+  // =======================
+  // ✅ نظام إظهار أخطاء الدفع فقط
+  // =======================
+  function normalizePiError(err){
+    if(!err) return { code: 'UNKNOWN', message: 'Unknown error' };
+    if(typeof err === 'string') return { code: 'ERROR', message: err };
+    const code = err.code || err.errorCode || err.name || 'ERROR';
+    const message = err.message || err.errorMessage || err.description || JSON.stringify(err);
+    return { code, message };
+  }
+
   async function safeJson(res){
     const t = await res.text();
-    try { return { ok: res.ok, status: res.status, data: JSON.parse(t) }; }
-    catch { return { ok: res.ok, status: res.status, data: { raw: t } }; }
+    let data;
+    try { data = JSON.parse(t); } catch { data = { raw: t }; }
+    return { ok: res.ok, status: res.status, data };
   }
+
   function pickTxid(tx){
     if (!tx) return null;
     if (typeof tx === 'string') return tx;
     return tx.txid || tx.id || tx.transaction?.txid || tx.transactionId || null;
+  }
+
+  function explainServerError(j, where){
+    // يحاول يجيب رسالة مفهومة من أي شكل رد
+    const d = j?.data || {};
+    const e = d?.error || d?.errors || d;
+    const msg =
+      (typeof e === 'string' ? e :
+      e?.message || e?.error || e?.details || e?.raw || JSON.stringify(e));
+
+    return `خطأ ${where} (${j.status}): ${msg}`;
+  }
+
+  function setBtnBusy(btn, busy, textBusy='جاري...', textNormal=null){
+    if(!btn) return;
+    if(busy){
+      btn.setAttribute('disabled', 'disabled');
+      btn.dataset._oldText = btn.innerText;
+      btn.innerText = textBusy;
+    }else{
+      btn.removeAttribute('disabled');
+      const old = btn.dataset._oldText;
+      btn.innerText = textNormal || old || btn.innerText;
+      delete btn.dataset._oldText;
+    }
   }
 
   const app = {
@@ -196,7 +239,7 @@
       const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-triangle' : 'info-circle');
       toast.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
       container.appendChild(toast);
-      setTimeout(() => toast.remove(), 4000);
+      setTimeout(() => toast.remove(), 5500);
     },
 
     setupRealtime() {
@@ -319,7 +362,7 @@
 
         ${isOwner ? `
           <div class="admin-tools">
-            <button onclick="app.promoteAd(${item.id})" class="btn-action promote-pro">
+            <button id="promoteBtn" onclick="app.promoteAd(${item.id})" class="btn-action promote-pro">
               <span class="promote-chip"><i class="fab fa-pi"></i> 3 Pi</span>
               تمييز الإعلان · 3 أيام
             </button>
@@ -340,13 +383,16 @@
       toggleModal('detailModal', true);
     },
 
-    // ✅✅✅ Pi Payment Flow مضبوط لـ Vercel (approve -> complete) + Debug
+    // ✅✅✅ الدفع: يظهر الخطأ بالتفصيل فقط لو حصل خطأ
     async promoteAd(adId) {
+      const btn = document.getElementById('promoteBtn');
       try {
         if(!this.currentUser?.username){
           this.showToast("سجل دخول بـ Pi الأول", "info");
           return;
         }
+
+        setBtnBusy(btn, true, "جاري بدء الدفع...");
 
         await Pi.createPayment(
           {
@@ -355,52 +401,67 @@
             metadata: { adId }
           },
           {
+            // ====== APPROVE ======
             onReadyForServerApproval: async (paymentId) => {
               try {
-                const res = await fetch('/api/pi/approve', {
+                setBtnBusy(btn, true, "جاري موافقة السيرفر...");
+
+                const res = await fetch(`${location.origin}/api/pi/approve`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ paymentId })
                 });
 
                 const j = await safeJson(res);
-                console.log('approve:', j);
+                console.log('approve result:', j);
 
                 if(!j.ok){
-                  this.showToast("فشل موافقة الدفع (approve)", "error");
-                  return false; // ✅ مهم
+                  // ✅ اظهار السبب بالظبط
+                  this.showToast(explainServerError(j, "Approve"), "error");
+                  setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
+                  return false; // ✅ مهم جدًا
                 }
-                return true; // ✅ مهم
+
+                return true; // ✅ مهم جدًا
               } catch (e) {
                 console.error('approve exception:', e);
-                this.showToast("مشكلة اتصال بالسيرفر (approve)", "error");
+                this.showToast(`Approve Exception: ${e.message || e}`, "error");
+                setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                 return false;
               }
             },
 
+            // ====== COMPLETE ======
             onReadyForServerCompletion: async (paymentId, tx) => {
               try {
-                console.log('completion tx raw:', tx);
+                setBtnBusy(btn, true, "جاري إتمام الدفع...");
 
+                console.log('completion tx raw:', tx);
                 const txid = pickTxid(tx);
+
                 if(!txid){
-                  this.showToast("txid مش واصل من Pi SDK", "error");
+                  this.showToast("خطأ: txid مش واصل من Pi SDK (راجع Console)", "error");
+                  setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                   return;
                 }
 
-                const res = await fetch('/api/pi/complete', {
+                const res = await fetch(`${location.origin}/api/pi/complete`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ paymentId, txid })
                 });
 
                 const j = await safeJson(res);
-                console.log('complete:', j);
+                console.log('complete result:', j);
 
                 if(!j.ok){
-                  this.showToast("فشل إتمام الدفع (complete)", "error");
+                  this.showToast(explainServerError(j, "Complete"), "error");
+                  setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                   return;
                 }
+
+                // ====== تحديث الإعلان ======
+                setBtnBusy(btn, true, "جاري تفعيل التمييز...");
 
                 const expiry = new Date();
                 expiry.setDate(expiry.getDate() + 3);
@@ -415,30 +476,39 @@
                   .eq('id', adId);
 
                 if(up.error){
-                  console.error(up.error);
-                  this.showToast("الدفع تم لكن فشل تحديث الإعلان", "error");
+                  console.error('supabase update error:', up.error);
+                  this.showToast(`Supabase Update Error: ${up.error.message || JSON.stringify(up.error)}`, "error");
+                  setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                   return;
                 }
 
                 this.showToast("تم تمييز الإعلان بنجاح ⭐", "success");
+                setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
                 toggleModal('detailModal', false);
 
               } catch (e) {
                 console.error('completion exception:', e);
-                this.showToast("خطأ أثناء إتمام الدفع", "error");
+                this.showToast(`Complete Exception: ${e.message || e}`, "error");
+                setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
               }
             },
 
+            // ====== Pi SDK Error ======
             onError: (err) => {
               console.error('Pi onError:', err);
-              this.showToast("فشل عملية الدفع", "error");
+              const n = normalizePiError(err);
+              // ✅ هنا هتعرف نوع الخطأ من Pi SDK
+              this.showToast(`Pi Error (${n.code}): ${n.message}`, "error");
+              setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
             }
           }
         );
 
       } catch (err) {
         console.error('createPayment exception:', err);
-        this.showToast("نظام الدفع غير متاح حالياً", "error");
+        const n = normalizePiError(err);
+        this.showToast(`CreatePayment Failed (${n.code}): ${n.message}`, "error");
+        setBtnBusy(btn, false, null, "تمييز الإعلان · 3 أيام");
       }
     },
 
