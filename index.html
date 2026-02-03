@@ -250,20 +250,19 @@
     },
 
     async loginWithPi() {
-      try {
-        const auth = await Pi.authenticate(['username'], () => {});
-        this.currentUser = auth.user;
-
-        await this.loadFavs();
-        this.updateUI();
-        this.showToast(`مرحباً ${this.currentUser.username}`, 'success');
-        this.fetchAds();
-      } catch (e) {
-        console.error(e);
-        this.showToast("فشل تسجيل الدخول بـ Pi", 'error');
-      }
-    },
-
+  try {
+    const auth = await Pi.authenticate(['username', 'payments'], () => {});
+    this.currentUser = auth.user;
+    
+    await this.loadFavs();
+    this.updateUI();
+    this.showToast(`مرحباً ${this.currentUser.username}`, 'success');
+    this.fetchAds();
+  } catch (e) {
+    console.error(e);
+    this.showToast("فشل تسجيل الدخول بـ Pi", 'error');
+  }
+},
     async loadFavs() {
       if (!this.currentUser) return;
       const { data, error } = await client
