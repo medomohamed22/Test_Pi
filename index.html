@@ -44,13 +44,19 @@
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         
-        /* تحسين أزرار التحكم للتاجر */
         .admin-tools { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; border-top: 2px dashed #eee; padding-top: 20px; }
         .btn-action { border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; color: white; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
-        .btn-promote { background: #000; color: var(--pi); border: 2px solid var(--pi); order: -1; } /* التمييز دائماً في الأعلى */
+        .btn-promote { background: #000; color: var(--pi); border: 2px solid var(--pi); order: -1; }
         .btn-promote:hover { background: #222; transform: scale(1.02); }
         .btn-bump { background: var(--success); }
         .btn-delete { background: var(--danger); }
+
+        /* استايل الإشعارات المخصص */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
+        .toast { background: white; color: var(--primary); padding: 15px 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 10px; display: flex; align-items: center; gap: 12px; font-weight: bold; border-right: 5px solid var(--accent); animation: slideDown 0.3s ease; }
+        .toast.success { border-right-color: var(--success); }
+        .toast.error { border-right-color: var(--danger); }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -60,6 +66,7 @@
 <body>
 
 <div id="loader"><div class="spinner"></div><p style="margin-top:15px;">جاري تشغيل النظام المباشر...</p></div>
+<div id="toast-container"></div>
 
 <header>
     <div class="container nav">
@@ -90,7 +97,6 @@
             <div class="cat-pill" onclick="app.filterCat('fav', this)"><i class="fas fa-heart"></i> المفضلة</div>
         </div>
     </div>
-
     <div class="grid" id="productGrid"></div>
 </div>
 
@@ -100,13 +106,13 @@
     <div class="modal-content">
         <h3>نشر إعلان جديد</h3>
         <form id="addForm" style="margin-top:15px;">
-            <div class="form-group"><label>العنوان</label><input type="text" id="pName" required></div>
-            <div class="form-group"><label>السعر (ج.م)</label><input type="number" id="pPrice" required></div>
-            <div class="form-group"><label>القسم</label><select id="pCat"><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option><option value="properties">عقارات</option></select></div>
-            <div class="form-group"><label>الموقع</label><select id="pLoc"><option value="القاهرة">القاهرة</option><option value="الإسكندرية">الإسكندرية</option><option value="الجيزة">الجيزة</option></select></div>
-            <div class="form-group"><label>الهاتف</label><input type="tel" id="pPhone" required></div>
-            <div class="form-group"><label>الوصف</label><textarea id="pDesc" rows="3" required></textarea></div>
-            <div class="form-group"><label>الصورة</label><input type="file" id="pImage" accept="image/*" required></div>
+            <div class="form-group"><label>العنوان</label><input type="text" id="pName" required style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;"></div>
+            <div class="form-group"><label>السعر (ج.م)</label><input type="number" id="pPrice" required style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;"></div>
+            <div class="form-group"><label>القسم</label><select id="pCat" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;"><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option><option value="properties">عقارات</option></select></div>
+            <div class="form-group"><label>الموقع</label><select id="pLoc" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;"><option value="القاهرة">القاهرة</option><option value="الإسكندرية">الإسكندرية</option><option value="الجيزة">الجيزة</option></select></div>
+            <div class="form-group"><label>الهاتف</label><input type="tel" id="pPhone" required style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;"></div>
+            <div class="form-group"><label>الوصف</label><textarea id="pDesc" rows="3" required style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;"></textarea></div>
+            <div class="form-group"><label>الصورة</label><input type="file" id="pImage" accept="image/*" required style="margin-bottom:15px;"></div>
             <button type="submit" class="btn-pi" style="width:100%; justify-content:center; background:var(--accent); color:white;" id="submitBtn">نشر الآن</button>
             <button type="button" onclick="toggleModal('addModal', false)" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer;">إلغاء</button>
         </form>
@@ -126,14 +132,24 @@
 
     const app = {
         currentUser: null,
-        currentCat: 'all',
         userFavs: [],
         adsData: [],
+        currentCat: 'all',
 
         async init() {
             this.setupRealtime();
             await this.fetchAds();
             document.getElementById('loader').style.display = 'none';
+        },
+
+        showToast(msg, type='info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-triangle' : 'info-circle');
+            toast.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
         },
 
         setupRealtime() {
@@ -148,8 +164,9 @@
                 this.currentUser = auth.user;
                 await this.loadFavs();
                 this.updateUI();
+                this.showToast(`مرحباً ${this.currentUser.username}`, 'success');
                 this.fetchAds();
-            } catch (e) { console.log("Pi Login Error"); }
+            } catch (e) { this.showToast("فشل تسجيل الدخول بـ Pi", 'error'); }
         },
 
         async loadFavs() {
@@ -167,17 +184,11 @@
         async fetchAds() {
             const search = document.getElementById('searchInput').value;
             const loc = document.getElementById('locFilter').value;
-            
-            let query = client.from('ads').select('*')
-                .order('is_featured', { ascending: false })
-                .order('updated_at', { ascending: false });
-            
+            let query = client.from('ads').select('*').order('is_featured', { ascending: false }).order('updated_at', { ascending: false });
             if (this.currentCat === 'fav' && this.currentUser) query = query.in('id', this.userFavs);
             else if (this.currentCat !== 'all') query = query.eq('category', this.currentCat);
-
             if (loc !== 'all') query = query.eq('location', loc);
             if (search) query = query.ilike('name', `%${search}%`);
-
             const { data } = await query;
             this.adsData = data || [];
             this.render();
@@ -189,7 +200,6 @@
             this.adsData.forEach(item => {
                 const isFav = this.userFavs.includes(item.id);
                 const isFeatured = item.is_featured && new Date(item.featured_until) > new Date();
-
                 grid.innerHTML += `
                     <div class="card" onclick="app.showDetails(${item.id})">
                         ${isFeatured ? '<div class="featured-badge"><i class="fas fa-star"></i> مميز</div>' : ''}
@@ -210,34 +220,27 @@
             const item = this.adsData.find(a => a.id === id);
             const isOwner = this.currentUser && this.currentUser.username === item.seller_user;
             const content = document.getElementById('detailContent');
-            
             content.innerHTML = `
                 <img src="${item.image_url}" style="width:100%; border-radius:12px; height:250px; object-fit:cover;">
                 <div style="margin-top:15px;">
                     <h2 style="margin-bottom:5px;">${item.name}</h2>
                     <h3 style="color:var(--accent); font-size:24px;">${item.price} ج.م</h3>
                     <p style="background:#f8f8f8; padding:15px; border-radius:10px; margin:15px 0; line-height:1.6;">${item.description}</p>
-                    <div style="font-size:13px; color:#666; margin-bottom:15px;">
-                        <i class="fas fa-user"></i> البائع: ${item.seller_user} | <i class="fas fa-map-marker-alt"></i> ${item.location}
-                    </div>
                 </div>
-                
                 <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:#25D366; color:white; text-decoration:none; height:50px;">
                     <i class="fas fa-phone"></i> اتصل بالبائع
                 </a>
-
                 ${isOwner ? `
                     <div class="admin-tools">
                         <button onclick="app.promoteAd(${item.id})" class="btn-action btn-promote">
                             <i class="fab fa-pi"></i> تمييز الإعلان (3 Pi لمدة 3 أيام)
                         </button>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                            <button onclick="app.bumpAd(${item.id})" class="btn-action btn-bump"><i class="fas fa-arrow-up"></i> تحديث</button>
-                            <button onclick="app.deleteAd(${item.id})" class="btn-action btn-delete"><i class="fas fa-trash"></i> حذف</button>
+                            <button onclick="app.bumpAd(${item.id})" class="btn-action btn-bump">تحديث</button>
+                            <button onclick="app.deleteAd(${item.id})" class="btn-action btn-delete">حذف</button>
                         </div>
                     </div>
                 ` : ''}
-                
                 <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:20px; cursor:pointer; color:#999; font-weight:bold;">إغلاق</button>
             `;
             toggleModal('detailModal', true);
@@ -245,46 +248,51 @@
 
         async promoteAd(adId) {
             try {
-                const payment = await Pi.createPayment({
+                await Pi.createPayment({
                     amount: 3.0,
-                    memo: "تمييز إعلان لمدة 3 أيام في سوق إكس",
+                    memo: "تمييز إعلان لمدة 3 أيام",
                     metadata: { adId: adId },
                 }, {
-                    onReadyForServerApproval: async (pId) => fetch('/api/pi/approve', { method: 'POST', body: JSON.stringify({ paymentId: pId }) }),
+                    onReadyForServerApproval: async (pId) => {
+                        const res = await fetch('/api/pi/approve', { method: 'POST', body: JSON.stringify({ paymentId: pId }) });
+                        if(res.ok) return true;
+                    },
                     onReadyForServerCompletion: async (pId, tx) => {
                         await fetch('/api/pi/complete', { method: 'POST', body: JSON.stringify({ paymentId: pId, txid: tx }) });
                         const expiry = new Date(); expiry.setDate(expiry.getDate() + 3);
                         await client.from('ads').update({ is_featured: true, featured_until: expiry, updated_at: new Date() }).eq('id', adId);
-                        alert("تم تمييز الإعلان بنجاح!");
+                        app.showToast("مبروك! تم تمييز إعلانك بنجاح", "success");
                         toggleModal('detailModal', false);
                     },
-                    onError: (err) => alert("خطأ في الدفع: " + err.message)
+                    onError: (err) => app.showToast("خطأ في عملية الدفع", "error")
                 });
-            } catch (err) { alert("فشل نظام الدفع"); }
+            } catch (err) { app.showToast("فشل نظام الدفع", "error"); }
         },
 
         async toggleFav(id, e) {
             e.stopPropagation();
-            if (!this.currentUser) return alert("سجل دخول بـ Pi");
+            if (!this.currentUser) return this.showToast("سجل دخول أولاً", "info");
             if (this.userFavs.includes(id)) {
                 await client.from('favorites').delete().eq('user_id', this.currentUser.username).eq('ad_id', id);
                 this.userFavs = this.userFavs.filter(f => f !== id);
             } else {
                 await client.from('favorites').insert({ user_id: this.currentUser.username, ad_id: id });
                 this.userFavs.push(id);
+                this.showToast("تمت الإضافة للمفضلة", "success");
             }
             this.render();
         },
 
         async bumpAd(id) {
             await client.from('ads').update({ updated_at: new Date() }).eq('id', id);
+            this.showToast("تم تحديث الإعلان للأعلى", "success");
             toggleModal('detailModal', false);
-            alert("تم تحديث تاريخ الإعلان لرفعه في النتائج");
         },
 
         async deleteAd(id) {
-            if (confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً؟")) {
+            if (confirm("حذف الإعلان نهائياً؟")) {
                 await client.from('ads').delete().eq('id', id);
+                this.showToast("تم حذف الإعلان", "success");
                 toggleModal('detailModal', false);
             }
         },
@@ -296,16 +304,16 @@
             this.fetchAds();
         },
 
+        checkAuth() {
+            if(!this.currentUser) this.loginWithPi();
+            else toggleModal('addModal', true);
+        },
+
         resetFilters() {
             document.getElementById('searchInput').value = '';
             document.getElementById('locFilter').value = 'all';
             this.currentCat = 'all';
             this.fetchAds();
-        },
-
-        checkAuth() {
-            if(!this.currentUser) this.loginWithPi();
-            else toggleModal('addModal', true);
         }
     };
 
@@ -316,9 +324,9 @@
         btn.innerText = "جاري النشر...";
         try {
             const file = document.getElementById('pImage').files[0];
-            const name = `${Date.now()}_${file.name}`;
-            await client.storage.from('ad_images').upload(name, file);
-            const { data: { publicUrl } } = client.storage.from('ad_images').getPublicUrl(name);
+            const fileName = `${Date.now()}_${file.name}`;
+            await client.storage.from('ad_images').upload(fileName, file);
+            const { data: { publicUrl } } = client.storage.from('ad_images').getPublicUrl(fileName);
 
             await client.from('ads').insert({
                 name: document.getElementById('pName').value,
@@ -331,10 +339,10 @@
                 seller_user: app.currentUser.username,
                 updated_at: new Date()
             });
+            app.showToast("تم نشر الإعلان بنجاح", "success");
             toggleModal('addModal', false);
             document.getElementById('addForm').reset();
-            alert("تم نشر إعلانك بنجاح!");
-        } catch (err) { alert("خطأ في الرفع"); }
+        } catch (err) { app.showToast("خطأ أثناء النشر", "error"); }
         btn.disabled = false;
         btn.innerText = "نشر الآن";
     };
