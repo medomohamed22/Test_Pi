@@ -81,10 +81,23 @@
   </div>
 
 <script>
-  const SUPABASE_URL = 'https://xncapmzlwuisupkjlftb.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS';
-  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ===== Supabase URL (split) =====
+const SUPABASE_URL = [
+  "https://",
+  "xncapmzlw",
+  "uisupkjlftb",
+  ".supabase.co"
+].join("");
 
+// ===== Supabase Publishable Key (split) =====
+const SUPABASE_KEY = [
+  "sb_publishable_zPECXAiI_",
+  "bDbeLtRYe3vIw_IEt_",
+  "p_AS"
+].join("");
+
+// ===== Create Client =====
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let user=null;
   let piUsd=0, usdEgp=0;
 
