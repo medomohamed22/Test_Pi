@@ -22,8 +22,3 @@
   to = "/.netlify/functions/withdraw"
   status = 200
   force = true
-  [[redirects]]
-from = "/api/p2p/release"
-to = "/.netlify/functions/release"
-status = 200
-force = true
