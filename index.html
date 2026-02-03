@@ -1,438 +1,341 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Nexus Wallet P2P</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سوق إكس - متصل بقاعدة البيانات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #002f34;
+            --accent: #3a77ff;
+            --accent-hover: #2160fd;
+            --bg: #f2f4f5;
+            --surface: #ffffff;
+            --text-main: #002f34;
+            --text-light: #7f8fa4;
+            --border: #ebeeef;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 12px;
+        }
 
-  <style>
-    :root{--p:#6c5ce7;--bg:#0f172a;--card:rgba(255,255,255,.06);--bd:rgba(255,255,255,.12)}
-    *{box-sizing:border-box;font-family:Inter,Tajawal}
-    body{margin:0;background:var(--bg);color:#fff;padding:18px}
-    .card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:12px 0}
-    h3,h4{margin:0 0 10px}
-    input,textarea{width:100%;padding:12px;border-radius:14px;border:1px solid var(--bd);background:#020617;color:#fff;margin:7px 0}
-    button{width:100%;padding:12px;border:none;border-radius:14px;background:var(--p);color:#fff;font-weight:700;cursor:pointer}
-    .small{width:auto;padding:6px 10px;font-size:12px}
-    .row{display:flex;justify-content:space-between;gap:10px}
-    .mut{opacity:.7}
-    .badge{background:#1e293b;padding:4px 10px;border-radius:999px;font-size:12px}
-    .ok{color:#22c55e}.warn{color:#f59e0b}.danger{background:#ef4444}
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; outline: none; }
+        body { background-color: var(--bg); color: var(--text-main); padding-bottom: 80px; }
+        
+        /* Loading Spinner */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #ddd;
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* PART 2 */
-    .chat-box{max-height:220px;overflow:auto;border:1px solid var(--bd);border-radius:14px;padding:10px}
-    .msg{margin:6px 0;font-size:13px}
-    .msg.me{text-align:right;color:#a5b4fc}
-    .msg.other{text-align:left;color:#f1f5f9}
-    .timer{font-size:13px;color:#f59e0b}
-    #tradeModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;padding:20px;overflow:auto}
-  </style>
+        /* Header */
+        header { background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; padding: 15px 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .nav-flex { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 26px; font-weight: 900; color: var(--primary); text-decoration: none; }
+        .logo span { color: var(--accent); }
+        
+        .btn-main {
+            background: var(--accent); color: white; padding: 10px 24px;
+            border-radius: 50px; font-weight: 700; border: none; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-main:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+        /* Hero & Grid */
+        .hero-section { margin: 30px 0; text-align: center; }
+        .search-container { max-width: 600px; margin: 0 auto 20px; position: relative; }
+        .search-input { width: 100%; padding: 16px 50px 16px 20px; border-radius: 50px; border: 1px solid #ddd; font-size: 16px; }
+        
+        .categories { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+        .cat-pill { background: var(--surface); padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; cursor: pointer; transition: 0.2s; }
+        .cat-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
+        .card { background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .card-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
+        .card-body { padding: 15px; }
+        .card-price { font-size: 20px; font-weight: 800; color: var(--primary); }
+        
+        /* Floating Button (+) */
+        .fab {
+            position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px;
+            background: var(--accent); color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 28px; box-shadow: 0 4px 15px rgba(58, 119, 255, 0.4);
+            cursor: pointer; z-index: 90; transition: transform 0.2s; border: none;
+        }
+        .fab:hover { transform: scale(1.1) rotate(90deg); }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: var(--surface); width: 90%; max-width: 500px;
+            border-radius: 16px; padding: 25px; position: relative;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .close-modal { position: absolute; left: 20px; top: 20px; font-size: 24px; cursor: pointer; }
+
+        /* Forms */
+        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
+        
+        /* Detail View */
+        .detail-img { width: 100%; max-height: 350px; object-fit: contain; background: #000; border-radius: 8px; margin-bottom: 15px; }
+    </style>
 </head>
-
 <body>
 
-  <!-- LOGIN -->
-  <div class="card" id="loginCard">
-    <h3>🔐 Nexus Wallet P2P</h3>
-    <p class="mut">منصة P2P بوسيط Escrow آمن</p>
-    <button onclick="login()">تسجيل دخول بـ Pi</button>
-  </div>
+    <div id="loader">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px;">جاري الاتصال بالسيرفر...</p>
+    </div>
 
-  <div id="app" style="display:none">
-
-    <!-- ACCOUNT -->
-    <div class="card">
-      <div class="row">
-        <div>
-          <b id="userTag"></b>
-          <div class="mut">رصيدك المتاح</div>
-          <div style="font-size:24px"><span id="balance">0.00</span> π</div>
-          <div class="mut">محجوز في الإسكرو</div>
-          <div><span id="locked">0.00</span> π</div>
+    <header>
+        <div class="container nav-flex">
+            <a href="#" class="logo" onclick="location.reload()">سوق <span>إكس</span></a>
+            <button class="btn-main" onclick="openModal('addModal')">
+                <i class="fas fa-plus"></i> إضافة إعلان
+            </button>
         </div>
-        <div style="text-align:left">
-          <div class="mut">سعر Pi</div>
-          <b id="piPrice">...</b>
+    </header>
+
+    <div class="container">
+        <div class="hero-section">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="ابحث..." onkeyup="app.fetchAds()">
+            </div>
+            <div class="categories">
+                <div class="cat-pill active" onclick="app.setCategory('all', this)">الكل</div>
+                <div class="cat-pill" onclick="app.setCategory('cars', this)">سيارات</div>
+                <div class="cat-pill" onclick="app.setCategory('properties', this)">عقارات</div>
+                <div class="cat-pill" onclick="app.setCategory('electronics', this)">إلكترونيات</div>
+                <div class="cat-pill" onclick="app.setCategory('furniture', this)">أثاث</div>
+            </div>
         </div>
-      </div>
+
+        <div class="grid" id="productGrid"></div>
     </div>
 
-    <!-- CREATE AD -->
-    <div class="card">
-      <h3>📢 نشر إعلان بيع</h3>
-      <input id="adPi" type="number" placeholder="كمية Pi">
-      <input id="adEgp" type="number" placeholder="السعر بالجنيه">
-      <div class="mut">سعر مقترح: <span id="autoPrice">-</span></div>
-      <button id="btnPublish" onclick="createAdWithDeposit(event)">نشر + إيداع</button>
-    </div>
+    <button class="fab" onclick="openModal('addModal')">
+        <i class="fas fa-plus"></i>
+    </button>
 
-    <!-- MARKET -->
-    <div class="card">
-      <h3>🔁 سوق الإعلانات</h3>
-      <div id="ads"></div>
-    </div>
+    <div id="addModal" class="modal-overlay">
+        <div class="modal-box">
+            <span class="close-modal" onclick="closeModal('addModal')">&times;</span>
+            <h3 style="margin-bottom: 20px;">إضافة إعلان جديد</h3>
+            <form id="addForm" onsubmit="app.uploadAd(event)">
+                <label>عنوان الإعلان</label>
+                <input type="text" class="form-control" id="pName" required>
+                
+                <label>السعر (ج.م)</label>
+                <input type="number" class="form-control" id="pPrice" required>
 
-    <!-- SELLER TRADES -->
-    <div class="card">
-      <h3>🧾 صفقاتي كبائع</h3>
-      <div id="sellerTrades"></div>
-    </div>
+                <label>القسم</label>
+                <select class="form-control" id="pCat" required>
+                    <option value="cars">سيارات</option>
+                    <option value="properties">عقارات</option>
+                    <option value="electronics">إلكترونيات</option>
+                    <option value="furniture">أثاث</option>
+                    <option value="others">أخرى</option>
+                </select>
 
-    <!-- WITHDRAW -->
-    <div class="card">
-      <h3>📤 سحب Pi</h3>
-      <input id="wAddr" placeholder="عنوان المحفظة">
-      <input id="wAmt" type="number" placeholder="الكمية">
-      <button class="danger" onclick="withdraw()">سحب</button>
-      <div id="wMsg" class="mut"></div>
-    </div>
+                <label>رقم الهاتف</label>
+                <input type="tel" class="form-control" id="pPhone" required>
 
-  </div>
+                <label>الوصف</label>
+                <textarea class="form-control" id="pDesc" rows="3" required></textarea>
 
-  <!-- ================== TRADE MODAL (PART 2) ================== -->
-  <div id="tradeModal">
-    <div class="card">
-      <h3>📦 تفاصيل الصفقة</h3>
-      <div id="tradeInfo" class="mut"></div>
-      <div class="timer">⏱️ الوقت المتبقي: <span id="tradeTimer">--</span></div>
+                <label>صورة المنتج</label>
+                <input type="file" class="form-control" id="pImage" accept="image/*" required>
 
-      <h4>💬 شات الصفقة</h4>
-      <div class="chat-box" id="chatBox"></div>
-      <input id="chatInput" placeholder="اكتب رسالة">
-      <button class="small" onclick="sendMessage()">إرسال</button>
-
-      <div style="margin-top:10px">
-        <button class="small warn" onclick="openDispute()">⚖️ فتح نزاع</button>
-        <button class="small" onclick="tradeModal.style.display='none'">إغلاق</button>
-      </div>
-    </div>
-  </div>
-
-<script>
-  // ================== SUPABASE ==================
-  const SUPABASE_URL = ["https://","xncapmzlw","uisupkjlftb",".supabase.co"].join("");
-  const SUPABASE_KEY = ["sb_publishable_zPECXAiI_","bDbeLtRYe3vIw_IEt_","p_AS"].join("");
-  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  let user=null, piUsd=0, usdEgp=0;
-  let activeTrade=null, timerInt=null;
-
-  // ✅ IMPORTANT: bind inputs after DOM loaded
-  window.onload = () => {
-    loadPrices();
-
-    const adPiEl = document.getElementById("adPi");
-    const adEgpEl = document.getElementById("adEgp");
-    const autoPriceEl = document.getElementById("autoPrice");
-
-    if(adPiEl){
-      adPiEl.addEventListener("input", ()=>{
-        if(!piUsd || !usdEgp){
-          autoPriceEl.innerText = "-";
-          return;
-        }
-        const pi = Number(adPiEl.value || 0);
-        if(pi <= 0){
-          autoPriceEl.innerText = "-";
-          return;
-        }
-        const suggested = (pi * piUsd * usdEgp * 1.02);
-        autoPriceEl.innerText = suggested.toFixed(2) + " EGP";
-        adEgpEl.value = suggested.toFixed(2);
-      });
-    }
-  };
-
-  // ================== LOGIN ==================
-  async function login(){
-    try{
-      try{ Pi.init({version:"2.0"}); }catch(e){}
-      const a = await Pi.authenticate(['username','payments']);
-      user = a.user;
-
-      loginCard.style.display="none";
-      app.style.display="block";
-      userTag.innerText = "@"+user.username;
-
-      await db.from("users").upsert({pi_uid:user.uid,username:user.username},{onConflict:"pi_uid"});
-      await refreshAll();
-    }catch(e){
-      alert("افتح من Pi Browser");
-    }
-  }
-
-  // ================== PRICES ==================
-  async function loadPrices(){
-    try{
-      const okx = await fetch("https://www.okx.com/api/v5/market/ticker?instId=PI-USDT").then(r=>r.json());
-      piUsd = parseFloat(okx?.data?.[0]?.last || 0);
-
-      const fx = await fetch("https://open.er-api.com/v6/latest/USD").then(r=>r.json());
-      usdEgp = fx?.rates?.EGP || 0;
-
-      piPrice.innerText = `1π ≈ ${(piUsd*usdEgp).toFixed(2)} EGP`;
-    }catch(e){
-      piPrice.innerText = "Price unavailable";
-    }
-  }
-
-  // ================== BALANCE ==================
-  async function refreshBalance(){
-    if(!user) return;
-
-    const {data:d} = await db.from("donations").select("amount").eq("pi_user_id",user.uid);
-    const {data:w} = await db.from("withdrawals").select("amount").eq("pi_user_id",user.uid);
-
-    const bal = (d||[]).reduce((s,r)=>s+Number(r.amount||0),0) - (w||[]).reduce((s,r)=>s+Number(r.amount||0),0);
-    balance.innerText = bal.toFixed(2);
-
-    const {data:e} = await db.from("escrows").select("pi_amount").eq("seller_uid",user.uid);
-    locked.innerText = (e||[]).reduce((s,r)=>s+Number(r.pi_amount||0),0).toFixed(2);
-  }
-
-  // ================== ADS ==================
-  async function loadAds(){
-    const {data} = await db.from("p2p_ads").select("*").eq("status","open").order("created_at",{ascending:false});
-    ads.innerHTML = (data||[]).map(a=>`
-      <div class="card" style="margin:10px 0">
-        <div class="row">
-          <div>
-            <b>@${a.seller_username}</b>
-            <div class="mut">${a.pi_amount}π → ${a.price_egp} EGP</div>
-          </div>
-          ${a.seller_uid!==user?.uid ? `<button class="small" onclick="buyAd(${a.id})">شراء</button>` : `<span class="badge">إعلانك</span>`}
+                <button type="submit" class="btn-main" style="width: 100%; justify-content: center;" id="submitBtn">نشر الإعلان</button>
+            </form>
         </div>
-      </div>
-    `).join("") || `<div class="mut">لا يوجد إعلانات</div>`;
-  }
+    </div>
 
-  // ================== SELLER TRADES ==================
-  async function loadSellerTrades(){
-    if(!user) return;
-    const {data} = await db.from("trades").select("*")
-      .eq("seller_uid",user.uid)
-      .eq("status","waiting_release")
-      .order("created_at",{ascending:false});
-
-    sellerTrades.innerHTML = (data||[]).map(t=>`
-      <div class="card" style="margin:10px 0">
-        <div class="row">
-          <div>
-            <b>Trade #${t.id}</b>
-            <div class="mut">${t.pi_amount}π مقابل ${t.egp_amount} EGP</div>
-          </div>
-          <button class="small" onclick="openTrade(${t.id})">فتح</button>
+    <div id="detailModal" class="modal-overlay">
+        <div class="modal-box">
+            <span class="close-modal" onclick="closeModal('detailModal')">&times;</span>
+            <div id="detailContent"></div>
         </div>
-      </div>
-    `).join("") || `<div class="mut">لا يوجد صفقات</div>`;
-  }
+    </div>
 
-  async function refreshAll(){
-    await loadPrices();
-    await refreshBalance();
-    await loadAds();
-    await loadSellerTrades();
-  }
+    <script>
+        // --- 1. إعدادات Supabase ---
+        const supabaseUrl = 'https://xncapmzlwuisupkjlftb.supabase.co';
+        // ضع مفتاحك هنا (تأكد أنه الـ anon key وليس service_role)
+        const supabaseKey = 'Sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS'; 
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // ✅ UPDATED + SAFE
-  async function createAdWithDeposit(ev){
-    if(!user) return alert("سجل دخول الأول");
+        const app = {
+            currentCategory: 'all',
 
-    const pi = Number(document.getElementById("adPi").value);
-    const egp = Number(document.getElementById("adEgp").value);
+            async init() {
+                await this.fetchAds();
+                document.getElementById('loader').style.display = 'none';
+            },
 
-    if(!pi || pi <= 0) return alert("اكتب كمية Pi صح");
-    if(!egp || egp <= 0) return alert("اكتب سعر EGP صح");
+            // --- جلب الإعلانات من قاعدة البيانات ---
+            async fetchAds() {
+                const search = document.getElementById('searchInput').value;
+                let query = supabase.from('ads').select('*').order('created_at', { ascending: false });
 
-    const btn = ev?.target;
-    if(btn){ btn.disabled=true; btn.innerText="جاري الإيداع..."; }
+                if (this.currentCategory !== 'all') {
+                    query = query.eq('category', this.currentCategory);
+                }
+                if (search) {
+                    query = query.ilike('name', `%${search}%`);
+                }
 
-    try{
-      const ins = await db.from("p2p_ads").insert([{
-        seller_uid: user.uid,
-        seller_username: user.username,
-        pi_amount: pi,
-        price_egp: egp,
-        status: "pending_deposit"
-      }]).select().single();
+                const { data, error } = await query;
 
-      if(ins.error) throw new Error(ins.error.message);
-      const ad = ins.data;
+                if (error) {
+                    console.error('Error fetching ads:', error);
+                    alert('حدث خطأ في تحميل الإعلانات');
+                } else {
+                    this.renderGrid(data);
+                }
+            },
 
-      await Pi.createPayment({
-        amount: pi,
-        memo: "P2P Escrow Deposit",
-        metadata: { ad_id: ad.id, seller_uid: user.uid }
-      },{
-        onReadyForServerApproval: (paymentId) =>
-          fetch("/api/pi/approve",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({ paymentId })
-          }),
+            // --- رفع الإعلان والصورة ---
+            async uploadAd(e) {
+                e.preventDefault();
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = 'جاري الرفع... <i class="fas fa-spinner fa-spin"></i>';
+                btn.disabled = true;
 
-        onReadyForServerCompletion: (paymentId, txid) =>
-          fetch("/api/pi/complete",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({ paymentId, txid })
-          }).then(async (r)=>{
-            const j = await r.json().catch(()=>({}));
-            if(!r.ok){
-              const msg = j?.error?.message || j?.error_message || JSON.stringify(j);
-              throw new Error("Complete error: " + msg);
+                try {
+                    // 1. رفع الصورة إلى Supabase Storage
+                    const file = document.getElementById('pImage').files[0];
+                    const fileName = `${Date.now()}_${file.name.replace(/\s/g, '')}`;
+                    
+                    const { data: imgData, error: imgError } = await supabase.storage
+                        .from('ad_images')
+                        .upload(fileName, file);
+
+                    if (imgError) throw imgError;
+
+                    // الحصول على رابط الصورة العام
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('ad_images')
+                        .getPublicUrl(fileName);
+
+                    // 2. إضافة البيانات إلى الجدول
+                    const { error: dbError } = await supabase.from('ads').insert({
+                        name: document.getElementById('pName').value,
+                        price: document.getElementById('pPrice').value,
+                        category: document.getElementById('pCat').value,
+                        description: document.getElementById('pDesc').value,
+                        phone: document.getElementById('pPhone').value,
+                        image_url: publicUrl
+                    });
+
+                    if (dbError) throw dbError;
+
+                    alert('تم نشر الإعلان بنجاح!');
+                    closeModal('addModal');
+                    document.getElementById('addForm').reset();
+                    this.fetchAds(); // تحديث القائمة
+
+                } catch (err) {
+                    alert('حدث خطأ: ' + err.message);
+                    console.error(err);
+                } finally {
+                    btn.innerHTML = 'نشر الإعلان';
+                    btn.disabled = false;
+                }
+            },
+
+            // --- عرض البيانات ---
+            renderGrid(products) {
+                const grid = document.getElementById('productGrid');
+                grid.innerHTML = '';
+
+                if (products.length === 0) {
+                    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;">لا توجد إعلانات حالياً</div>';
+                    return;
+                }
+
+                products.forEach(item => {
+                    // تنسيق التاريخ
+                    const date = new Date(item.created_at).toLocaleDateString('ar-EG');
+                    
+                    const card = `
+                        <div class="card" onclick="app.showDetails(${item.id})">
+                            <img src="${item.image_url}" class="card-img" onerror="this.src='https://via.placeholder.com/300'">
+                            <div class="card-body">
+                                <div class="card-price">${Number(item.price).toLocaleString()} ج.م</div>
+                                <div style="font-weight:500; margin-bottom:5px;">${item.name}</div>
+                                <div style="font-size:12px; color:#777; display:flex; justify-content:space-between;">
+                                    <span>${this.getCatName(item.category)}</span>
+                                    <span>${date}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+            },
+
+            async showDetails(id) {
+                // جلب التفاصيل من الداتابيز لضمان أحدث بيانات
+                const { data, error } = await supabase.from('ads').select('*').eq('id', id).single();
+                
+                if (error || !data) return;
+
+                const content = document.getElementById('detailContent');
+                content.innerHTML = `
+                    <img src="${data.image_url}" class="detail-img">
+                    <h2>${data.name}</h2>
+                    <h3 style="color:var(--primary); margin:10px 0;">${Number(data.price).toLocaleString()} ج.م</h3>
+                    <p style="background:#f9f9f9; padding:15px; border-radius:8px; line-height:1.6;">${data.description}</p>
+                    <div style="margin-top:20px;">
+                        <a href="tel:${data.phone}" class="btn-main" style="justify-content:center; text-decoration:none;">
+                            <i class="fas fa-phone"></i> اتصل بالبائع: ${data.phone}
+                        </a>
+                    </div>
+                `;
+                openModal('detailModal');
+            },
+
+            setCategory(cat, btn) {
+                this.currentCategory = cat;
+                document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.fetchAds();
+            },
+
+            getCatName(cat) {
+                const map = { 'cars': 'سيارات', 'properties': 'عقارات', 'electronics': 'إلكترونيات', 'furniture': 'أثاث' };
+                return map[cat] || 'أخرى';
             }
+        };
 
-            alert("تم الإيداع ✅ والإعلان اتفتح");
-            document.getElementById("adPi").value="";
-            document.getElementById("adEgp").value="";
-            document.getElementById("autoPrice").innerText="-";
-            await refreshAll();
-          }),
+        // Modal Helpers
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        window.onclick = function(e) { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); }
 
-        onCancel: async () => {
-          await db.from("p2p_ads").update({status:"cancelled"}).eq("id", ad.id);
-          alert("تم الإلغاء");
-        },
-
-        onError: async () => {
-          await db.from("p2p_ads").update({status:"cancelled"}).eq("id", ad.id);
-          alert("خطأ في الدفع");
-        }
-      });
-
-    }catch(err){
-      console.error(err);
-      alert(err.message || "حصل خطأ");
-    }finally{
-      if(btn){ btn.disabled=false; btn.innerText="نشر + إيداع"; }
-    }
-  }
-
-  // ================== BUY ==================
-  async function buyAd(id){
-    if(!user) return alert("سجل دخول الأول");
-    if(!confirm("تأكيد الشراء؟")) return;
-
-    // هنا لازم سكيمة trades عندك تكون كاملة (seller_uid, pi_amount, egp_amount...)
-    // لو عندك أعمدة كاملة، ده يشتغل.
-    await db.from("trades").insert([{
-      ad_id: id,
-      buyer_uid: user.uid,
-      status: "waiting_release"
-    }]);
-
-    await db.from("p2p_ads").update({status:"locked"}).eq("id",id);
-    refreshAll();
-  }
-
-  // ================== TRADE MODAL ==================
-  async function openTrade(id){
-    const {data:t} = await db.from("trades").select("*").eq("id",id).single();
-    activeTrade = t;
-    tradeModal.style.display="block";
-    tradeInfo.innerText = `بيع ${t.pi_amount}π مقابل ${t.egp_amount} EGP`;
-    startTimer(t.created_at);
-    loadChat();
-  }
-
-  function startTimer(createdAt){
-    clearInterval(timerInt);
-    const end = new Date(createdAt).getTime() + 86400000;
-    timerInt = setInterval(()=>{
-      const diff = end - Date.now();
-      if(diff<=0){
-        tradeTimer.innerText = "انتهى الوقت";
-        clearInterval(timerInt);
-        return;
-      }
-      tradeTimer.innerText = Math.floor(diff/3600000) + "h";
-    },1000);
-  }
-
-  // ================== CHAT ==================
-  async function loadChat(){
-    if(!activeTrade) return;
-    const {data} = await db.from("trade_messages").select("*")
-      .eq("trade_id",activeTrade.id)
-      .order("created_at",{ascending:true});
-
-    chatBox.innerHTML = (data||[]).map(m=>
-      `<div class="msg ${m.sender_uid===user.uid?'me':'other'}">${m.message}</div>`
-    ).join("");
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  async function sendMessage(){
-    if(!activeTrade || !chatInput.value) return;
-    await db.from("trade_messages").insert([{
-      trade_id: activeTrade.id,
-      sender_uid: user.uid,
-      message: chatInput.value
-    }]);
-    chatInput.value="";
-    loadChat();
-  }
-
-  // ================== DISPUTE ==================
-  async function openDispute(){
-    if(!activeTrade) return;
-    await db.from("disputes").insert([{
-      trade_id: activeTrade.id,
-      opened_by: user.uid,
-      status: "open"
-    }]);
-    alert("تم فتح نزاع");
-  }
-
-  // ================== RELEASE ==================
-  async function releaseTrade(tradeId){
-    if(!user) return alert("سجل دخول الأول");
-    if(!confirm("تأكيد الإفراج؟")) return;
-
-    const res = await fetch("/api/p2p/release",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ tradeId, sellerUid: user.uid })
-    });
-
-    const j = await res.json().catch(()=>({}));
-    if(!res.ok) return alert(j.error || j.details || "Release failed");
-
-    alert("تم الإفراج ✅");
-    tradeModal.style.display="none";
-    refreshAll();
-  }
-
-  // ================== WITHDRAW ==================
-  async function withdraw(){
-    if(!user) return alert("سجل دخول الأول");
-    const addr = wAddr.value.trim();
-    const amt  = Number(wAmt.value);
-
-    if(!addr || amt<=0) return alert("اكتب العنوان والكمية");
-
-    wMsg.innerText = "جاري السحب...";
-    const r = await fetch("/api/withdraw",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ uid:user.uid, username:user.username, amount:amt, walletAddress:addr })
-    });
-
-    const j = await r.json().catch(()=>({}));
-    if(!r.ok){
-      wMsg.innerText = "";
-      return alert(j.error || j.details || "Withdraw failed");
-    }
-
-    wMsg.innerHTML = `تم السحب ✅ TX: <span class="ok">${j.txid}</span>`;
-    wAddr.value=""; wAmt.value="";
-    refreshAll();
-  }
-</script>
+        // Start App
+        app.init();
+    </script>
 </body>
 </html>
