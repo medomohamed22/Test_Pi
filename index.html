@@ -3,56 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سوق إكس برو - Live Realtime</title>
+    <title>سوق إكس - النسخة الاحترافية الحية</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
-        :root { --primary: #002f34; --accent: #3a77ff; --danger: #eb4d4b; --pi: #ffda00; --bg: #f2f4f5; --surface: #ffffff; }
+        :root { --primary: #002f34; --accent: #3a77ff; --pi: #ffda00; --bg: #f2f4f5; --surface: #ffffff; --danger: #eb4d4b; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background: var(--bg); color: var(--primary); padding-bottom: 60px; }
+        body { background: var(--bg); color: var(--primary); padding-bottom: 70px; }
+        
+        /* Header & Nav */
         header { background: var(--surface); padding: 12px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .nav { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 24px; font-weight: 900; color: var(--primary); text-decoration: none; cursor: pointer; }
         .logo span { color: var(--accent); }
-        .btn-pi { background: var(--pi); color: #674818; border: none; padding: 10px 18px; border-radius: 50px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        
-        .search-section { margin: 25px 0; display: flex; flex-direction: column; gap: 15px; align-items: center; }
-        .search-bar { display: flex; gap: 10px; width: 100%; max-width: 800px; }
-        .search-input { flex: 1; padding: 12px 20px; border-radius: 50px; border: 1px solid #ddd; }
+        .btn-pi { background: var(--pi); color: #674818; border: none; padding: 10px 18px; border-radius: 50px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        /* Search & Filters */
+        .search-section { margin: 20px 0; display: flex; flex-direction: column; gap: 12px; }
+        .search-bar { display: flex; gap: 10px; width: 100%; }
+        .search-input { flex: 1; padding: 12px 20px; border-radius: 50px; border: 1px solid #ddd; outline: none; }
+        .loc-select { padding: 0 15px; border-radius: 50px; border: 1px solid #ddd; background: white; cursor: pointer; }
+
+        .categories-bar { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
+        .categories-bar::-webkit-scrollbar { display: none; }
+        .cat-pill { background: white; padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; cursor: pointer; white-space: nowrap; transition: 0.3s; font-size: 14px; }
+        .cat-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Grid & Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .card { background: var(--surface); border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; }
         .card:hover { transform: translateY(-5px); }
-        .card-img { width: 100%; height: 180px; object-fit: cover; }
-        .card-body { padding: 15px; }
+        .card-img { width: 100%; height: 170px; object-fit: cover; }
+        .fav-btn { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); border: none; width: 32px; height: 32px; border-radius: 50%; color: #ff4757; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .card-body { padding: 12px; }
+        .card-price { font-size: 18px; font-weight: 800; color: var(--primary); }
+        .card-meta { display: flex; justify-content: space-between; font-size: 11px; color: #777; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
 
+        /* Floating Button */
         .fab { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 99; cursor: pointer; }
-        
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; }
 
+        /* Modals */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+
+        .admin-tools { display: flex; gap: 10px; margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 15px; }
+        .btn-action { flex: 1; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; }
+
+        /* Loader */
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .admin-tools { display: flex; gap: 10px; margin-top: 15px; border-top: 2px dashed #eee; padding-top: 15px; }
-        .btn-bump { flex: 1; background: #2ed573; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-delete { flex: 1; background: var(--danger); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div><p style="margin-top:15px;">جاري تشغيل النظام الحي...</p></div>
+<div id="loader"><div class="spinner"></div><p style="margin-top:15px;">جاري تشغيل النظام المباشر...</p></div>
 
 <header>
     <div class="container nav">
-        <a class="logo" onclick="app.fetchAds()">سوق <span>إكس</span></a>
+        <a class="logo" onclick="app.resetFilters()">سوق <span>إكس</span></a>
         <div id="authContainer">
             <button class="btn-pi" onclick="app.loginWithPi()"><i class="fab fa-pi"></i> دخول بـ Pi</button>
         </div>
@@ -62,30 +77,55 @@
 <div class="container">
     <div class="search-section">
         <div class="search-bar">
-            <input type="text" id="searchInput" class="search-input" placeholder="ابحث وسيظهر النتائج فوراً..." onkeyup="app.fetchAds()">
+            <input type="text" id="searchInput" class="search-input" placeholder="عن ماذا تبحث اليوم؟" onkeyup="app.fetchAds()">
+            <select id="locFilter" class="loc-select" onchange="app.fetchAds()">
+                <option value="all">كل المحافظات</option>
+                <option value="القاهرة">القاهرة</option>
+                <option value="الإسكندرية">الإسكندرية</option>
+                <option value="الجيزة">الجيزة</option>
+                <option value="أخرى">أخرى</option>
+            </select>
+        </div>
+        
+        <div class="categories-bar">
+            <div class="cat-pill active" onclick="app.filterCat('all', this)">الكل</div>
+            <div class="cat-pill" onclick="app.filterCat('cars', this)">سيارات</div>
+            <div class="cat-pill" onclick="app.filterCat('electronics', this)">إلكترونيات</div>
+            <div class="cat-pill" onclick="app.filterCat('properties', this)">عقارات</div>
+            <div class="cat-pill" onclick="app.filterCat('fav', this)"><i class="fas fa-heart"></i> المفضلة</div>
         </div>
     </div>
+
     <div class="grid" id="productGrid"></div>
 </div>
 
 <button class="fab" onclick="app.checkAuth()"><i class="fas fa-plus"></i></button>
 
-<div id="detailModal" class="modal"><div class="modal-content" id="detailContent"></div></div>
-
 <div id="addModal" class="modal">
     <div class="modal-content">
-        <h3>إضافة إعلان جديد</h3>
+        <h3>نشر إعلان جديد</h3>
         <form id="addForm" style="margin-top:15px;">
             <div class="form-group"><label>العنوان</label><input type="text" id="pName" required></div>
-            <div class="form-group"><label>السعر</label><input type="number" id="pPrice" required></div>
-            <div class="form-group"><label>القسم</label><select id="pCat"><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option></select></div>
-            <div class="form-group"><label>الهاتف</label><input type="tel" id="pPhone" required></div>
+            <div class="form-group"><label>السعر (ج.م)</label><input type="number" id="pPrice" required></div>
+            <div class="form-group">
+                <label>القسم</label>
+                <select id="pCat"><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option><option value="properties">عقارات</option></select>
+            </div>
+            <div class="form-group">
+                <label>الموقع</label>
+                <select id="pLoc"><option value="القاهرة">القاهرة</option><option value="الإسكندرية">الإسكندرية</option><option value="الجيزة">الجيزة</option><option value="أخرى">أخرى</option></select>
+            </div>
+            <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="pPhone" required></div>
             <div class="form-group"><label>الوصف</label><textarea id="pDesc" rows="3" required></textarea></div>
             <div class="form-group"><label>الصورة</label><input type="file" id="pImage" accept="image/*" required></div>
-            <button type="submit" class="btn-pi" style="width:100%; background:var(--accent); color:white;" id="submitBtn">نشر الآن</button>
+            <button type="submit" class="btn-pi" style="width:100%; justify-content:center; background:var(--accent); color:white;" id="submitBtn">نشر الآن</button>
             <button type="button" onclick="toggleModal('addModal', false)" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer;">إلغاء</button>
         </form>
     </div>
+</div>
+
+<div id="detailModal" class="modal">
+    <div class="modal-content" id="detailContent"></div>
 </div>
 
 <script>
@@ -97,6 +137,8 @@
 
     const app = {
         currentUser: null,
+        currentCat: 'all',
+        userFavs: [],
         adsData: [],
 
         async init() {
@@ -105,39 +147,66 @@
             document.getElementById('loader').style.display = 'none';
         },
 
-        // --- ميزة الـ Realtime السحرية ---
         setupRealtime() {
-            client
-                .channel('public:ads')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, payload => {
-                    console.log('تغيير مباشر مكتشف:', payload);
-                    this.fetchAds(); // تحديث القائمة فوراً عند أي حذف أو إضافة أو تعديل
-                })
-                .subscribe();
+            client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, () => {
+                this.fetchAds();
+            }).subscribe();
         },
 
         async loginWithPi() {
             try {
                 const auth = await Pi.authenticate(['username'], (pay) => {});
                 this.currentUser = auth.user;
+                await this.loadFavs();
                 this.updateUI();
-            } catch (e) { alert("عذراً، فشل الاتصال بشبكة Pi"); }
+                this.fetchAds();
+            } catch (e) { console.log("Pi Login Error"); }
+        },
+
+        async loadFavs() {
+            if (!this.currentUser) return;
+            const { data } = await client.from('favorites').select('ad_id').eq('user_id', this.currentUser.username);
+            this.userFavs = data ? data.map(f => f.ad_id) : [];
         },
 
         updateUI() {
             if(this.currentUser) {
-                document.getElementById('authContainer').innerHTML = `
-                    <div style="font-weight:bold; color:var(--primary)">
-                        <i class="fas fa-user-circle"></i> ${this.currentUser.username}
-                    </div>`;
+                document.getElementById('authContainer').innerHTML = `<div style="font-weight:900;"><i class="fas fa-user-circle"></i> ${this.currentUser.username}</div>`;
             }
+        },
+
+        filterCat(cat, el) {
+            this.currentCat = cat;
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            this.fetchAds();
+        },
+
+        resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('locFilter').value = 'all';
+            this.currentCat = 'all';
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.cat-pill')[0].classList.add('active');
+            this.fetchAds();
         },
 
         async fetchAds() {
             const search = document.getElementById('searchInput').value;
-            let query = client.from('ads').select('*').order('updated_at', { ascending: false });
-            if (search) query = query.ilike('name', `%${search}%`);
+            const loc = document.getElementById('locFilter').value;
             
+            let query = client.from('ads').select('*').order('updated_at', { ascending: false });
+            
+            if (this.currentCat === 'fav') {
+                if (!this.currentUser) { alert("سجل دخولك لرؤية المفضلة"); return; }
+                query = query.in('id', this.userFavs);
+            } else if (this.currentCat !== 'all') {
+                query = query.eq('category', this.currentCat);
+            }
+
+            if (loc !== 'all') query = query.eq('location', loc);
+            if (search) query = query.ilike('name', `%${search}%`);
+
             const { data } = await query;
             this.adsData = data || [];
             this.render();
@@ -145,62 +214,90 @@
 
         render() {
             const grid = document.getElementById('productGrid');
-            grid.innerHTML = '';
+            grid.innerHTML = this.adsData.length ? '' : '<p style="grid-column:1/-1; text-align:center; padding:50px; color:#999;">لا توجد نتائج مطابقة</p>';
+            
             this.adsData.forEach(item => {
+                const isFav = this.userFavs.includes(item.id);
                 grid.innerHTML += `
-                    <div class="card" onclick="app.showDetails(${item.id})">
-                        <img src="${item.image_url}" class="card-img">
-                        <div class="card-body">
-                            <div style="font-weight:bold;">${item.name}</div>
-                            <div style="color:var(--accent); font-weight:900;">${item.price} ج.م</div>
-                            <div style="font-size:11px; color:#999; margin-top:5px;">بواسطة: ${item.seller_user}</div>
+                    <div class="card">
+                        <button class="fav-btn" onclick="app.toggleFav(${item.id}, event)">
+                            <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+                        </button>
+                        <div onclick="app.showDetails(${item.id})">
+                            <img src="${item.image_url}" class="card-img">
+                            <div class="card-body">
+                                <div class="card-price">${item.price} ج.م</div>
+                                <div style="font-weight:bold; margin:5px 0; font-size:14px;">${item.name}</div>
+                                <div style="font-size:12px; color:#777;"><i class="fas fa-map-marker-alt"></i> ${item.location || 'غير محدد'}</div>
+                                <div class="card-meta">
+                                    <span><i class="fas fa-eye"></i> ${item.views_count || 0}</span>
+                                    <span><i class="fas fa-clock"></i> ${new Date(item.updated_at).toLocaleDateString('ar-EG')}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>`;
             });
         },
 
+        async toggleFav(id, e) {
+            e.stopPropagation();
+            if (!this.currentUser) return alert("سجل دخولك بـ Pi أولاً");
+            if (this.userFavs.includes(id)) {
+                await client.from('favorites').delete().eq('user_id', this.currentUser.username).eq('ad_id', id);
+                this.userFavs = this.userFavs.filter(f => f !== id);
+            } else {
+                await client.from('favorites').insert({ user_id: this.currentUser.username, ad_id: id });
+                this.userFavs.push(id);
+            }
+            this.render();
+        },
+
         async showDetails(id) {
             const item = this.adsData.find(a => a.id === id);
-            if(!item) return;
-
+            await client.from('ads').update({ views_count: (item.views_count || 0) + 1 }).eq('id', id);
+            
             const isOwner = this.currentUser && this.currentUser.username === item.seller_user;
             const content = document.getElementById('detailContent');
             
             content.innerHTML = `
-                <img src="${item.image_url}" style="width:100%; border-radius:10px;">
-                <h2 style="margin-top:15px;">${item.name}</h2>
-                <h3 style="color:var(--accent);">${item.price} ج.م</h3>
-                <p style="margin:10px 0; color:#555;">${item.description}</p>
-                <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:var(--accent); color:white; text-decoration:none;">اتصال بالبائع</a>
-
+                <img src="${item.image_url}" style="width:100%; border-radius:12px;">
+                <div style="margin-top:15px;">
+                    <span style="background:#eef2ff; color:var(--accent); padding:4px 10px; border-radius:50px; font-size:11px; font-weight:bold;">${item.category}</span>
+                    <h2 style="margin:10px 0 5px;">${item.name}</h2>
+                    <h3 style="color:var(--accent); margin-bottom:15px;">${item.price} ج.م</h3>
+                    <p style="background:#f8f9fa; padding:15px; border-radius:10px; font-size:14px; line-height:1.6; color:#444;">${item.description}</p>
+                    <div style="margin:15px 0; font-size:13px; color:#777;">
+                        <i class="fas fa-user-circle"></i> البائع: ${item.seller_user} <br>
+                        <i class="fas fa-map-marker-alt"></i> الموقع: ${item.location}
+                    </div>
+                </div>
+                <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:#25D366; color:white; text-decoration:none;">اتصال بالبائع</a>
+                
                 ${isOwner ? `
                     <div class="admin-tools">
-                        <button onclick="app.bumpAd(${item.id})" class="btn-bump"><i class="fas fa-arrow-up"></i> رفع</button>
-                        <button onclick="app.deleteAd(${item.id})" class="btn-delete"><i class="fas fa-trash"></i> حذف</button>
+                        <button onclick="app.bumpAd(${item.id})" class="btn-action" style="background:#2ed573">تحديث</button>
+                        <button onclick="app.deleteAd(${item.id})" class="btn-action" style="background:var(--danger)">حذف</button>
                     </div>
                 ` : ''}
-                <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:15px; cursor:pointer;">إغلاق</button>
+                <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:15px; cursor:pointer; color:#999;">إغلاق</button>
             `;
             toggleModal('detailModal', true);
         },
 
         async bumpAd(id) {
-            const { error } = await client.from('ads').update({ updated_at: new Date() }).eq('id', id);
-            if (!error) {
-                toggleModal('detailModal', false);
-                // لا نحتاج لـ reload، الـ Realtime سيحدث القائمة تلقائياً
-            }
+            await client.from('ads').update({ updated_at: new Date() }).eq('id', id);
+            toggleModal('detailModal', false);
         },
 
         async deleteAd(id) {
-            if (confirm("هل تريد حذف هذا الإعلان؟")) {
-                const { error } = await client.from('ads').delete().eq('id', id);
-                if (!error) toggleModal('detailModal', false);
+            if (confirm("هل تريد حذف الإعلان نهائياً؟")) {
+                await client.from('ads').delete().eq('id', id);
+                toggleModal('detailModal', false);
             }
         },
 
         checkAuth() {
-            if(!this.currentUser) { alert("يرجى تسجيل الدخول بـ Pi أولاً"); this.loginWithPi(); }
+            if(!this.currentUser) { alert("سجل دخول بـ Pi أولاً"); this.loginWithPi(); }
             else toggleModal('addModal', true);
         }
     };
@@ -209,8 +306,6 @@
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
-        btn.innerText = 'جاري الرفع...';
-
         try {
             const file = document.getElementById('pImage').files[0];
             const name = `${Date.now()}_${file.name}`;
@@ -221,18 +316,17 @@
                 name: document.getElementById('pName').value,
                 price: document.getElementById('pPrice').value,
                 category: document.getElementById('pCat').value,
+                location: document.getElementById('pLoc').value,
                 description: document.getElementById('pDesc').value,
                 phone: document.getElementById('pPhone').value,
                 image_url: publicUrl,
                 seller_user: app.currentUser.username,
                 updated_at: new Date()
             });
-
             toggleModal('addModal', false);
             document.getElementById('addForm').reset();
-        } catch (err) { alert(err.message); }
+        } catch (err) { alert("حدث خطأ أثناء الرفع"); }
         btn.disabled = false;
-        btn.innerText = 'نشر الآن';
     };
 
     function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
