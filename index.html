@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سوق إكس - متصل بـ Pi Network</title>
+    <title>سوق إكس - Pi Network Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -14,116 +14,109 @@
         :root { 
             --primary: #002f34; 
             --accent: #3a77ff; 
-            --pi-color: #ffda00; /* Pi Yellow */
-            --pi-text: #674818;
+            --pi-color: #ffda00; 
             --bg: #f2f4f5; 
             --surface: #ffffff; 
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
         body { background: var(--bg); color: var(--primary); padding-bottom: 50px; }
         
-        header { 
-            background: var(--surface); 
-            padding: 12px 0; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            position: sticky; top: 0; z-index: 100; 
-        }
+        header { background: var(--surface); padding: 12px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .nav { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 24px; font-weight: 900; color: var(--primary); text-decoration: none; }
         .logo span { color: var(--accent); }
 
-        /* Login Button Styling */
-        .btn-login {
-            background: var(--pi-color);
-            color: var(--pi-text);
-            border: none;
-            padding: 10px 18px;
-            border-radius: 50px;
-            font-weight: 800;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 8px rgba(255, 218, 0, 0.4);
-            transition: 0.3s;
-        }
-        .btn-login:hover { transform: scale(1.05); }
-        .user-profile { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; }
+        .btn-login { background: var(--pi-color); color: #674818; border: none; padding: 10px 18px; border-radius: 50px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(255, 218, 0, 0.4); }
+        .user-profile { display: flex; align-items: center; gap: 10px; font-weight: bold; }
 
-        .search-area { text-align: center; margin: 30px 0; }
-        .search-input { width: 100%; max-width: 600px; padding: 15px 25px; border-radius: 50px; border: 1px solid #ddd; font-size: 16px; }
+        .search-section { text-align: center; margin: 25px 0; }
+        .search-input { width: 100%; max-width: 600px; padding: 15px 25px; border-radius: 50px; border: 1px solid #ddd; font-size: 16px; margin-bottom: 15px; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+        /* Category Pills */
+        .categories-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .cat-pill { background: white; padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; cursor: pointer; transition: 0.3s; font-weight: 500; }
+        .cat-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
         .card { background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; }
         .card:hover { transform: translateY(-5px); }
         .card-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
         .card-body { padding: 15px; }
-        .card-price { font-size: 20px; font-weight: 800; color: var(--primary); }
+        .card-price { font-size: 19px; font-weight: 800; color: var(--primary); }
 
-        .fab { 
-            position: fixed; bottom: 20px; left: 20px; 
-            width: 60px; height: 60px; 
-            background: var(--accent); color: white; 
-            border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-            font-size: 24px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 99; 
-            cursor: pointer;
-        }
+        .fab { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; border: none; box-shadow: 0 4px 15px rgba(58, 119, 255, 0.4); z-index: 99; cursor: pointer; }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
-        .btn-submit { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
+        
+        .badge-cat { display: inline-block; background: #e8f0fe; color: var(--accent); padding: 4px 12px; border-radius: 50px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div id="loader">
     <div class="spinner"></div>
-    <p id="loaderStatus" style="margin-top: 15px;">جاري تشغيل النظام...</p>
+    <p style="margin-top:15px;">جاري تحميل سوق إكس...</p>
 </div>
 
 <header>
     <div class="container nav">
-        <a href="#" class="logo">سوق <span>إكس</span></a>
+        <a href="#" class="logo" onclick="location.reload()">سوق <span>إكس</span></a>
         <div id="authContainer">
             <button class="btn-login" onclick="app.loginWithPi()">
-                <i class="fab fa-pi"></i> تسجيل الدخول بـ Pi
+                <i class="fab fa-pi"></i> دخول بـ Pi
             </button>
         </div>
     </div>
 </header>
 
 <div class="container">
-    <div class="search-area">
-        <input type="text" id="searchInput" class="search-input" placeholder="ابحث عن أي شيء..." onkeyup="app.fetchAds()">
+    <div class="search-section">
+        <input type="text" id="searchInput" class="search-input" placeholder="عن ماذا تبحث اليوم؟" onkeyup="app.fetchAds()">
+        
+        <div class="categories-bar">
+            <div class="cat-pill active" onclick="app.filterCat('all', this)">الكل</div>
+            <div class="cat-pill" onclick="app.filterCat('cars', this)">سيارات</div>
+            <div class="cat-pill" onclick="app.filterCat('electronics', this)">إلكترونيات</div>
+            <div class="cat-pill" onclick="app.filterCat('properties', this)">عقارات</div>
+            <div class="cat-pill" onclick="app.filterCat('furniture', this)">أثاث</div>
+        </div>
     </div>
+
     <div class="grid" id="productGrid"></div>
 </div>
 
-<button class="fab" onclick="app.checkAuthBeforeAdd()"><i class="fas fa-plus"></i></button>
+<button class="fab" onclick="app.checkAuth()"><i class="fas fa-plus"></i></button>
 
 <div id="addModal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-bottom: 15px;">انشر إعلانك</h3>
-        <form id="addForm">
-            <div class="form-group"><label>العنوان</label><input type="text" id="pName" required></div>
+        <h3>إضافة إعلان جديد</h3>
+        <form id="addForm" style="margin-top:15px;">
+            <div class="form-group"><label>عنوان الإعلان</label><input type="text" id="pName" required></div>
             <div class="form-group"><label>السعر (ج.م)</label><input type="number" id="pPrice" required></div>
             <div class="form-group">
                 <label>القسم</label>
-                <select id="pCat"><option value="cars">سيارات</option><option value="electronics">إلكترونيات</option><option value="properties">عقارات</option></select>
+                <select id="pCat">
+                    <option value="cars">سيارات</option>
+                    <option value="electronics">إلكترونيات</option>
+                    <option value="properties">عقارات</option>
+                    <option value="furniture">أثاث</option>
+                </select>
             </div>
-            <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="pPhone" required></div>
-            <div class="form-group"><label>الوصف</label><textarea id="pDesc" rows="3" required></textarea></div>
-            <div class="form-group"><label>الصورة</label><input type="file" id="pImage" accept="image/*" required></div>
-            <button type="submit" class="btn-submit" id="submitBtn">نشر الآن</button>
-            <button type="button" onclick="toggleModal('addModal', false)" style="width: 100%; background: #eee; border: none; padding: 10px; border-radius: 50px; margin-top: 10px; cursor: pointer;">إلغاء</button>
+            <div class="form-group"><label>رقم التواصل</label><input type="tel" id="pPhone" required></div>
+            <div class="form-group"><label>الوصف بالتفصيل</label><textarea id="pDesc" rows="3" required></textarea></div>
+            <div class="form-group"><label>صورة المنتج</label><input type="file" id="pImage" accept="image/*" required></div>
+            <button type="submit" class="btn-login" style="width:100%; justify-content:center; background:var(--accent); color:white;" id="submitBtn">نشر الآن</button>
+            <button type="button" onclick="toggleModal('addModal', false)" style="width:100%; border:none; background:none; margin-top:10px; cursor:pointer; color:#777;">إلغاء</button>
         </form>
     </div>
 </div>
@@ -131,168 +124,136 @@
 <div id="detailModal" class="modal">
     <div class="modal-content">
         <div id="detailContent"></div>
-        <button onclick="toggleModal('detailModal', false)" style="width: 100%; background: #eee; border: none; padding: 10px; border-radius: 8px; margin-top: 15px; cursor: pointer;">إغلاق</button>
+        <button onclick="toggleModal('detailModal', false)" style="width:100%; background:#f2f2f2; border:none; padding:12px; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer;">إغلاق</button>
     </div>
 </div>
 
 <script>
-    // --- الإعدادات ---
     const SB_URL = 'https://xncapmzlwuisupkjlftb.supabase.co';
     const SB_KEY = 'sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS'; 
     const client = supabase.createClient(SB_URL, SB_KEY);
-
-    // تهيئة Pi SDK
     const Pi = window.Pi;
     Pi.init({ version: "2.0", sandbox: false });
 
     const app = {
         currentUser: null,
+        currentCat: 'all',
 
         async init() {
-            try {
-                console.log("App starting...");
-                await this.fetchAds();
-                document.getElementById('loader').style.display = 'none';
-            } catch (err) {
-                console.error("Init Error:", err);
-                document.getElementById('loaderStatus').innerHTML = `<span style="color:red">فشل الاتصال: ${err.message}</span>`;
-            }
+            await this.fetchAds();
+            document.getElementById('loader').style.display = 'none';
         },
 
-        // --- تسجيل الدخول عبر Pi ---
         async loginWithPi() {
             try {
-                const scopes = ['username', 'payments'];
-                const onIncompletePaymentFound = (payment) => { /* معالجة الدفعات المعلقة إن وجدت */ };
-
-                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                const auth = await Pi.authenticate(['username'], (pay) => {});
                 this.currentUser = auth.user;
-                this.updateAuthUI();
-                console.log("Authenticated User:", this.currentUser);
-            } catch (err) {
-                alert("فشل تسجيل الدخول بـ Pi: " + err.message);
-            }
+                this.updateUI();
+            } catch (e) { alert("خطأ في تسجيل دخول Pi"); }
         },
 
-        updateAuthUI() {
-            const container = document.getElementById('authContainer');
-            if (this.currentUser) {
-                container.innerHTML = `
+        updateUI() {
+            if(this.currentUser) {
+                document.getElementById('authContainer').innerHTML = `
                     <div class="user-profile">
-                        <span>مرحباً، ${this.currentUser.username}</span>
-                        <i class="fas fa-user-circle" style="font-size: 24px; color: var(--accent);"></i>
-                    </div>
-                `;
+                        <span>${this.currentUser.username}</span>
+                        <i class="fas fa-check-circle" style="color:var(--accent)"></i>
+                    </div>`;
             }
         },
 
-        checkAuthBeforeAdd() {
-            if (!this.currentUser) {
-                alert("يرجى تسجيل الدخول باستخدام Pi أولاً لتتمكن من إضافة إعلان.");
-                this.loginWithPi();
-            } else {
-                toggleModal('addModal', true);
-            }
+        filterCat(cat, el) {
+            this.currentCat = cat;
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            this.fetchAds();
         },
 
         async fetchAds() {
-            const searchTerm = document.getElementById('searchInput').value;
+            const search = document.getElementById('searchInput').value;
             let query = client.from('ads').select('*').order('created_at', { ascending: false });
             
-            if (searchTerm) query = query.ilike('name', `%${searchTerm}%`);
+            if (this.currentCat !== 'all') query = query.eq('category', this.currentCat);
+            if (search) query = query.ilike('name', `%${search}%`);
 
             const { data, error } = await query;
-            if (error) throw error;
-            
-            this.renderGrid(data || []);
+            if (!error) this.render(data);
         },
 
-        renderGrid(items) {
+        render(items) {
             const grid = document.getElementById('productGrid');
-            grid.innerHTML = '';
-            
-            if (items.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">لا توجد إعلانات متاحة حالياً.</p>';
-                return;
-            }
-
+            grid.innerHTML = items.length ? '' : '<p style="grid-column:1/-1; text-align:center; padding:40px;">لا توجد نتائج مطابقة</p>';
             items.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => this.showDetails(item);
-                card.innerHTML = `
-                    <img src="${item.image_url}" class="card-img" onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
-                    <div class="card-body">
-                        <div class="card-price">${Number(item.price).toLocaleString()} ج.م</div>
-                        <div style="font-weight:bold; margin-top:5px;">${item.name}</div>
-                        <div style="font-size:11px; color:#999; margin-top:5px;">بواسطة: ${item.seller_user || 'غير معروف'}</div>
-                        <div style="font-size:12px; color:#777; margin-top:10px;"><i class="fas fa-phone"></i> ${item.phone}</div>
-                    </div>
-                `;
-                grid.appendChild(card);
+                grid.innerHTML += `
+                    <div class="card" onclick="app.showDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                        <img src="${item.image_url}" class="card-img">
+                        <div class="card-body">
+                            <div class="card-price">${item.price} ج.م</div>
+                            <div style="font-weight:bold; margin:5px 0;">${item.name}</div>
+                            <div style="font-size:12px; color:#777;">${this.getCatName(item.category)}</div>
+                        </div>
+                    </div>`;
             });
         },
 
-        async showDetails(item) {
+        getCatName(c) {
+            const map = { cars:'سيارات', electronics:'إلكترونيات', properties:'عقارات', furniture:'أثاث' };
+            return map[c] || 'أخرى';
+        },
+
+        showDetails(item) {
             const content = document.getElementById('detailContent');
             content.innerHTML = `
                 <img src="${item.image_url}" style="width:100%; border-radius:10px; margin-bottom:15px;">
-                <h2>${item.name}</h2>
-                <h3 style="color:var(--accent); margin:10px 0;">${Number(item.price).toLocaleString()} ج.م</h3>
-                <p style="background:#f9f9f9; padding:10px; border-radius:8px; font-size:14px; color:#555;">${item.description}</p>
-                <div style="margin: 15px 0; font-size: 13px;">البائع: <b>${item.seller_user || 'عضو Pi'}</b></div>
-                <a href="tel:${item.phone}" style="display:block; text-align:center; background:#25D366; color:white; padding:12px; border-radius:8px; text-decoration:none; margin-top:15px; font-weight:bold;">
-                    <i class="fas fa-phone"></i> اتصل بالبائع
+                <span class="badge-cat">${this.getCatName(item.category)}</span>
+                <h2 style="margin-bottom:5px;">${item.name}</h2>
+                <h3 style="color:var(--accent); margin-bottom:15px;">${item.price} ج.م</h3>
+                <div style="background:#f9f9f9; padding:15px; border-radius:8px;">
+                    <strong style="display:block; margin-bottom:5px;">الوصف:</strong>
+                    <p style="font-size:14px; color:#555; line-height:1.6;">${item.description}</p>
+                </div>
+                <div style="margin:15px 0; font-size:13px; color:#777;">بواسطة: ${item.seller_user || 'عضو Pi'}</div>
+                <a href="tel:${item.phone}" style="display:block; text-align:center; background:#25D366; color:white; padding:12px; border-radius:8px; text-decoration:none; font-weight:bold;">
+                    <i class="fas fa-phone"></i> اتصال
                 </a>
             `;
             toggleModal('detailModal', true);
+        },
+
+        checkAuth() {
+            if(!this.currentUser) { alert("سجل دخولك أولاً"); this.loginWithPi(); }
+            else toggleModal('addModal', true);
         }
     };
 
-    // --- معالجة رفع الإعلان مع اسم المستخدم من Pi ---
+    // رفع الإعلان
     document.getElementById('addForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerText = 'جاري النشر...';
+        btn.disabled = true; btn.innerText = 'جاري الرفع...';
 
         try {
             const file = document.getElementById('pImage').files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+            const name = `${Date.now()}_${file.name}`;
+            await client.storage.from('ad_images').upload(name, file);
+            const { data: { publicUrl } } = client.storage.from('ad_images').getPublicUrl(name);
 
-            // 1. رفع الصورة
-            const { error: uploadError } = await client.storage.from('ad_images').upload(fileName, file);
-            if (uploadError) throw uploadError;
-
-            // 2. الحصول على الرابط
-            const { data: { publicUrl } } = client.storage.from('ad_images').getPublicUrl(fileName);
-
-            // 3. حفظ البيانات (مع إضافة seller_user)
-            const { error: insertError } = await client.from('ads').insert({
+            const { error } = await client.from('ads').insert({
                 name: document.getElementById('pName').value,
                 price: document.getElementById('pPrice').value,
                 category: document.getElementById('pCat').value,
                 description: document.getElementById('pDesc').value,
                 phone: document.getElementById('pPhone').value,
                 image_url: publicUrl,
-                seller_user: app.currentUser.username // حفظ اسم المستخدم من شبكة Pi
+                seller_user: app.currentUser.username
             });
 
-            if (insertError) throw insertError;
-
-            alert('تم نشر إعلانك بنجاح!');
+            if(error) throw error;
             location.reload();
-        } catch (err) {
-            alert('خطأ: ' + err.message);
-            btn.disabled = false;
-            btn.innerText = 'نشر الآن';
-        }
+        } catch (err) { alert(err.message); btn.disabled = false; }
     };
 
-    function toggleModal(id, show) {
-        document.getElementById(id).style.display = show ? 'flex' : 'none';
-    }
+    function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
 
     app.init();
 </script>
