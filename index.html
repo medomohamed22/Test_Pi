@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -10,11 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
     <style>
         :root { --primary: #002f34; --accent: #3a77ff; --pi: #ffda00; --bg: #f2f4f5; --surface: #ffffff; --danger: #eb4d4b; --success: #2ed573; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
         body { background: var(--bg); color: var(--primary); padding-bottom: 70px; }
-        
+
         header { background: var(--surface); padding: 12px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .nav { display: flex; justify-content: space-between; align-items: center; }
@@ -28,16 +27,18 @@
         .loc-select { padding: 0 15px; border-radius: 50px; border: 1px solid #ddd; background: white; cursor: pointer; }
 
         .categories-bar { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
-        .cat-pill { background: white; padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; cursor: pointer; white-space: nowrap; transition: 0.3s; }
-        .cat-pill.active { background: var(--primary); color: white; }
+        .cat-pill { background: white; padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; cursor: pointer; white-space: nowrap; transition: 0.3s; display:flex; align-items:center; gap:8px; }
+        .cat-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .card { background: var(--surface); border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,.08); }
         .card-img { width: 100%; height: 170px; object-fit: cover; }
-        
+
         .featured-badge { position: absolute; top: 10px; right: 10px; background: var(--pi); color: #000; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 5; border: 1px solid rgba(0,0,0,0.1); }
-        
-        .fav-btn { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); border: none; width: 32px; height: 32px; border-radius: 50%; color: #ff4757; z-index: 10; display: flex; align-items: center; justify-content: center; }
+
+        .fav-btn { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); border: none; width: 32px; height: 32px; border-radius: 50%; color: #ff4757; z-index: 10; display: flex; align-items: center; justify-content: center; cursor:pointer; }
+        .fav-btn:hover { transform: scale(1.05); }
         .card-body { padding: 12px; }
         .card-price { font-size: 18px; font-weight: 800; color: var(--primary); }
 
@@ -45,7 +46,7 @@
 
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        
+
         .admin-tools { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; border-top: 2px dashed #eee; padding-top: 20px; }
         .btn-action { border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; color: white; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
         .btn-promote { background: #000; color: var(--pi); border: 2px solid var(--pi); order: -1; }
@@ -53,7 +54,33 @@
         .btn-bump { background: var(--success); }
         .btn-delete { background: var(--danger); }
 
-        /* استايل الإشعارات المخصص */
+        /* زر تمييز احترافي */
+        .promote-pro {
+            background: linear-gradient(135deg,#000,#222);
+            color: var(--pi);
+            border: 2px solid var(--pi);
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,.25);
+        }
+        .promote-pro:hover{
+            transform: translateY(-1px) scale(1.01);
+            background: linear-gradient(135deg,#111,#2a2a2a);
+        }
+        .promote-chip{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background: rgba(255,218,0,.12);
+            border: 1px solid rgba(255,218,0,.35);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            margin-right: 6px;
+        }
+
+        /* استايل الإشعارات */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
         .toast { background: white; color: var(--primary); padding: 15px 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-bottom: 10px; display: flex; align-items: center; gap: 12px; font-weight: bold; border-right: 5px solid var(--accent); animation: slideDown 0.3s ease; }
         .toast.success { border-right-color: var(--success); }
@@ -90,13 +117,13 @@
                 <option value="الجيزة">الجيزة</option>
             </select>
         </div>
-        
+
         <div class="categories-bar">
-            <div class="cat-pill active" onclick="app.filterCat('all', this)">الكل</div>
-            <div class="cat-pill" onclick="app.filterCat('cars', this)">سيارات</div>
-            <div class="cat-pill" onclick="app.filterCat('electronics', this)">إلكترونيات</div>
-            <div class="cat-pill" onclick="app.filterCat('properties', this)">عقارات</div>
-            <div class="cat-pill" onclick="app.filterCat('fav', this)"><i class="fas fa-heart"></i> المفضلة</div>
+            <div class="cat-pill active" data-cat="all" onclick="app.filterCat('all', this)">الكل</div>
+            <div class="cat-pill" data-cat="cars" onclick="app.filterCat('cars', this)">سيارات</div>
+            <div class="cat-pill" data-cat="electronics" onclick="app.filterCat('electronics', this)">إلكترونيات</div>
+            <div class="cat-pill" data-cat="properties" onclick="app.filterCat('properties', this)">عقارات</div>
+            <div class="cat-pill" data-cat="fav" onclick="app.filterCat('fav', this)"><i class="fas fa-heart"></i> المفضلة</div>
         </div>
     </div>
     <div class="grid" id="productGrid"></div>
@@ -127,8 +154,10 @@
 
 <script>
     const SB_URL = 'https://xncapmzlwuisupkjlftb.supabase.co';
-    const SB_KEY = 'sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS'; 
+    const SB_KEY = 'sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS';
     const client = supabase.createClient(SB_URL, SB_KEY);
+
+    // Pi SDK init
     const Pi = window.Pi;
     Pi.init({ version: "2.0", sandbox: false });
 
@@ -137,6 +166,12 @@
         userFavs: [],
         adsData: [],
         currentCat: 'all',
+
+        catLabel(cat){
+            return cat === 'cars' ? 'سيارات' :
+                   cat === 'electronics' ? 'إلكترونيات' :
+                   cat === 'properties' ? 'عقارات' : '—';
+        },
 
         async init() {
             this.setupRealtime();
@@ -155,43 +190,64 @@
         },
 
         setupRealtime() {
-            client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, () => {
-                this.fetchAds();
-            }).subscribe();
+            client.channel('any')
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, () => {
+                  this.fetchAds();
+              }).subscribe();
         },
 
         async loginWithPi() {
             try {
-                const auth = await Pi.authenticate(['username'], (pay) => {});
+                const auth = await Pi.authenticate(['username'], () => {});
                 this.currentUser = auth.user;
+
                 await this.loadFavs();
                 this.updateUI();
                 this.showToast(`مرحباً ${this.currentUser.username}`, 'success');
                 this.fetchAds();
-            } catch (e) { this.showToast("فشل تسجيل الدخول بـ Pi", 'error'); }
+            } catch (e) {
+                console.error(e);
+                this.showToast("فشل تسجيل الدخول بـ Pi", 'error');
+            }
         },
 
         async loadFavs() {
             if (!this.currentUser) return;
-            const { data } = await client.from('favorites').select('ad_id').eq('user_id', this.currentUser.username);
+            const { data, error } = await client
+              .from('favorites')
+              .select('ad_id')
+              .eq('user_id', this.currentUser.username);
+
+            if(error) console.error(error);
             this.userFavs = data ? data.map(f => f.ad_id) : [];
         },
 
         updateUI() {
             if(this.currentUser) {
-                document.getElementById('authContainer').innerHTML = `<div style="font-weight:900;"><i class="fas fa-user-circle"></i> ${this.currentUser.username}</div>`;
+                document.getElementById('authContainer').innerHTML =
+                  `<div style="font-weight:900;"><i class="fas fa-user-circle"></i> ${this.currentUser.username}</div>`;
             }
         },
 
         async fetchAds() {
             const search = document.getElementById('searchInput').value;
             const loc = document.getElementById('locFilter').value;
-            let query = client.from('ads').select('*').order('is_featured', { ascending: false }).order('updated_at', { ascending: false });
+
+            let query = client
+              .from('ads')
+              .select('*')
+              .order('is_featured', { ascending: false })
+              .order('updated_at', { ascending: false });
+
             if (this.currentCat === 'fav' && this.currentUser) query = query.in('id', this.userFavs);
             else if (this.currentCat !== 'all') query = query.eq('category', this.currentCat);
+
             if (loc !== 'all') query = query.eq('location', loc);
             if (search) query = query.ilike('name', `%${search}%`);
-            const { data } = await query;
+
+            const { data, error } = await query;
+            if(error) console.error(error);
+
             this.adsData = data || [];
             this.render();
         },
@@ -199,16 +255,18 @@
         render() {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = '';
+
             this.adsData.forEach(item => {
                 const isFav = this.userFavs.includes(item.id);
-                const isFeatured = item.is_featured && new Date(item.featured_until) > new Date();
+                const isFeatured = item.is_featured && item.featured_until && (new Date(item.featured_until) > new Date());
+
                 grid.innerHTML += `
                     <div class="card" onclick="app.showDetails(${item.id})">
                         ${isFeatured ? '<div class="featured-badge"><i class="fas fa-star"></i> مميز</div>' : ''}
-                        <button class="fav-btn" onclick="app.toggleFav(${item.id}, event)">
+                        <button class="fav-btn" onclick="event.stopPropagation(); app.toggleFav(${item.id}, event)">
                             <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
                         </button>
-                        <img src="${item.image_url}" class="card-img">
+                        <img src="${item.image_url}" class="card-img" onerror="this.src='https://via.placeholder.com/600x400?text=No+Image';">
                         <div class="card-body">
                             <div class="card-price">${item.price} ج.م</div>
                             <div style="font-weight:bold; margin:5px 0;">${item.name}</div>
@@ -220,69 +278,141 @@
 
         async showDetails(id) {
             const item = this.adsData.find(a => a.id === id);
+            if(!item) return;
+
             const isOwner = this.currentUser && this.currentUser.username === item.seller_user;
             const content = document.getElementById('detailContent');
+
             content.innerHTML = `
-                <img src="${item.image_url}" style="width:100%; border-radius:12px; height:250px; object-fit:cover;">
+                <img src="${item.image_url}" style="width:100%; border-radius:12px; height:250px; object-fit:cover;" onerror="this.src='https://via.placeholder.com/600x400?text=No+Image';">
                 <div style="margin-top:15px;">
                     <h2 style="margin-bottom:5px;">${item.name}</h2>
                     <h3 style="color:var(--accent); font-size:24px;">${item.price} ج.م</h3>
-                    <p style="background:#f8f8f8; padding:15px; border-radius:10px; margin:15px 0; line-height:1.6;">${item.description}</p>
+
+                    <!-- ✅ مكان + فئة -->
+                    <div style="
+                      display:flex;
+                      gap:10px;
+                      flex-wrap:wrap;
+                      margin:10px 0;
+                      font-size:13px;
+                    ">
+                      <span style="background:#eef2ff;padding:6px 12px;border-radius:20px;">
+                        <i class="fas fa-map-marker-alt"></i> ${item.location}
+                      </span>
+
+                      <span style="background:#f1f2f6;padding:6px 12px;border-radius:20px;">
+                        <i class="fas fa-tags"></i> ${app.catLabel(item.category)}
+                      </span>
+                    </div>
+
+                    <p style="background:#f8f8f8; padding:15px; border-radius:10px; margin:15px 0; line-height:1.6;">
+                      ${item.description}
+                    </p>
                 </div>
+
                 <a href="tel:${item.phone}" class="btn-pi" style="width:100%; justify-content:center; background:#25D366; color:white; text-decoration:none; height:50px;">
                     <i class="fas fa-phone"></i> اتصل بالبائع
                 </a>
+
                 ${isOwner ? `
                     <div class="admin-tools">
-                        <button onclick="app.promoteAd(${item.id})" class="btn-action btn-promote">
-                            <i class="fab fa-pi"></i> تمييز الإعلان (3 Pi لمدة 3 أيام)
+                        <button onclick="app.promoteAd(${item.id})" class="btn-action promote-pro">
+                            <span class="promote-chip"><i class="fab fa-pi"></i> 3 Pi</span>
+                            تمييز الإعلان · 3 أيام
                         </button>
+
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                            <button onclick="app.bumpAd(${item.id})" class="btn-action btn-bump">تحديث</button>
-                            <button onclick="app.deleteAd(${item.id})" class="btn-action btn-delete">حذف</button>
+                            <button onclick="app.bumpAd(${item.id})" class="btn-action btn-bump">
+                              <i class="fas fa-arrow-up"></i> تحديث
+                            </button>
+                            <button onclick="app.deleteAd(${item.id})" class="btn-action btn-delete">
+                              <i class="fas fa-trash"></i> حذف
+                            </button>
                         </div>
                     </div>
                 ` : ''}
+
                 <button onclick="toggleModal('detailModal', false)" style="width:100%; border:none; background:none; margin-top:20px; cursor:pointer; color:#999; font-weight:bold;">إغلاق</button>
             `;
             toggleModal('detailModal', true);
         },
 
+        // ✅ Pi Payment Fixed Flow (approve -> complete)
         async promoteAd(adId) {
             try {
-                await Pi.createPayment({
-                    amount: 3.0,
-                    memo: "تمييز إعلان لمدة 3 أيام",
-                    metadata: { adId: adId },
-                }, {
-                    onReadyForServerApproval: async (pId) => {
-                        const res = await fetch('/api/pi/approve', { method: 'POST', body: JSON.stringify({ paymentId: pId }) });
-                        if(res.ok) return true;
+                await Pi.createPayment(
+                    {
+                        amount: 3,
+                        memo: "تمييز إعلان لمدة 3 أيام",
+                        metadata: { adId }
                     },
-                    onReadyForServerCompletion: async (pId, tx) => {
-                        await fetch('/api/pi/complete', { method: 'POST', body: JSON.stringify({ paymentId: pId, txid: tx }) });
-                        const expiry = new Date(); expiry.setDate(expiry.getDate() + 3);
-                        await client.from('ads').update({ is_featured: true, featured_until: expiry, updated_at: new Date() }).eq('id', adId);
-                        app.showToast("مبروك! تم تمييز إعلانك بنجاح", "success");
-                        toggleModal('detailModal', false);
-                    },
-                    onError: (err) => app.showToast("خطأ في عملية الدفع", "error")
-                });
-            } catch (err) { app.showToast("فشل نظام الدفع", "error"); }
+                    {
+                        onReadyForServerApproval: async (paymentId) => {
+                            const res = await fetch('/api/pi/approve', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ paymentId })
+                            });
+
+                            if (!res.ok) throw new Error('Server approval failed');
+                        },
+
+                        onReadyForServerCompletion: async (paymentId, txid) => {
+                            const res = await fetch('/api/pi/complete', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ paymentId, txid })
+                            });
+
+                            if (!res.ok) throw new Error('Server completion failed');
+
+                            const expiry = new Date();
+                            expiry.setDate(expiry.getDate() + 3);
+
+                            await client
+                              .from('ads')
+                              .update({
+                                  is_featured: true,
+                                  featured_until: expiry,
+                                  updated_at: new Date()
+                              })
+                              .eq('id', adId);
+
+                            app.showToast("تم تمييز الإعلان بنجاح ⭐", "success");
+                            toggleModal('detailModal', false);
+                        },
+
+                        onError: (err) => {
+                            console.error(err);
+                            app.showToast("فشل عملية الدفع", "error");
+                        }
+                    }
+                );
+            } catch (err) {
+                console.error(err);
+                app.showToast("نظام الدفع غير متاح حالياً", "error");
+            }
         },
 
         async toggleFav(id, e) {
             e.stopPropagation();
             if (!this.currentUser) return this.showToast("سجل دخول أولاً", "info");
-            if (this.userFavs.includes(id)) {
-                await client.from('favorites').delete().eq('user_id', this.currentUser.username).eq('ad_id', id);
-                this.userFavs = this.userFavs.filter(f => f !== id);
-            } else {
-                await client.from('favorites').insert({ user_id: this.currentUser.username, ad_id: id });
-                this.userFavs.push(id);
-                this.showToast("تمت الإضافة للمفضلة", "success");
+
+            try{
+              if (this.userFavs.includes(id)) {
+                  await client.from('favorites').delete().eq('user_id', this.currentUser.username).eq('ad_id', id);
+                  this.userFavs = this.userFavs.filter(f => f !== id);
+              } else {
+                  await client.from('favorites').insert({ user_id: this.currentUser.username, ad_id: id });
+                  this.userFavs.push(id);
+                  this.showToast("تمت الإضافة للمفضلة", "success");
+              }
+              this.render();
+            }catch(err){
+              console.error(err);
+              this.showToast("حصل خطأ في المفضلة", "error");
             }
-            this.render();
         },
 
         async bumpAd(id) {
@@ -303,6 +433,11 @@
             this.currentCat = cat;
             document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
             el.classList.add('active');
+
+            if(cat === 'fav' && !this.currentUser){
+              this.showToast("سجل دخول عشان تشوف المفضلة", "info");
+            }
+
             this.fetchAds();
         },
 
@@ -315,6 +450,11 @@
             document.getElementById('searchInput').value = '';
             document.getElementById('locFilter').value = 'all';
             this.currentCat = 'all';
+
+            // ✅ رجع تفعيل زر "الكل"
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+            document.querySelector('.cat-pill[data-cat="all"]')?.classList.add('active');
+
             this.fetchAds();
         }
     };
@@ -324,13 +464,33 @@
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
         btn.innerText = "جاري النشر...";
-        try {
-            const file = document.getElementById('pImage').files[0];
-            const fileName = `${Date.now()}_${file.name}`;
-            await client.storage.from('ad_images').upload(fileName, file);
-            const { data: { publicUrl } } = client.storage.from('ad_images').getPublicUrl(fileName);
 
-            await client.from('ads').insert({
+        try {
+            if(!app.currentUser?.username){
+              app.showToast("لازم تسجل دخول بـ Pi قبل النشر", "info");
+              btn.disabled = false;
+              btn.innerText = "نشر الآن";
+              return;
+            }
+
+            const file = document.getElementById('pImage').files[0];
+            if(!file){
+              app.showToast("اختر صورة للإعلان", "info");
+              btn.disabled = false;
+              btn.innerText = "نشر الآن";
+              return;
+            }
+
+            const safeName = (file.name || 'img').replace(/\s+/g,'_');
+            const fileName = `${Date.now()}_${safeName}`;
+
+            const up = await client.storage.from('ad_images').upload(fileName, file, { upsert: false });
+            if(up.error) throw up.error;
+
+            const { data: pub } = client.storage.from('ad_images').getPublicUrl(fileName);
+            const publicUrl = pub?.publicUrl;
+
+            const ins = await client.from('ads').insert({
                 name: document.getElementById('pName').value,
                 price: document.getElementById('pPrice').value,
                 category: document.getElementById('pCat').value,
@@ -341,15 +501,25 @@
                 seller_user: app.currentUser.username,
                 updated_at: new Date()
             });
+
+            if(ins.error) throw ins.error;
+
             app.showToast("تم نشر الإعلان بنجاح", "success");
             toggleModal('addModal', false);
             document.getElementById('addForm').reset();
-        } catch (err) { app.showToast("خطأ أثناء النشر", "error"); }
+        } catch (err) {
+            console.error(err);
+            app.showToast("خطأ أثناء النشر", "error");
+        }
+
         btn.disabled = false;
         btn.innerText = "نشر الآن";
     };
 
-    function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
+    function toggleModal(id, show) {
+        document.getElementById(id).style.display = show ? 'flex' : 'none';
+    }
+
     app.init();
 </script>
 </body>
