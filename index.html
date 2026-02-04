@@ -17,7 +17,8 @@
   --r:16px;
 }
 *{box-sizing:border-box;font-family:Tajawal,system-ui}
-body{margin:0;background:var(--bg);color:var(--text);padding-bottom:64px}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);padding-bottom:84px}
 
 header{
   position:sticky;top:0;z-index:9;
@@ -46,8 +47,15 @@ header button:disabled{opacity:.55;cursor:not-allowed}
 }
 .btnSmall{padding:10px 12px}
 
-main{padding:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+main{padding:14px;max-width:1100px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+@media (max-width:520px){
+  header{padding:10px 10px}
+  header h1{font-size:16px}
+  .grid{grid-template-columns:1fr}
+  main{padding:10px}
+}
+
 .card{
   background:var(--card);border-radius:var(--r);padding:14px;
   box-shadow:var(--shadow);border:1px solid rgba(230,224,255,.85)
@@ -61,7 +69,7 @@ main{padding:14px}
   cursor:pointer;user-select:none
 }
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
-.actions{display:flex;gap:8px;align-items:center}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .iconBtn{
   border:1px solid var(--border);background:#fff;color:var(--text);
   padding:8px 10px;border-radius:12px;cursor:pointer
@@ -98,7 +106,7 @@ nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)
 }
 .modalWrap.show{display:flex}
 .modal{
-  width:min(520px,100%);
+  width:min(560px,100%);
   background:#fff;border-radius:18px;border:1px solid var(--border);
   box-shadow:0 20px 60px rgba(31,31,46,.25);
   padding:14px
@@ -109,18 +117,80 @@ nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)
 .field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
 .field label{font-size:13px;color:var(--mut)}
 .field input,.field textarea{
-  border:1px solid var(--border);border-radius:12px;padding:10px;outline:none;
-  background:#fff
+  border:1px solid var(--border);border-radius:12px;padding:10px;outline:none;background:#fff
 }
 .field textarea{min-height:110px;resize:vertical}
 .help{font-size:12px;color:var(--mut);margin-top:6px}
-.footerBtns{display:flex;gap:8px;justify-content:flex-start;margin-top:10px}
+.footerBtns{display:flex;gap:8px;justify-content:flex-start;margin-top:10px;flex-wrap:wrap}
 .skel{
   height:110px;border-radius:16px;background:linear-gradient(90deg,#fff, #f3edff, #fff);
   border:1px solid var(--border);box-shadow:0 8px 24px rgba(123,47,247,.08);
   animation:sh 1.2s infinite linear
 }
 @keyframes sh{0%{background-position:0 0}100%{background-position:800px 0}}
+
+hr{border:none;border-top:1px solid var(--border);margin:12px 0}
+.small{font-size:12px}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:999px;
+  border:1px solid rgba(123,47,247,.18);
+  background:rgba(123,47,247,.08);
+  color:var(--p);font-size:12px
+}
+
+/* ✅ Floating + Button (bottom-left) */
+.fab{
+  position:fixed;left:14px;bottom:84px;z-index:95;
+  width:54px;height:54px;border-radius:999px;border:none;
+  background:var(--p);color:#fff;font-size:28px;line-height:0;
+  box-shadow:0 16px 40px rgba(123,47,247,.28);
+  cursor:pointer;display:none
+}
+.fab:active{transform:scale(.98)}
+.fabMenu{
+  position:fixed;left:14px;bottom:144px;z-index:95;
+  display:none;flex-direction:column;gap:10px
+}
+.fabItem{
+  display:flex;align-items:center;gap:10px;
+  background:#fff;border:1px solid var(--border);
+  padding:10px 12px;border-radius:14px;box-shadow:var(--shadow);
+  cursor:pointer;min-width:170px
+}
+.fabItem b{color:var(--p)}
+.fabBackdrop{
+  position:fixed;inset:0;z-index:94;
+  background:transparent;display:none
+}
+
+/* Chat UI */
+.chatWrap{display:grid;grid-template-columns:1fr;gap:12px}
+.chatBox{
+  height:54vh;min-height:320px;max-height:560px;
+  border:1px solid var(--border);border-radius:16px;background:#fff;
+  box-shadow:var(--shadow);
+  display:flex;flex-direction:column;overflow:hidden
+}
+.chatMsgs{padding:12px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.bubble{
+  max-width:80%;padding:10px 12px;border-radius:14px;border:1px solid var(--border);
+  background:#fff;line-height:1.7
+}
+.bubble.me{margin-right:auto;background:rgba(123,47,247,.08);border-color:rgba(123,47,247,.18)}
+.bubble .who{font-size:12px;color:var(--mut);margin-bottom:4px}
+.bubble img{max-width:100%;border-radius:12px;border:1px solid var(--border);display:block;margin-top:8px}
+.chatSend{
+  border-top:1px solid var(--border);
+  padding:10px;display:flex;gap:8px;align-items:center
+}
+.chatSend input[type="text"]{
+  flex:1;border:1px solid var(--border);border-radius:12px;padding:10px;outline:none
+}
+.fileBtn{
+  border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px;cursor:pointer
+}
+.fileBtn input{display:none}
 </style>
 </head>
 
@@ -133,11 +203,6 @@ nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)
     <input id="search" placeholder="بحث..." />
     <div class="headerActions">
       <span class="chip" id="userChip"><span class="dot"></span><span id="userChipText">ضيف</span></span>
-
-      <!-- أزرار الإضافة (مقفولة لحد ما التحقق يتم) -->
-      <button class="btnGhost btnSmall hidden" id="addPostBtn" data-need-auth>➕ بوست</button>
-      <button class="btnGhost btnSmall hidden" id="addProjectBtn" data-need-auth>➕ مشروع</button>
-
       <button id="loginBtn">تسجيل دخول Pi</button>
       <button class="btnGhost btnSmall hidden" id="logoutBtn">خروج</button>
     </div>
@@ -147,6 +212,36 @@ nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)
 <main>
   <section id="home" class="grid"></section>
   <section id="projects" class="grid hidden"></section>
+
+  <section id="group" class="hidden">
+    <div class="card">
+      <div class="row" style="margin-top:0">
+        <div>
+          <h3 style="margin:0" id="groupTitle">جروب المشروع</h3>
+          <div class="mut" id="groupSub">محادثة المشروع + مشاركة صور</div>
+        </div>
+        <div class="actions">
+          <button class="iconBtn" onclick="leaveGroup()">مغادرة</button>
+          <button class="btnGhost btnSmall" onclick="show('projects', document.querySelector('[data-tab=projects]'))">رجوع</button>
+        </div>
+      </div>
+      <hr />
+      <div class="chatWrap">
+        <div class="chatBox">
+          <div class="chatMsgs" id="chatMsgs"></div>
+          <div class="chatSend">
+            <label class="fileBtn" title="إرسال صورة">
+              📎
+              <input id="imgInput" type="file" accept="image/*" />
+            </label>
+            <input id="msgText" type="text" placeholder="اكتب رسالة..." />
+            <button class="primaryBtn" onclick="sendMessage()">إرسال</button>
+          </div>
+          <div class="help">✅ رفع الصور يتم على Supabase Storage Bucket: <b>project_uploads</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="profile" class="hidden">
     <div class="card">
@@ -165,7 +260,7 @@ nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)
           <div style="font-weight:900;font-size:22px;color:var(--p)" id="statProjects">0</div>
         </div>
       </div>
-      <div class="help">✅ بعد التحقق، تقدر تضيف بوست/مشروع وهيتسجلوا بصلاحيات RLS باسمك (owner_auth_uid).</div>
+      <div class="help">✅ بعد التحقق، زر + العائم هيظهر عشان تضيف بوست/مشروع.</div>
     </div>
   </section>
 </main>
@@ -176,7 +271,19 @@ nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)
   <button data-tab="profile" onclick="show('profile', this)">حسابي</button>
 </nav>
 
-<!-- ====== Modals ====== -->
+<!-- Floating + -->
+<div class="fabBackdrop" id="fabBackdrop" onclick="toggleFab(false)"></div>
+<button class="fab" id="fabBtn" title="إضافة" onclick="toggleFab()">+</button>
+<div class="fabMenu" id="fabMenu">
+  <div class="fabItem" onclick="toggleFab(false); openCreatePost()">
+    <span>📝</span><div><b>إضافة بوست</b><div class="mut small">نقاش + لايك + كومنت</div></div>
+  </div>
+  <div class="fabItem" onclick="toggleFab(false); openCreateProject()">
+    <span>👥</span><div><b>إضافة مشروع</b><div class="mut small">جروب شات للمشاركة</div></div>
+  </div>
+</div>
+
+<!-- Modals -->
 <div class="modalWrap" id="modalWrap" onclick="overlayClose(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modalHead">
@@ -196,13 +303,20 @@ let piUser = null;
 let isVerified = false;
 let authUid = null;
 
+let activeProject = null;
+let activeProjectSub = null; // realtime subscription
+
 let state = {
   posts: [],
   projects: [],
+  likesByPost: new Map(),      // postId -> Set(authUid)
+  commentsCount: new Map(),    // postId -> count
+  myMemberProjects: new Set(), // projectId
   activeTag: null,
   q: ""
 };
 
+/* ----------------- UI helpers ----------------- */
 function toast(msg, ok=true){
   const el=document.getElementById('toast');
   document.getElementById('toastText').innerHTML = ok ? `<b>✔</b> ${escapeHtml(msg)}` : `<b>⚠</b> ${escapeHtml(msg)}`;
@@ -211,175 +325,9 @@ function toast(msg, ok=true){
   window.__t=setTimeout(()=>hideToast(), 2500);
 }
 function hideToast(){ document.getElementById('toast').classList.remove('show'); }
-
 function escapeHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
-
-async function ensureSession(){
-  const { data } = await sb.auth.getSession();
-  if(!data?.session){
-    const r = await sb.auth.signInAnonymously();
-    if(r.error) throw r.error;
-  }
-  const sess = await sb.auth.getSession();
-  return sess.data.session;
-}
-
-async function refreshAuthUid(){
-  const { data, error } = await sb.auth.getUser();
-  if(error) throw error;
-  authUid = data?.user?.id || null;
-  return authUid;
-}
-
-function setUIAuthed(){
-  const chip = document.getElementById('userChip');
-  const chipText = document.getElementById('userChipText');
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-
-  const addBtns = document.querySelectorAll('[data-need-auth]');
-
-  if(isVerified && piUser?.username){
-    chip.classList.add('ok');
-    chipText.textContent = piUser.username;
-    loginBtn.classList.add('hidden');
-    logoutBtn.classList.remove('hidden');
-    addBtns.forEach(b=>b.classList.remove('hidden'));
-    document.getElementById('profileInfo').textContent = `مرحباً ${piUser.username} — UID: ${piUser.uid}`;
-  }else{
-    chip.classList.remove('ok');
-    chipText.textContent = 'ضيف';
-    loginBtn.classList.remove('hidden');
-    logoutBtn.classList.add('hidden');
-    addBtns.forEach(b=>b.classList.add('hidden'));
-    document.getElementById('profileInfo').textContent = 'سجّل دخول عشان يظهر حسابك هنا.';
-  }
-}
-
-function show(id, btn){
-  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-}
-
-function setSkeleton(containerId, count=6){
-  const c=document.getElementById(containerId);
-  c.innerHTML = new Array(count).fill(0).map(()=>`<div class="skel"></div>`).join('');
-}
-
-function renderPosts(){
-  const c=document.getElementById('home');
-  const q = (state.q || '').toLowerCase().trim();
-  const tag = state.activeTag;
-
-  const filtered = (state.posts||[]).filter(p=>{
-    const inText = !q || (p.title||'').toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q) || (p.pi_username||'').toLowerCase().includes(q);
-    const inTag  = !tag || (Array.isArray(p.tags) && p.tags.includes(tag));
-    return inText && inTag;
-  });
-
-  c.innerHTML = filtered.map(p=>`
-    <div class="card">
-      <h3>${escapeHtml(p.title)}</h3>
-      <div class="mut">${escapeHtml(p.pi_username||'')}</div>
-      <p style="margin:10px 0 0;line-height:1.7">${escapeHtml(p.content)}</p>
-
-      <div class="tags">
-        ${(p.tags||[]).slice(0,6).map(t=>`<span class="tag" onclick="setTag('${escapeHtml(t)}')">#${escapeHtml(t)}</span>`).join('')}
-      </div>
-
-      <div class="row">
-        <div class="mut">${new Date(p.created_at).toLocaleString('ar-EG')}</div>
-        ${p.owner_auth_uid === authUid ? `
-          <div class="actions">
-            <button class="iconBtn" onclick="deletePost('${p.id}')">حذف</button>
-          </div>` : `<div></div>`
-        }
-      </div>
-    </div>
-  `).join('');
-
-  if(!filtered.length){
-    c.innerHTML = `<div class="card"><h3>لا يوجد نتائج</h3><div class="mut">جرّب بحث مختلف أو امسح الفلتر.</div></div>`;
-  }
-}
-
-function renderProjects(){
-  const c=document.getElementById('projects');
-  const q = (state.q || '').toLowerCase().trim();
-  const tag = state.activeTag;
-
-  const filtered = (state.projects||[]).filter(p=>{
-    const inText = !q || (p.name||'').toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q) || (p.pi_username||'').toLowerCase().includes(q);
-    const inTag  = !tag || (Array.isArray(p.stack) && p.stack.includes(tag));
-    return inText && inTag;
-  });
-
-  c.innerHTML = filtered.map(p=>`
-    <div class="card">
-      <h3>${escapeHtml(p.name)}</h3>
-      <div class="mut">${escapeHtml(p.pi_username||'')}</div>
-      <p style="margin:10px 0 0;line-height:1.7">${escapeHtml(p.description)}</p>
-
-      <div class="tags">
-        ${(p.stack||[]).slice(0,6).map(t=>`<span class="tag" onclick="setTag('${escapeHtml(t)}')">${escapeHtml(t)}</span>`).join('')}
-      </div>
-
-      <div class="row">
-        <div class="mut">${new Date(p.created_at).toLocaleString('ar-EG')}</div>
-        ${p.owner_auth_uid === authUid ? `
-          <div class="actions">
-            <button class="iconBtn" onclick="deleteProject('${p.id}')">حذف</button>
-          </div>` : `<div></div>`
-        }
-      </div>
-    </div>
-  `).join('');
-
-  if(!filtered.length){
-    c.innerHTML = `<div class="card"><h3>لا يوجد مشاريع</h3><div class="mut">جرّب إضافة مشروع جديد.</div></div>`;
-  }
-}
-
-function setTag(t){
-  state.activeTag = t || null;
-  toast(state.activeTag ? `فلترة بالوسم: ${state.activeTag}` : 'تم مسح الفلتر');
-  renderPosts();
-  renderProjects();
-}
-
-async function loadAll(){
-  // Skeletons
-  setSkeleton('home', 6);
-  setSkeleton('projects', 6);
-
-  // public read allowed by RLS
-  const [{data:posts, error:pe},{data:projects, error:pr}] = await Promise.all([
-    sb.from('posts').select('*').order('created_at',{ascending:false}),
-    sb.from('projects').select('*').order('created_at',{ascending:false})
-  ]);
-
-  if(pe) console.error(pe);
-  if(pr) console.error(pr);
-
-  state.posts = posts || [];
-  state.projects = projects || [];
-
-  renderPosts();
-  renderProjects();
-  updateStats();
-}
-
-function updateStats(){
-  const myPosts = (state.posts||[]).filter(p=>p.owner_auth_uid === authUid).length;
-  const myProjects = (state.projects||[]).filter(p=>p.owner_auth_uid === authUid).length;
-  document.getElementById('statPosts').textContent = myPosts;
-  document.getElementById('statProjects').textContent = myProjects;
-}
-
 function openModal(title, innerHtml){
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('modalBody').innerHTML = innerHtml;
@@ -393,6 +341,512 @@ function closeModal(){ document.getElementById('modalWrap').classList.remove('sh
 function overlayClose(e){ if(e.target.id === 'modalWrap') closeModal(); }
 window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
 
+function setSkeleton(containerId, count=6){
+  const c=document.getElementById(containerId);
+  c.innerHTML = new Array(count).fill(0).map(()=>`<div class="skel"></div>`).join('');
+}
+
+/* ----------------- FAB ----------------- */
+function toggleFab(force){
+  const menu = document.getElementById('fabMenu');
+  const back = document.getElementById('fabBackdrop');
+  const show = (typeof force === 'boolean') ? force : (menu.style.display !== 'flex');
+  menu.style.display = show ? 'flex' : 'none';
+  back.style.display = show ? 'block' : 'none';
+}
+
+/* ----------------- Auth / Session ----------------- */
+async function ensureSession(){
+  const { data } = await sb.auth.getSession();
+  if(!data?.session){
+    const r = await sb.auth.signInAnonymously();
+    if(r.error) throw r.error;
+  }
+  const sess = await sb.auth.getSession();
+  return sess.data.session;
+}
+async function refreshAuthUid(){
+  const { data, error } = await sb.auth.getUser();
+  if(error) throw error;
+  authUid = data?.user?.id || null;
+  return authUid;
+}
+function setUIAuthed(){
+  const chip = document.getElementById('userChip');
+  const chipText = document.getElementById('userChipText');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const fabBtn = document.getElementById('fabBtn');
+
+  if(isVerified && piUser?.username){
+    chip.classList.add('ok');
+    chipText.textContent = piUser.username;
+    loginBtn.classList.add('hidden');
+    logoutBtn.classList.remove('hidden');
+    fabBtn.style.display = 'block';
+    document.getElementById('profileInfo').textContent = `مرحباً ${piUser.username} — UID: ${piUser.uid}`;
+  }else{
+    chip.classList.remove('ok');
+    chipText.textContent = 'ضيف';
+    loginBtn.classList.remove('hidden');
+    logoutBtn.classList.add('hidden');
+    fabBtn.style.display = 'none';
+    toggleFab(false);
+    document.getElementById('profileInfo').textContent = 'سجّل دخول عشان يظهر حسابك هنا.';
+  }
+}
+
+function show(id, btn){
+  // لو داخل جروب، اقفل الاشتراك realtime
+  if(id !== 'group') stopProjectRealtime();
+
+  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+/* ----------------- Data loading ----------------- */
+async function loadAll(){
+  setSkeleton('home', 6);
+  setSkeleton('projects', 6);
+
+  const [postsR, projectsR, likesR, commentsR, membersR] = await Promise.all([
+    sb.from('posts').select('*').order('created_at',{ascending:false}),
+    sb.from('projects').select('*').order('created_at',{ascending:false}),
+    sb.from('post_likes').select('post_id, owner_auth_uid'),
+    sb.from('post_comments').select('post_id'),
+    (authUid ? sb.from('project_members').select('project_id').eq('member_auth_uid', authUid) : Promise.resolve({data:[]}))
+  ]);
+
+  if(postsR.error) console.error(postsR.error);
+  if(projectsR.error) console.error(projectsR.error);
+  if(likesR.error) console.error(likesR.error);
+  if(commentsR.error) console.error(commentsR.error);
+  if(membersR?.error) console.error(membersR.error);
+
+  state.posts = postsR.data || [];
+  state.projects = projectsR.data || [];
+
+  // likes map
+  state.likesByPost = new Map();
+  (likesR.data || []).forEach(x=>{
+    if(!state.likesByPost.has(x.post_id)) state.likesByPost.set(x.post_id, new Set());
+    state.likesByPost.get(x.post_id).add(x.owner_auth_uid);
+  });
+
+  // comments count
+  state.commentsCount = new Map();
+  (commentsR.data || []).forEach(x=>{
+    state.commentsCount.set(x.post_id, (state.commentsCount.get(x.post_id)||0) + 1);
+  });
+
+  // member projects
+  state.myMemberProjects = new Set((membersR.data||[]).map(x=>x.project_id));
+
+  renderPosts();
+  renderProjects();
+  updateStats();
+}
+
+function updateStats(){
+  const myPosts = (state.posts||[]).filter(p=>p.owner_auth_uid === authUid).length;
+  const myProjects = (state.projects||[]).filter(p=>p.owner_auth_uid === authUid).length;
+  document.getElementById('statPosts').textContent = myPosts;
+  document.getElementById('statProjects').textContent = myProjects;
+}
+
+/* ----------------- Filters ----------------- */
+function setTag(t){
+  state.activeTag = t || null;
+  toast(state.activeTag ? `فلترة بالوسم: ${state.activeTag}` : 'تم مسح الفلتر');
+  renderPosts();
+  renderProjects();
+}
+
+/* ----------------- Posts (Likes + Comments) ----------------- */
+function renderPosts(){
+  const c=document.getElementById('home');
+  const q = (state.q || '').toLowerCase().trim();
+  const tag = state.activeTag;
+
+  const filtered = (state.posts||[]).filter(p=>{
+    const inText = !q || (p.title||'').toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q) || (p.pi_username||'').toLowerCase().includes(q);
+    const inTag  = !tag || (Array.isArray(p.tags) && p.tags.includes(tag));
+    return inText && inTag;
+  });
+
+  c.innerHTML = filtered.map(p=>{
+    const likedSet = state.likesByPost.get(p.id) || new Set();
+    const likes = likedSet.size;
+    const likedByMe = authUid ? likedSet.has(authUid) : false;
+    const cmCount = state.commentsCount.get(p.id) || 0;
+
+    return `
+    <div class="card">
+      <h3>${escapeHtml(p.title)}</h3>
+      <div class="mut">${escapeHtml(p.pi_username||'')}</div>
+      <p style="margin:10px 0 0;line-height:1.7">${escapeHtml(p.content)}</p>
+
+      <div class="tags">
+        ${(p.tags||[]).slice(0,6).map(t=>`<span class="tag" onclick="setTag('${escapeHtml(t)}')">#${escapeHtml(t)}</span>`).join('')}
+      </div>
+
+      <div class="row">
+        <div class="mut">${new Date(p.created_at).toLocaleString('ar-EG')}</div>
+        <div class="actions">
+          <button class="iconBtn" onclick="toggleLike('${p.id}')">${likedByMe ? '💜' : '🤍'} لايك (${likes})</button>
+          <button class="iconBtn" onclick="openComments('${p.id}')">💬 كومنت (${cmCount})</button>
+          ${p.owner_auth_uid === authUid ? `<button class="iconBtn" onclick="deletePost('${p.id}')">🗑 حذف</button>` : ``}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if(!filtered.length){
+    c.innerHTML = `<div class="card"><h3>لا يوجد نتائج</h3><div class="mut">جرّب بحث مختلف أو امسح الفلتر.</div></div>`;
+  }
+}
+
+async function toggleLike(postId){
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
+  try{
+    if(!authUid) await refreshAuthUid();
+
+    const likedSet = state.likesByPost.get(postId) || new Set();
+    const already = likedSet.has(authUid);
+
+    if(already){
+      const { error } = await sb.from('post_likes')
+        .delete()
+        .eq('post_id', postId)
+        .eq('owner_auth_uid', authUid);
+      if(error) throw error;
+      likedSet.delete(authUid);
+    }else{
+      const payload = { post_id: postId, owner_auth_uid: authUid };
+      const { error } = await sb.from('post_likes').insert(payload);
+      if(error) throw error;
+      likedSet.add(authUid);
+    }
+
+    state.likesByPost.set(postId, likedSet);
+    renderPosts();
+  }catch(e){
+    console.error('toggleLike', e);
+    toast(e?.message || 'فشل اللايك (RLS?)', false);
+  }
+}
+
+async function openComments(postId){
+  try{
+    const { data, error } = await sb.from('post_comments')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', {ascending:true});
+
+    if(error) throw error;
+
+    const list = (data||[]).map(c=>`
+      <div style="padding:10px;border:1px solid var(--border);border-radius:12px;margin:8px 0;background:#fff">
+        <div class="mut">${escapeHtml(c.pi_username||'')}</div>
+        <div style="margin-top:6px;line-height:1.7">${escapeHtml(c.body)}</div>
+        <div class="mut" style="margin-top:6px">${new Date(c.created_at).toLocaleString('ar-EG')}</div>
+        ${c.owner_auth_uid === authUid ? `<div class="actions" style="margin-top:8px"><button class="iconBtn" onclick="deleteComment('${c.id}','${postId}')">حذف</button></div>` : ``}
+      </div>
+    `).join('');
+
+    openModal('التعليقات', `
+      <div>${list || `<div class="mut">لا يوجد تعليقات حتى الآن.</div>`}</div>
+      <hr />
+      <div class="field">
+        <label>إضافة تعليق</label>
+        <textarea id="c_body" placeholder="اكتب تعليق..."></textarea>
+        <div class="help">ملاحظة: لازم تكون عامل Pi Login علشان تضيف تعليق.</div>
+      </div>
+      <div class="footerBtns">
+        <button class="primaryBtn" onclick="addComment('${postId}')">نشر التعليق</button>
+        <button class="btnGhost btnSmall" onclick="closeModal()">إغلاق</button>
+      </div>
+    `);
+
+  }catch(e){
+    console.error('openComments', e);
+    toast(e?.message || 'فشل تحميل التعليقات', false);
+  }
+}
+
+async function addComment(postId){
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
+  try{
+    if(!authUid) await refreshAuthUid();
+    const body = (document.getElementById('c_body').value||'').trim();
+    if(!body) return toast('اكتب تعليق', false);
+
+    const payload = {
+      post_id: postId,
+      owner_auth_uid: authUid,
+      pi_username: piUser?.username || '',
+      body
+    };
+
+    const { error } = await sb.from('post_comments').insert(payload);
+    if(error) throw error;
+
+    state.commentsCount.set(postId, (state.commentsCount.get(postId)||0) + 1);
+    toast('تم نشر التعليق ✅');
+    closeModal();
+    renderPosts();
+  }catch(e){
+    console.error('addComment', e);
+    toast(e?.message || 'فشل إضافة التعليق (RLS?)', false);
+  }
+}
+
+async function deleteComment(commentId, postId){
+  try{
+    const { error } = await sb.from('post_comments').delete().eq('id', commentId);
+    if(error) throw error;
+    state.commentsCount.set(postId, Math.max(0, (state.commentsCount.get(postId)||1) - 1));
+    toast('تم حذف التعليق');
+    closeModal();
+    renderPosts();
+  }catch(e){
+    console.error('deleteComment', e);
+    toast(e?.message || 'فشل حذف التعليق', false);
+  }
+}
+
+/* ----------------- Projects as Groups ----------------- */
+function renderProjects(){
+  const c=document.getElementById('projects');
+  const q = (state.q || '').toLowerCase().trim();
+  const tag = state.activeTag;
+
+  const filtered = (state.projects||[]).filter(p=>{
+    const inText = !q || (p.name||'').toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q) || (p.pi_username||'').toLowerCase().includes(q);
+    const inTag  = !tag || (Array.isArray(p.stack) && p.stack.includes(tag));
+    return inText && inTag;
+  });
+
+  c.innerHTML = filtered.map(p=>{
+    const isMember = state.myMemberProjects.has(p.id);
+    return `
+    <div class="card">
+      <h3>${escapeHtml(p.name)}</h3>
+      <div class="mut">${escapeHtml(p.pi_username||'')}</div>
+      <p style="margin:10px 0 0;line-height:1.7">${escapeHtml(p.description)}</p>
+
+      <div class="tags">
+        ${(p.stack||[]).slice(0,6).map(t=>`<span class="tag" onclick="setTag('${escapeHtml(t)}')">${escapeHtml(t)}</span>`).join('')}
+      </div>
+
+      <div class="row">
+        <div class="mut">${new Date(p.created_at).toLocaleString('ar-EG')}</div>
+        <div class="actions">
+          ${isMember
+            ? `<span class="badge">✅ عضو</span><button class="primaryBtn" onclick="openGroup('${p.id}','${escapeHtml(p.name)}')">فتح الجروب</button>`
+            : `<button class="primaryBtn" onclick="joinGroup('${p.id}','${escapeHtml(p.name)}')">انضم للجروب</button>`
+          }
+          ${p.owner_auth_uid === authUid ? `<button class="iconBtn" onclick="deleteProject('${p.id}')">🗑 حذف</button>` : ``}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if(!filtered.length){
+    c.innerHTML = `<div class="card"><h3>لا يوجد مشاريع</h3><div class="mut">جرّب إضافة مشروع جديد.</div></div>`;
+  }
+}
+
+async function joinGroup(projectId, projectName){
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
+  try{
+    if(!authUid) await refreshAuthUid();
+    const payload = {
+      project_id: projectId,
+      member_auth_uid: authUid,
+      pi_username: piUser?.username || '',
+      role: 'member'
+    };
+    const { error } = await sb.from('project_members').insert(payload);
+    if(error) throw error;
+
+    state.myMemberProjects.add(projectId);
+    toast(`انضميت لجروب: ${projectName} ✅`);
+    renderProjects();
+    openGroup(projectId, projectName);
+  }catch(e){
+    console.error('joinGroup', e);
+    toast(e?.message || 'فشل الانضمام (RLS?)', false);
+  }
+}
+
+async function leaveGroup(){
+  if(!activeProject?.id) return;
+  try{
+    const pid = activeProject.id;
+    const { error } = await sb.from('project_members')
+      .delete()
+      .eq('project_id', pid)
+      .eq('member_auth_uid', authUid);
+    if(error) throw error;
+
+    state.myMemberProjects.delete(pid);
+    toast('تمت المغادرة');
+    stopProjectRealtime();
+    activeProject = null;
+    show('projects', document.querySelector('[data-tab=projects]'));
+    renderProjects();
+  }catch(e){
+    console.error('leaveGroup', e);
+    toast(e?.message || 'فشل المغادرة', false);
+  }
+}
+
+/* ----------------- Group Chat + Images ----------------- */
+async function openGroup(projectId, projectName){
+  activeProject = { id: projectId, name: projectName };
+  document.getElementById('groupTitle').textContent = `جروب: ${projectName}`;
+  document.getElementById('groupSub').textContent = `شارك في حل المشكلة وبناء المشروع — إرسال صور متاح`;
+
+  // open group page
+  show('group', null);
+
+  // load history + subscribe realtime
+  await loadProjectMessages();
+  startProjectRealtime();
+}
+
+async function loadProjectMessages(){
+  const wrap = document.getElementById('chatMsgs');
+  wrap.innerHTML = `<div class="mut">تحميل الرسائل...</div>`;
+  const { data, error } = await sb.from('project_messages')
+    .select('*')
+    .eq('project_id', activeProject.id)
+    .order('created_at', {ascending:true});
+
+  if(error){
+    console.error(error);
+    wrap.innerHTML = `<div class="mut">فشل تحميل الرسائل</div>`;
+    return;
+  }
+  renderMessages(data||[]);
+}
+
+function renderMessages(list){
+  const wrap = document.getElementById('chatMsgs');
+  wrap.innerHTML = (list||[]).map(m=>{
+    const me = (m.sender_auth_uid === authUid);
+    return `
+      <div class="bubble ${me?'me':''}">
+        <div class="who">${escapeHtml(m.sender_pi_username||'')}</div>
+        ${m.body ? `<div>${escapeHtml(m.body)}</div>` : ``}
+        ${m.image_url ? `<img src="${escapeHtml(m.image_url)}" alt="image" />` : ``}
+        <div class="mut small" style="margin-top:6px">${new Date(m.created_at).toLocaleString('ar-EG')}</div>
+      </div>
+    `;
+  }).join('');
+  wrap.scrollTop = wrap.scrollHeight + 9999;
+}
+
+function startProjectRealtime(){
+  stopProjectRealtime();
+  activeProjectSub = sb.channel('project_messages_'+activeProject.id)
+    .on('postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'project_messages', filter: `project_id=eq.${activeProject.id}` },
+      (payload) => {
+        // append message
+        const wrap = document.getElementById('chatMsgs');
+        const m = payload.new;
+        const me = (m.sender_auth_uid === authUid);
+        const html = `
+          <div class="bubble ${me?'me':''}">
+            <div class="who">${escapeHtml(m.sender_pi_username||'')}</div>
+            ${m.body ? `<div>${escapeHtml(m.body)}</div>` : ``}
+            ${m.image_url ? `<img src="${escapeHtml(m.image_url)}" alt="image" />` : ``}
+            <div class="mut small" style="margin-top:6px">${new Date(m.created_at).toLocaleString('ar-EG')}</div>
+          </div>
+        `;
+        wrap.insertAdjacentHTML('beforeend', html);
+        wrap.scrollTop = wrap.scrollHeight + 9999;
+      }
+    )
+    .subscribe();
+}
+
+function stopProjectRealtime(){
+  if(activeProjectSub){
+    sb.removeChannel(activeProjectSub);
+    activeProjectSub = null;
+  }
+}
+
+async function uploadImageToStorage(file){
+  // Bucket: project_uploads (public=true)
+  // Path: <authUid>/<projectId>/<timestamp>_<filename>
+  const safeName = (file.name || 'image').replace(/[^\w.\-]+/g,'_');
+  const path = `${authUid}/${activeProject.id}/${Date.now()}_${safeName}`;
+
+  const { error } = await sb.storage.from('project_uploads').upload(path, file, {
+    cacheControl: '3600',
+    upsert: false
+  });
+  if(error) throw error;
+
+  const { data } = sb.storage.from('project_uploads').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+document.getElementById('imgInput').addEventListener('change', async (e)=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
+  if(!activeProject?.id) return toast('افتح جروب مشروع الأول', false);
+
+  try{
+    if(!authUid) await refreshAuthUid();
+    toast('جاري رفع الصورة...');
+    const url = await uploadImageToStorage(f);
+    await insertProjectMessage('', url);
+    toast('تم إرسال الصورة ✅');
+    e.target.value = '';
+  }catch(err){
+    console.error(err);
+    toast(err?.message || 'فشل رفع الصورة', false);
+  }
+});
+
+async function insertProjectMessage(text, imageUrl){
+  const payload = {
+    project_id: activeProject.id,
+    sender_auth_uid: authUid,
+    sender_pi_username: piUser?.username || '',
+    body: text || null,
+    image_url: imageUrl || null
+  };
+  const { error } = await sb.from('project_messages').insert(payload);
+  if(error) throw error;
+}
+
+async function sendMessage(){
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
+  if(!activeProject?.id) return toast('افتح جروب مشروع الأول', false);
+
+  try{
+    if(!authUid) await refreshAuthUid();
+    const input = document.getElementById('msgText');
+    const text = (input.value||'').trim();
+    if(!text) return;
+    input.value = '';
+    await insertProjectMessage(text, null);
+  }catch(e){
+    console.error('sendMessage', e);
+    toast(e?.message || 'فشل إرسال الرسالة (RLS?)', false);
+  }
+}
+
+/* ----------------- Create Post / Project (from FAB) ----------------- */
 function openCreatePost(){
   if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
 
@@ -404,7 +858,7 @@ function openCreatePost(){
     <div class="field">
       <label>المحتوى</label>
       <textarea id="p_content" placeholder="اكتب تفاصيل البوست..."></textarea>
-      <div class="help">سيتم حفظ البوست باسمك مع owner_auth_uid تلقائيًا من جلسة Supabase.</div>
+      <div class="help">بعد النشر الناس تقدر تعمل لايك وكومنت.</div>
     </div>
     <div class="field">
       <label>Tags (افصل بينهم بفاصلة)</label>
@@ -427,12 +881,10 @@ async function createPost(){
     if(!authUid) await refreshAuthUid();
 
     const payload = {
-      owner_auth_uid: authUid,           // ✅ مطلوب عشان RLS
+      owner_auth_uid: authUid,
       pi_uid: piUser.uid,
       pi_username: piUser.username,
-      title,
-      content,
-      tags
+      title, content, tags
     };
 
     const { error } = await sb.from('posts').insert(payload);
@@ -449,7 +901,6 @@ async function createPost(){
 
 async function deletePost(id){
   try{
-    if(!authUid) await refreshAuthUid();
     const { error } = await sb.from('posts').delete().eq('id', id);
     if(error) throw error;
     toast('تم حذف البوست');
@@ -463,13 +914,13 @@ async function deletePost(id){
 function openCreateProject(){
   if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
 
-  openModal('إضافة مشروع', `
+  openModal('إضافة مشروع (ينشئ جروب)', `
     <div class="field">
       <label>اسم المشروع</label>
       <input id="pr_name" placeholder="مثال: Pi Shop" />
     </div>
     <div class="field">
-      <label>وصف مختصر</label>
+      <label>وصف مختصر (المشكلة/المطلوب)</label>
       <textarea id="pr_desc" placeholder="اكتب وصف سريع..."></textarea>
     </div>
     <div class="field">
@@ -481,9 +932,10 @@ function openCreateProject(){
       <input id="pr_roles" placeholder="frontend, backend, uiux" />
     </div>
     <div class="footerBtns">
-      <button class="primaryBtn" onclick="createProject()">حفظ</button>
+      <button class="primaryBtn" onclick="createProject()">نشر المشروع</button>
       <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
     </div>
+    <div class="help">بعد نشر المشروع، هيبقى جروب: الناس تنضم وتتكلم وتشارك صور.</div>
   `);
 }
 
@@ -498,30 +950,37 @@ async function createProject(){
     if(!authUid) await refreshAuthUid();
 
     const payload = {
-      owner_auth_uid: authUid,          // ✅ مطلوب عشان RLS
+      owner_auth_uid: authUid,
       pi_uid: piUser.uid,
       pi_username: piUser.username,
-      name,
-      description,
-      stack,
-      needed_roles
+      name, description, stack, needed_roles
     };
 
-    const { error } = await sb.from('projects').insert(payload);
+    const { data, error } = await sb.from('projects').insert(payload).select().single();
     if(error) throw error;
 
+    // auto-join owner to group
+    const { error: meErr } = await sb.from('project_members').insert({
+      project_id: data.id,
+      member_auth_uid: authUid,
+      pi_username: piUser.username,
+      role: 'owner'
+    });
+    if(meErr) throw meErr;
+
     closeModal();
-    toast('تم إضافة المشروع ✅');
+    toast('تم نشر المشروع ✅ وتم إنشاء الجروب');
     await loadAll();
+    // open group directly
+    await openGroup(data.id, data.name);
   }catch(e){
     console.error('createProject', e);
-    toast(e?.message || 'فشل إضافة المشروع (RLS?)', false);
+    toast(e?.message || 'فشل نشر المشروع (RLS?)', false);
   }
 }
 
 async function deleteProject(id){
   try{
-    if(!authUid) await refreshAuthUid();
     const { error } = await sb.from('projects').delete().eq('id', id);
     if(error) throw error;
     toast('تم حذف المشروع');
@@ -532,6 +991,7 @@ async function deleteProject(id){
   }
 }
 
+/* ----------------- Pi Login + verify ----------------- */
 async function verifyAndSetAuth(pi_uid, pi_username){
   const sess = await ensureSession();
   const access = sess?.access_token;
@@ -581,21 +1041,11 @@ async function logout(){
   localStorage.removeItem('piUser');
   localStorage.removeItem('isVerified');
   setUIAuthed();
+  stopProjectRealtime();
   toast('تم تسجيل الخروج');
 }
 
-document.getElementById('loginBtn').onclick = login;
-document.getElementById('logoutBtn').onclick = logout;
-
-document.getElementById('addPostBtn').onclick = openCreatePost;
-document.getElementById('addProjectBtn').onclick = openCreateProject;
-
-document.getElementById('search').addEventListener('input', (e)=>{
-  state.q = e.target.value || '';
-  renderPosts();
-  renderProjects();
-});
-
+/* ----------------- Restore + init ----------------- */
 function restoreLogin(){
   try{
     const saved = localStorage.getItem('piUser');
@@ -607,20 +1057,26 @@ function restoreLogin(){
   }catch{}
 }
 
+document.getElementById('loginBtn').onclick = login;
+document.getElementById('logoutBtn').onclick = logout;
+
+document.getElementById('search').addEventListener('input', (e)=>{
+  state.q = e.target.value || '';
+  renderPosts();
+  renderProjects();
+});
+
 async function init(){
   try{
     restoreLogin();
     await ensureSession();
     await refreshAuthUid();
-
     setUIAuthed();
     await loadAll();
 
-    // لو user محفوظ (verified سابقًا) جرّب تعمل verify سريعًا لتجديد الربط (اختياري)
-    // (لو /api/pi/verify لا يحتاج إعادة تأكيد دائمًا، سيترك كما هو)
+    // optional: refresh verify silently if saved
     if(isVerified && piUser?.uid && piUser?.username){
-      // ملاحظة: لو بتحب تمنع call إضافي، تقدر تشيل الجزء ده
-      try{ await verifyAndSetAuth(piUser.uid, piUser.username); } catch(_){}
+      try{ await verifyAndSetAuth(piUser.uid, piUser.username); }catch(_){}
     }
   }catch(e){
     console.error('init', e);
