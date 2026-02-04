@@ -3,172 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gemini AI Art Generator</title>
+    <title>Gemini Image Gen</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #7B2FF7;
-            --secondary: #9B6DFF;
-            --bg: #0f0c29;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-        }
-
+        :root { --primary: #7B2FF7; --secondary: #9B6DFF; --bg: #0f0c29; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
         * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            text-align: center;
-        }
-
-        h1 {
-            margin: 0 0 10px;
-            background: linear-gradient(to right, #fff, var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 28px;
-            font-weight: 900;
-        }
-
-        p.subtitle {
-            color: #aaa;
-            font-size: 14px;
-            margin-bottom: 25px;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        textarea {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 15px;
-            color: #fff;
-            font-size: 16px;
-            resize: none;
-            height: 100px;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(123, 47, 247, 0.3);
-        }
-
-        button#generateBtn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border: none;
-            border-radius: 12px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        button#generateBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(123, 47, 247, 0.4);
-        }
-
-        button#generateBtn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .image-area {
-            margin-top: 25px;
-            min-height: 300px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border: 1px dashed var(--border);
-            position: relative;
-        }
-
-        .image-area img {
-            width: 100%;
-            height: auto;
-            border-radius: 16px;
-            display: none;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-
-        .placeholder-text {
-            color: #666;
-            font-size: 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .loader {
-            display: none;
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255,255,255,0.1);
-            border-bottom-color: var(--primary);
-            border-radius: 50%;
-            animation: rotation 1s linear infinite;
-        }
-
-        .download-btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 15px;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            display: none;
-        }
+        body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: #fff; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 600px; background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 24px; padding: 30px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); text-align: center; }
+        h1 { margin: 0 0 10px; background: linear-gradient(to right, #fff, var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; font-weight: 900; }
+        p.subtitle { color: #aaa; font-size: 14px; margin-bottom: 25px; }
+        .input-group { position: relative; margin-bottom: 20px; }
+        textarea { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); border-radius: 16px; padding: 15px; color: #fff; font-size: 16px; resize: none; height: 100px; outline: none; transition: 0.3s; }
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(123, 47, 247, 0.3); }
+        button#generateBtn { width: 100%; padding: 14px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        button#generateBtn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(123, 47, 247, 0.4); }
+        button#generateBtn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .image-area { margin-top: 25px; min-height: 300px; background: rgba(0,0,0,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px dashed var(--border); position: relative; }
+        .image-area img { width: 100%; height: auto; border-radius: 16px; display: none; animation: fadeIn 0.8s ease-in-out; }
+        .placeholder-text { color: #666; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .loader { display: none; width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-bottom-color: var(--primary); border-radius: 50%; animation: rotation 1s linear infinite; }
+        .download-btn { width: 100%; padding: 12px; margin-top: 15px; background: transparent; border: 1px solid var(--border); border-radius: 12px; color: #fff; font-weight: bold; cursor: pointer; display: none; }
         .download-btn:hover { background: rgba(255,255,255,0.1); }
-
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -224,23 +81,33 @@
         downloadBtn.style.display = "none";
         
         try {
-            // 2. طلب الرابط من الفانكشن (Netlify Function)
+            // 2. طلب الرابط من الفانكشن
             const response = await fetch('/.netlify/functions/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: text })
             });
             
-            if (!response.ok) throw new Error("السيرفر لا يستجيب حالياً (خطأ " + response.status + ")");
+            if (!response.ok) throw new Error("السيرفر لا يستجيب حالياً");
             
             const data = await response.json();
             if (data.error) throw new Error(data.error);
             if (!data.url) throw new Error("لم يتم استلام رابط صالح للصورة");
             
-            // 3. تحديث حالة الزر أثناء تحميل ملف الصورة الفعلي
-            generateBtn.innerHTML = "🎨 جاري رسم الصورة...";
+            // 3. الخطوة السحرية: تحميل بيانات الصورة نفسها قبل عرضها
+            // (هذا يمنع ظهور الصورة المكسورة)
+            generateBtn.innerHTML = "🎨 جاري تحميل الألوان...";
 
-            // 4. ربط أحداث تحميل الصورة (onload / onerror) قبل وضع الرابط
+            const imageFetch = await fetch(data.url);
+            if (!imageFetch.ok) throw new Error("فشل توليد الصورة (الرابط لا يعمل)");
+            
+            // تحويل البيانات لملف محلي (Blob)
+            const imageBlob = await imageFetch.blob();
+            const localImageUrl = URL.createObjectURL(imageBlob);
+
+            // 4. عرض الصورة المضمونة
+            resultImage.src = localImageUrl;
+            
             resultImage.onload = () => {
                 loader.style.display = "none";
                 resultImage.style.display = "block";
@@ -248,53 +115,29 @@
                 generateBtn.disabled = false;
                 generateBtn.innerHTML = "🎨 توليد صورة جديدة";
             };
-            
-            resultImage.onerror = () => {
-                loader.style.display = "none";
-                placeholder.style.display = "flex";
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = "🎨 حاول مرة أخرى";
-                alert("فشل تحميل الصورة من المصدر الرئيسي، قد يكون الوصف غير مدعوم.");
-            };
-            
-            // 5. وضع الرابط للبدء في التحميل الفعلي
-            resultImage.src = data.url;
-            
+
         } catch (err) {
             console.error("Generate Error:", err);
-            alert("حدث خطأ: " + err.message);
-            placeholder.style.display = "flex";
+            // إعادة الواجهة لحالتها الأولى
             loader.style.display = "none";
+            placeholder.style.display = "flex";
             generateBtn.disabled = false;
-            generateBtn.innerHTML = "🎨 توليد الصورة";
+            generateBtn.innerHTML = "🎨 حاول مرة أخرى";
+            alert("حدث خطأ: " + err.message);
         }
     }
     
-    // دالة التحميل الاحترافية (Blob Download)
+    // دالة التحميل
     async function downloadImage() {
         const img = document.getElementById('resultImage');
         if (!img.src) return;
         
-        const originalBtnText = document.getElementById('downloadBtn').innerText;
-        document.getElementById('downloadBtn').innerText = "⏳ جاري التجهيز...";
-
-        try {
-            const response = await fetch(img.src);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'AI_Generated_Image_' + Date.now() + '.jpg';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        } catch (e) {
-            // حل احتياطي في حال وجود قيود CORS على التحميل المباشر
-            window.open(img.src, '_blank');
-        } finally {
-            document.getElementById('downloadBtn').innerText = originalBtnText;
-        }
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = 'AI_Art_' + Date.now() + '.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 </script>
 </body>
