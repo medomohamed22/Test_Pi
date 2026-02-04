@@ -204,13 +204,15 @@
       justify-content:center;
     }
 
-    .image-area img{
-      width:100%;
-      height:auto;
-      display:none;
-      border-radius: 18px;
-      animation: fadeIn .7s ease;
-    }
+  .image-area img{
+  width:100%;
+  height:100%;
+  display:none;
+  border-radius:18px;
+  object-fit: cover;      /* ✅ يملى الإطار بدون شكل وحش */
+  object-position: center;/* ✅ يركز القص من النص */
+  animation: fadeIn .7s ease;
+}
 
     .placeholder-text{
       color: rgba(255,255,255,.45);
