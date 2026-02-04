@@ -241,6 +241,13 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
   padding:6px 12px;
   min-width:56px;
   text-align:center;
+  .copyBtn{
+  direction: rtl;        /* يخلي الكلمة عربية مظبوطة */
+  unicode-bidi: isolate; /* يعزلها عن الكود اللي جنبها */
+  white-space: nowrap;
+  min-width: 56px;
+  text-align: center;
+}
 </style>
 </head>
 
