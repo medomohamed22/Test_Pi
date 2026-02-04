@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gemini Image Gen</title>
+    <title>HF Image Gen</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #7B2FF7; --secondary: #9B6DFF; --bg: #0f0c29; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
@@ -13,17 +13,24 @@
         h1 { margin: 0 0 10px; background: linear-gradient(to right, #fff, var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; font-weight: 900; }
         p.subtitle { color: #aaa; font-size: 14px; margin-bottom: 25px; }
         .input-group { position: relative; margin-bottom: 20px; }
-        textarea { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); border-radius: 16px; padding: 15px; color: #fff; font-size: 16px; resize: none; height: 100px; outline: none; transition: 0.3s; }
+        textarea { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); border-radius: 16px; padding: 15px; color: #fff; font-size: 16px; resize: none; height: 110px; outline: none; transition: 0.3s; }
         textarea:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(123, 47, 247, 0.3); }
         button#generateBtn { width: 100%; padding: 14px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         button#generateBtn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(123, 47, 247, 0.4); }
         button#generateBtn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
         .image-area { margin-top: 25px; min-height: 300px; background: rgba(0,0,0,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px dashed var(--border); position: relative; }
         .image-area img { width: 100%; height: auto; border-radius: 16px; display: none; animation: fadeIn 0.8s ease-in-out; }
+
         .placeholder-text { color: #666; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .loader { display: none; width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-bottom-color: var(--primary); border-radius: 50%; animation: rotation 1s linear infinite; }
+
         .download-btn { width: 100%; padding: 12px; margin-top: 15px; background: transparent; border: 1px solid var(--border); border-radius: 12px; color: #fff; font-weight: bold; cursor: pointer; display: none; }
         .download-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .hint { margin-top: 10px; font-size: 12px; color: rgba(255,255,255,.55); line-height: 1.6; }
+        .hint b{ color:#fff; }
+
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
     </style>
@@ -31,11 +38,11 @@
 <body>
 
 <div class="container">
-    <h1>✨ Gemini Image Gen</h1>
-    <p class="subtitle">حول خيالك إلى صور باستخدام الذكاء الاصطناعي</p>
+    <h1>✨ HF Image Gen</h1>
+    <p class="subtitle">حول خيالك إلى صور باستخدام Hugging Face (Free-tier)</p>
 
     <div class="input-group">
-        <textarea id="prompt" placeholder="صف الصورة التي تريد تخيلها... (مثلاً: رائد فضاء يركب خيلاً على المريخ)"></textarea>
+        <textarea id="prompt" placeholder="صف الصورة... مثال: منتج عناية بالبشرة على خلفية فخمة بإضاءة سينمائية"></textarea>
     </div>
 
     <button id="generateBtn" onclick="generateImage()">
@@ -58,9 +65,34 @@
     <button id="downloadBtn" class="download-btn" onclick="downloadImage()">
         ⬇️ تحميل الصورة
     </button>
+
+    <div class="hint">
+        💡 لو ظهر خطأ <b>503</b> ده طبيعي أول مرة (الموديل بيسخّن). جرّب تاني بعد ثواني.
+    </div>
 </div>
 
 <script>
+    function setLoadingState(btn, loader, placeholder, img, downloadBtn, text) {
+        btn.disabled = true;
+        btn.innerHTML = text;
+        img.style.display = "none";
+        placeholder.style.display = "none";
+        loader.style.display = "block";
+        downloadBtn.style.display = "none";
+    }
+
+    function setIdleState(btn, loader, placeholder, img, downloadBtn, btnText, showPlaceholder=true) {
+        loader.style.display = "none";
+        btn.disabled = false;
+        btn.innerHTML = btnText;
+        if (showPlaceholder) placeholder.style.display = "flex";
+        if (!showPlaceholder) placeholder.style.display = "none";
+        if (img.src) {
+            img.style.display = "block";
+            downloadBtn.style.display = "block";
+        }
+    }
+
     async function generateImage() {
         const promptInput = document.getElementById('prompt');
         const generateBtn = document.getElementById('generateBtn');
@@ -68,46 +100,36 @@
         const loader = document.getElementById('loader');
         const placeholder = document.getElementById('placeholder');
         const downloadBtn = document.getElementById('downloadBtn');
-        
-        const text = promptInput.value.trim();
+
+        const text = (promptInput.value || "").trim();
         if (!text) return alert("من فضلك اكتب وصفاً للصورة!");
-        
-        // 1. تصفير الواجهة وبدء التحميل
-        generateBtn.disabled = true;
-        generateBtn.innerHTML = "⏳ جاري الاتصال بالسيرفر...";
-        resultImage.style.display = "none";
-        placeholder.style.display = "none";
-        loader.style.display = "block";
-        downloadBtn.style.display = "none";
-        
+
+        // loading
+        setLoadingState(generateBtn, loader, placeholder, resultImage, downloadBtn, "⏳ جاري التوليد...");
+
         try {
-            // 2. طلب الرابط من الفانكشن
             const response = await fetch('/.netlify/functions/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: text })
             });
-            
-            if (!response.ok) throw new Error("السيرفر لا يستجيب حالياً");
-            
-            const data = await response.json();
-            if (data.error) throw new Error(data.error);
-            if (!data.url) throw new Error("لم يتم استلام رابط صالح للصورة");
-            
-            // 3. الخطوة السحرية: تحميل بيانات الصورة نفسها قبل عرضها
-            // (هذا يمنع ظهور الصورة المكسورة)
-            generateBtn.innerHTML = "🎨 جاري تحميل الألوان...";
 
-            const imageFetch = await fetch(data.url);
-            if (!imageFetch.ok) throw new Error("فشل توليد الصورة (الرابط لا يعمل)");
-            
-            // تحويل البيانات لملف محلي (Blob)
-            const imageBlob = await imageFetch.blob();
-            const localImageUrl = URL.createObjectURL(imageBlob);
+            // حاول تقرأ JSON حتى لو فيه خطأ عشان تطلع رسالة مفهومة
+            let data = null;
+            try { data = await response.json(); } catch(e) {}
 
-            // 4. عرض الصورة المضمونة
-            resultImage.src = localImageUrl;
-            
+            if (!response.ok) {
+                const msg = data?.error || "السيرفر لا يستجيب حالياً";
+                throw new Error(msg);
+            }
+
+            if (data?.error) throw new Error(data.error);
+            if (!data?.dataUrl) throw new Error("لم يتم استلام صورة صالحة");
+
+            // عرض الصورة مباشرة (Base64)
+            generateBtn.innerHTML = "🎨 تجهيز العرض...";
+            resultImage.src = data.dataUrl;
+
             resultImage.onload = () => {
                 loader.style.display = "none";
                 resultImage.style.display = "block";
@@ -116,25 +138,28 @@
                 generateBtn.innerHTML = "🎨 توليد صورة جديدة";
             };
 
+            resultImage.onerror = () => {
+                throw new Error("فشل عرض الصورة، جرّب تاني");
+            };
+
         } catch (err) {
             console.error("Generate Error:", err);
-            // إعادة الواجهة لحالتها الأولى
             loader.style.display = "none";
             placeholder.style.display = "flex";
             generateBtn.disabled = false;
             generateBtn.innerHTML = "🎨 حاول مرة أخرى";
-            alert("حدث خطأ: " + err.message);
+            alert("حدث خطأ: " + (err?.message || err));
         }
     }
-    
-    // دالة التحميل
-    async function downloadImage() {
+
+    // تحميل الصورة
+    function downloadImage() {
         const img = document.getElementById('resultImage');
         if (!img.src) return;
-        
+
         const a = document.createElement('a');
-        a.href = img.src;
-        a.download = 'AI_Art_' + Date.now() + '.jpg';
+        a.href = img.src; // data URL
+        a.download = 'AI_Art_' + Date.now() + '.png';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
