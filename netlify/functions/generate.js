@@ -7,17 +7,23 @@ export async function handler(event) {
   try {
     const { prompt } = JSON.parse(event.body || "{}");
     if (!prompt || !prompt.trim()) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Missing prompt" }) };
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing prompt" })
+      };
     }
 
     const token = process.env.HF_TOKEN;
     if (!token) {
-      return { statusCode: 500, body: JSON.stringify({ error: "Missing HF_TOKEN env var" }) };
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "HF_TOKEN is missing" })
+      };
     }
 
-    // Model: SDXL (جودة عالية)
+    // ✅ ENDPOINT الجديد الرسمي
     const model = "stabilityai/stable-diffusion-xl-base-1.0";
-    const apiUrl = `https://api-inference.huggingface.co/models/${model}`;
+    const apiUrl = `https://router.huggingface.co/hf-inference/models/${model}`;
 
     const resp = await fetch(apiUrl, {
       method: "POST",
@@ -28,24 +34,30 @@ export async function handler(event) {
       },
       body: JSON.stringify({
         inputs: prompt,
-        parameters: { guidance_scale: 7.5 }
+        parameters: {
+          guidance_scale: 7.5
+        }
       })
     });
 
-    const ct = resp.headers.get("content-type") || "";
+    const contentType = resp.headers.get("content-type") || "";
 
-    // أخطاء HF (زي 503 cold start) بتكون JSON غالبًا
+    // أخطاء HuggingFace (زي 503 أثناء التسخين)
     if (!resp.ok) {
-      let msg = `HF error: ${resp.status}`;
-      if (ct.includes("application/json")) {
+      let msg = `HF Error ${resp.status}`;
+      if (contentType.includes("application/json")) {
         const j = await resp.json().catch(() => null);
         if (j?.error) msg = j.error;
       }
-      return { statusCode: 502, body: JSON.stringify({ error: msg }) };
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ error: msg })
+      };
     }
 
-    const arrayBuffer = await resp.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    // الصورة بتيجي Binary
+    const buffer = await resp.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
 
     return {
       statusCode: 200,
@@ -54,7 +66,11 @@ export async function handler(event) {
         dataUrl: `data:image/png;base64,${base64}`
       })
     };
-  } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: e.message || "Server error" }) };
+
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message || "Server error" })
+    };
   }
 }
