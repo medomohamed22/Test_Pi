@@ -1,3 +1,4 @@
+
 // تغيير السطر الأول ليصبح هكذا:
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
