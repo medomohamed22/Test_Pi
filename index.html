@@ -107,7 +107,6 @@
             transform: none;
         }
 
-        /* منطقة عرض الصورة */
         .image-area {
             margin-top: 25px;
             min-height: 300px;
@@ -138,7 +137,6 @@
             gap: 10px;
         }
 
-        /* Loading Spinner */
         .loader {
             display: none;
             width: 48px;
@@ -149,16 +147,19 @@
             animation: rotation 1s linear infinite;
         }
 
-        /* Download Button */
         .download-btn {
+            width: 100%;
+            padding: 12px;
             margin-top: 15px;
             background: transparent;
             border: 1px solid var(--border);
-            display: none; /* مخفي حتى يتم توليد الصورة */
+            border-radius: 12px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
         }
-        .download-btn:hover {
-            background: rgba(255,255,255,0.1);
-        }
+        .download-btn:hover { background: rgba(255,255,255,0.1); }
 
         @keyframes rotation {
             0% { transform: rotate(0deg); }
@@ -177,7 +178,7 @@
     <p class="subtitle">حول خيالك إلى صور باستخدام الذكاء الاصطناعي</p>
 
     <div class="input-group">
-        <textarea id="prompt" placeholder="صف الصورة التي تريد تخيلها... (مثلاً: نانو بنانا في مطعم فضائي)"></textarea>
+        <textarea id="prompt" placeholder="صف الصورة التي تريد تخيلها... (مثلاً: قطة في الفضاء)"></textarea>
     </div>
 
     <button id="generateBtn" onclick="generateImage()">
@@ -202,52 +203,80 @@
     </button>
 </div>
 
-<!-- استخدم نفس كود HTML السابق مع تغيير بسيط في دالة الجافاسكريبت -->
 <script>
-  async function generateImage() {
-    const promptInput = document.getElementById('prompt');
-    const generateBtn = document.getElementById('generateBtn');
-    const resultImage = document.getElementById('resultImage');
-    const loader = document.getElementById('loader');
-    const placeholder = document.getElementById('placeholder');
-    const downloadBtn = document.getElementById('downloadBtn');
-    
-    const text = promptInput.value.trim();
-    if (!text) return alert("من فضلك اكتب وصفاً للصورة!");
-    
-    generateBtn.disabled = true;
-    generateBtn.innerHTML = "⏳ جاري الرسم...";
-    resultImage.style.display = "none";
-    placeholder.style.display = "none";
-    loader.style.display = "block";
-    downloadBtn.style.display = "none";
-    
-    try {
-      // الرابط الجديد ليناسب Netlify Functions
-      const response = await fetch('/.netlify/functions/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text })
-      });
-      
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
-      
-      resultImage.src = `data:image/png;base64,${data.image}`;
-      resultImage.style.display = "block";
-      loader.style.display = "none";
-      downloadBtn.style.display = "block";
-      
-    } catch (err) {
-      alert("حدث خطأ: " + err.message);
-      placeholder.style.display = "flex";
-      loader.style.display = "none";
-    } finally {
-      generateBtn.disabled = false;
-      generateBtn.innerHTML = "🎨 توليد صورة جديدة";
+    async function generateImage() {
+        const promptInput = document.getElementById('prompt');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultImage = document.getElementById('resultImage');
+        const loader = document.getElementById('loader');
+        const placeholder = document.getElementById('placeholder');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        const text = promptInput.value.trim();
+        if (!text) return alert("من فضلك اكتب وصفاً للصورة!");
+
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = "⏳ جاري الرسم...";
+        resultImage.style.display = "none";
+        placeholder.style.display = "none";
+        loader.style.display = "block";
+        downloadBtn.style.display = "none";
+
+        try {
+            const response = await fetch('/.netlify/functions/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: text })
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            // تعديل هام هنا: نستخدم data.url مباشرة لأن الباك إند يرسل رابطاً
+            resultImage.src = data.url;
+
+            // ننتظر حتى تكتمل عملية تحميل الصورة من الرابط قبل إظهارها
+            resultImage.onload = () => {
+                resultImage.style.display = "block";
+                loader.style.display = "none";
+                downloadBtn.style.display = "block";
+            };
+
+            resultImage.onerror = () => {
+                throw new Error("فشل تحميل الصورة من المصدر");
+            };
+
+        } catch (err) {
+            alert("حدث خطأ: " + err.message);
+            placeholder.style.display = "flex";
+            loader.style.display = "none";
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = "🎨 توليد صورة جديدة";
+        }
     }
-  }
-  // دالة التحميل تبقى كما هي...
+
+    async function downloadImage() {
+        const img = document.getElementById('resultImage');
+        const imageUrl = img.src;
+        
+        try {
+            // جلب الصورة كـ Blob لضمان التحميل الفعلي وليس مجرد فتح الرابط
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ai-art.jpg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (e) {
+            // حل احتياطي لو فشل الـ Blob
+            window.open(imageUrl, '_blank');
+        }
+    }
 </script>
 </body>
 </html>
