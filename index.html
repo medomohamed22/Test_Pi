@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gemini AI Art Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -79,7 +79,7 @@
             box-shadow: 0 0 15px rgba(123, 47, 247, 0.3);
         }
 
-        button {
+        button#generateBtn {
             width: 100%;
             padding: 14px;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
@@ -96,14 +96,14 @@
             gap: 10px;
         }
 
-        button:hover {
+        button#generateBtn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(123, 47, 247, 0.4);
         }
 
-        button:disabled {
+        button#generateBtn:disabled {
             opacity: 0.7;
-            cursor: wait;
+            cursor: not-allowed;
             transform: none;
         }
 
@@ -125,7 +125,7 @@
             height: auto;
             border-radius: 16px;
             display: none;
-            animation: fadeIn 1s ease;
+            animation: fadeIn 0.8s ease-in-out;
         }
 
         .placeholder-text {
@@ -139,9 +139,9 @@
 
         .loader {
             display: none;
-            width: 48px;
-            height: 48px;
-            border: 5px solid #FFF;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.1);
             border-bottom-color: var(--primary);
             border-radius: 50%;
             animation: rotation 1s linear infinite;
@@ -166,7 +166,7 @@
             100% { transform: rotate(360deg); }
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
+            from { opacity: 0; transform: scale(0.98); }
             to { opacity: 1; transform: scale(1); }
         }
     </style>
@@ -178,7 +178,7 @@
     <p class="subtitle">حول خيالك إلى صور باستخدام الذكاء الاصطناعي</p>
 
     <div class="input-group">
-        <textarea id="prompt" placeholder="صف الصورة التي تريد تخيلها... (مثلاً: قطة في الفضاء)"></textarea>
+        <textarea id="prompt" placeholder="صف الصورة التي تريد تخيلها... (مثلاً: رائد فضاء يركب خيلاً على المريخ)"></textarea>
     </div>
 
     <button id="generateBtn" onclick="generateImage()">
@@ -202,7 +202,7 @@
         ⬇️ تحميل الصورة
     </button>
 </div>
-<!-- استبدل جزء الـ <script> في ملف index.html بهذا الجزء المحدث -->
+
 <script>
     async function generateImage() {
         const promptInput = document.getElementById('prompt');
@@ -215,43 +215,53 @@
         const text = promptInput.value.trim();
         if (!text) return alert("من فضلك اكتب وصفاً للصورة!");
         
-        // تجهيز الواجهة للتحميل
+        // 1. تصفير الواجهة وبدء التحميل
         generateBtn.disabled = true;
-        generateBtn.innerHTML = "⏳ جاري الرسم...";
+        generateBtn.innerHTML = "⏳ جاري الاتصال بالسيرفر...";
         resultImage.style.display = "none";
         placeholder.style.display = "none";
         loader.style.display = "block";
         downloadBtn.style.display = "none";
         
         try {
-            // طلب الرابط من الفانكشن
+            // 2. طلب الرابط من الفانكشن (Netlify Function)
             const response = await fetch('/.netlify/functions/generate', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: text })
             });
             
-            if (!response.ok) throw new Error("السيرفر لا يستجيب حالياً");
+            if (!response.ok) throw new Error("السيرفر لا يستجيب حالياً (خطأ " + response.status + ")");
             
             const data = await response.json();
             if (data.error) throw new Error(data.error);
+            if (!data.url) throw new Error("لم يتم استلام رابط صالح للصورة");
             
-            // الخطوة الأهم: نربط أحداث الصورة قبل وضع الرابط
+            // 3. تحديث حالة الزر أثناء تحميل ملف الصورة الفعلي
+            generateBtn.innerHTML = "🎨 جاري رسم الصورة...";
+
+            // 4. ربط أحداث تحميل الصورة (onload / onerror) قبل وضع الرابط
             resultImage.onload = () => {
-                resultImage.style.display = "block";
                 loader.style.display = "none";
+                resultImage.style.display = "block";
                 downloadBtn.style.display = "block";
                 generateBtn.disabled = false;
                 generateBtn.innerHTML = "🎨 توليد صورة جديدة";
             };
             
             resultImage.onerror = () => {
-                throw new Error("فشل تحميل الصورة من المصدر، جرب وصفاً آخر");
+                loader.style.display = "none";
+                placeholder.style.display = "flex";
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = "🎨 حاول مرة أخرى";
+                alert("فشل تحميل الصورة من المصدر الرئيسي، قد يكون الوصف غير مدعوم.");
             };
             
-            // وضع الرابط للبدء في التحميل
+            // 5. وضع الرابط للبدء في التحميل الفعلي
             resultImage.src = data.url;
             
         } catch (err) {
+            console.error("Generate Error:", err);
             alert("حدث خطأ: " + err.message);
             placeholder.style.display = "flex";
             loader.style.display = "none";
@@ -260,21 +270,30 @@
         }
     }
     
+    // دالة التحميل الاحترافية (Blob Download)
     async function downloadImage() {
         const img = document.getElementById('resultImage');
         if (!img.src) return;
+        
+        const originalBtnText = document.getElementById('downloadBtn').innerText;
+        document.getElementById('downloadBtn').innerText = "⏳ جاري التجهيز...";
+
         try {
             const response = await fetch(img.src);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'ai-art-' + Date.now() + '.jpg';
+            a.download = 'AI_Generated_Image_' + Date.now() + '.jpg';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         } catch (e) {
+            // حل احتياطي في حال وجود قيود CORS على التحميل المباشر
             window.open(img.src, '_blank');
+        } finally {
+            document.getElementById('downloadBtn').innerText = originalBtnText;
         }
     }
 </script>
