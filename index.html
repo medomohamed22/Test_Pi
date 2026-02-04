@@ -139,10 +139,10 @@ code{font-family:inherit}
 </div>
 
 <script>
-// ✅ غيّر ده حسب استضافتك:
-// Vercel:  "/api/chat"
-// Netlify: "/.netlify/functions/chat"
-const API_ENDPOINT = "/api/chat";
+// ✅ Netlify:
+const API_ENDPOINT = "/.netlify/functions/chat";
+// ✅ لو رجعت لـ Vercel بدّلها:
+// const API_ENDPOINT = "/api/chat";
 
 const chat = document.getElementById('chat');
 const msgEl = document.getElementById('msg');
@@ -223,7 +223,6 @@ msgEl.addEventListener('keydown', (e)=>{
     send();
   }
 });
-
 sendBtn.addEventListener('click', send);
 
 /* ===== Helpers for code blocks ===== */
@@ -233,7 +232,6 @@ function escapeHtml(s){
   }[c]));
 }
 
-// Parses markdown fences ```lang ... ```
 function parseCodeFences(text){
   const blocks = [];
   const re = /```([\w#+-]*)\n([\s\S]*?)```/g;
@@ -252,7 +250,6 @@ function parseCodeFences(text){
   return blocks;
 }
 
-// fallback: لو الرد عبارة عن HTML صريح بدون ``` ```
 function looksLikeHtmlCode(text){
   const t = text.trim();
   return t.startsWith("<!DOCTYPE html") || (t.startsWith("<html") && t.includes("</html>"));
@@ -265,7 +262,6 @@ async function copyToClipboard(text, btn){
     btn.textContent = "✅ تم النسخ";
     setTimeout(()=>btn.textContent = old, 1200);
   }catch{
-    // fallback
     const ta = document.createElement("textarea");
     ta.value = text;
     document.body.appendChild(ta);
@@ -279,9 +275,8 @@ async function copyToClipboard(text, btn){
 }
 
 function renderAiWithCode(container, reply){
-  container.innerHTML = ""; // هنحط عناصر بدل textContent
+  container.innerHTML = "";
 
-  // لو مفيش fences بس شكله HTML كامل: نعرضه ككود
   if(!reply.includes("```") && looksLikeHtmlCode(reply)){
     const wrap = document.createElement("div");
     wrap.className = "codeWrap";
@@ -326,6 +321,14 @@ async function send(){
   const text = (msgEl.value || '').trim();
   if(!text) return;
 
+  // ✅ كشف لو المستخدم عايز كود
+  const wantsCode = /(\bكود\b|\bcode\b|\bhtml\b|\bcss\b|\bjavascript\b|\bjs\b)/i.test(text);
+
+  // ✅ تعليمات إجبارية للـ AI علشان يبعث الكود كامل داخل fences
+  const forceCodeInstruction = wantsCode
+    ? "\n\nمهم جدًا: لو هتبعت كود لازم يكون كامل داخل ```html``` أو ```js``` أو ```css``` حسب المطلوب. ممنوع ترد بجملة تمهيدية بس. لازم تبعت الكود كامل فورًا."
+    : "";
+
   addBubble('user', text);
   convo.push({ role:'user', text });
 
@@ -343,7 +346,7 @@ async function send(){
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
-        message: text,
+        message: text + forceCodeInstruction,
         history: convo.slice(0, -1)
       })
     });
@@ -364,10 +367,15 @@ async function send(){
 
     typing.meta.textContent = '🤖 AI';
 
-    // لو الرد فيه كود: نعرضه كـ blocks + زر نسخ
-    if(reply.includes("```") || looksLikeHtmlCode(reply)){
-      // بدل typewriter، هنظهره مرة واحدة
+    const isLong = reply.length > 800;
+    const hasCode = reply.includes("```") || looksLikeHtmlCode(reply);
+
+    // ✅ لو فيه كود: عرض Blocks + زر نسخ
+    if(hasCode){
       renderAiWithCode(typing.content, reply);
+    } else if(isLong || wantsCode){
+      // ✅ لو الرد طويل أو المستخدم طالب كود: اعرضه مرة واحدة (بدون typewriter) عشان ما يقطعش
+      typing.content.textContent = reply;
     } else {
       await typewriter(typing.content, reply, 12);
     }
@@ -387,7 +395,7 @@ async function send(){
   }
 }
 
-addBubble('ai', 'أهلاً 👋 ابعت رسالتك وأنا هرد عليك.\nلو طلبت كود، خليه يبعته داخل ``` ``` علشان يظهر زر النسخ.');
+addBubble('ai', 'أهلاً 👋 ابعت رسالتك وأنا هرد عليك.\nلو طلبت كود، هبعته كامل داخل ``` ``` ومعاه زر النسخ.');
 </script>
 </body>
 </html>
