@@ -1,527 +1,98 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Purple Gemini Chat</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-
-<style>
-:root{
-  --p:#7B2FF7; --p2:#9B6DFF;
-  --bg:#F6F3FF; --card:#FFFFFF;
-  --stroke:#E6E0FF;
-  --text:#1F1F2E; --mut:#6B6B85;
-  --userBg:#EDE7FF; --aiBg:#FFFFFF;
-  --r:18px;
-  --shadow: 0 10px 28px rgba(123,47,247,.10);
-  --modal-bg: rgba(0,0,0,0.6);
-}
-*{box-sizing:border-box;font-family:Tajawal,system-ui}
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
-
-/* Header */
-header{
-  background:linear-gradient(135deg,var(--p),var(--p2));
-  color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  z-index: 10;
-}
-header .title{font-weight:900;font-size:18px;display:flex;align-items:center;gap:8px}
-.header-btn{
-  background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3);
-  color:#fff; padding:6px 12px; border-radius:12px; cursor:pointer; font-size:13px; font-weight:bold;
-  transition:0.2s; display:flex; align-items:center; gap:6px;
-}
-.header-btn:hover{background:rgba(255,255,255,0.3);}
-
-/* Sub-Header Actions */
-.actions-bar{
-  padding:10px 16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
-  background:#fff; border-bottom:1px solid var(--stroke);
-}
-
-/* Chat Area */
-.wrap{width:min(980px,100%);margin:0 auto;flex:1;display:flex;flex-direction:column;position:relative}
-.chat{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
-
-.bubble{
-  max-width:86%;
-  border-radius:var(--r);
-  padding:12px 16px;
-  line-height:1.7;
-  box-shadow:var(--shadow);
-  border:1px solid var(--stroke);
-  position:relative;
-  white-space:pre-wrap;
-  word-break:break-word;
-}
-.bubble.user{align-self:flex-start;background:var(--userBg);border-bottom-right-radius:4px}
-.bubble.ai{align-self:flex-end;background:var(--aiBg);border-bottom-left-radius:4px}
-
-.meta{font-size:11px;color:var(--mut);margin-top:6px;display:flex;gap:8px;align-items:center}
-.bubble.user .meta{justify-content:flex-start}
-.bubble.ai .meta{justify-content:flex-end}
-
-/* Typing Animation */
-.dotTyping{display:inline-flex;gap:4px;align-items:center}
-.dotTyping span{
-  width:6px;height:6px;border-radius:50%;
-  background:var(--p);display:inline-block;
-  animation:bounce 1s infinite ease-in-out;opacity:.75
-}
-.dotTyping span:nth-child(2){animation-delay:.12s}
-.dotTyping span:nth-child(3){animation-delay:.24s}
-@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.55}40%{transform:translateY(-5px);opacity:1}}
-
-/* Footer / Composer */
-footer{background:var(--card);border-top:1px solid var(--stroke);padding:12px;z-index:10}
-.composer{width:min(980px,100%);margin:0 auto;display:flex;gap:10px;align-items:flex-end;padding:0 2px}
-textarea{
-  flex:1;resize:none;min-height:50px;max-height:160px;
-  padding:14px;border-radius:16px;border:1px solid var(--stroke);
-  outline:none;font-size:15px;background:#fff; transition:0.2s;
-}
-textarea:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(123,47,247,0.1)}
-
-.btn{
-  border:none;border-radius:14px;padding:12px 16px;font-weight:700;cursor:pointer; transition:0.2s;
-  display:flex; align-items:center; justify-content:center; font-size:14px;
-}
-.btn.primary{background:var(--p);color:#fff}
-.btn.primary:hover{background:var(--p2)}
-.btn.ghost{background:#f3f0ff;border:1px solid var(--stroke);color:var(--text)}
-.btn.ghost:hover{background:#ede7ff}
-.btn.danger{background:#fff0f1;border:1px solid #ffd2d6;color:#b4232a}
-.btn:disabled{opacity:.6;cursor:not-allowed}
-
-/* File Attachments */
-.attachRow{
-  width:min(980px,100%); margin:0 auto; padding:0 12px 8px;
-  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
-}
-.fileChip{
-  display:inline-flex;gap:8px;align-items:center;
-  background:#fff;border:1px solid var(--stroke);border-radius:999px;padding:6px 12px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.05);font-size:12px;color:var(--mut)
-}
-.fileChip b{color:var(--p)}
-
-/* MODAL (Popup) Styles */
-.modal-overlay{
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  background:var(--modal-bg); z-index:1000;
-  display:none; align-items:center; justify-content:center;
-  opacity:0; transition:opacity 0.3s ease;
-}
-.modal-overlay.active{display:flex; opacity:1;}
-
-.modal-content{
-  background:#fff; width:min(400px, 90%); border-radius:24px; padding:24px;
-  box-shadow:0 20px 50px rgba(0,0,0,0.2);
-  transform:scale(0.9); transition:transform 0.3s ease;
-}
-.modal-overlay.active .modal-content{transform:scale(1);}
-
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.modal-title{font-size:18px;font-weight:900;color:var(--p)}
-.close-icon{cursor:pointer;font-size:20px;color:var(--mut)}
-
-.setting-group{margin-bottom:16px}
-.setting-group label{display:block;font-size:13px;font-weight:bold;margin-bottom:8px;color:var(--text)}
-select, input[type="range"]{
-  width:100%; padding:10px; border-radius:12px; border:1px solid var(--stroke);
-  background:#fff; outline:none;
-}
-
-</style>
-</head>
-
-<body>
-
-<!-- Modal تخصيص AI -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-title">⚙️ تخصيص AI</div>
-      <div class="close-icon" id="closeModal">✕</div>
-    </div>
-    
-    <div class="setting-group">
-      <label>شخصية المساعد</label>
-      <select id="persona">
-        <option value="helper" selected>مساعد عام ذكي</option>
-        <option value="coder">مبرمج محترف (Code Expert)</option>
-        <option value="teacher">مدرس ومبسط للمعلومات</option>
-        <option value="marketer">خبير تسويق وكتابة محتوى</option>
-        <option value="pi_dev">مطور Pi Network</option>
-      </select>
-    </div>
-
-    <div class="setting-group">
-      <label>طول الرد</label>
-      <select id="lenLevel">
-        <option value="short">مختصر (3-5 سطور)</option>
-        <option value="medium" selected>متوسط ومتوازن</option>
-        <option value="long">تفصيلي وشامل</option>
-      </select>
-    </div>
-
-    <div class="setting-group">
-      <label>مستوى الإبداع (Temperature): <span id="tempVal">0.40</span></label>
-      <input id="temp" type="range" min="0" max="100" value="40" />
-    </div>
-
-    <button class="btn primary" style="width:100%" id="saveSettingsBtn">تم (حفظ الإعدادات)</button>
-  </div>
-</div>
-
-<!-- Header -->
-<header>
-  <div class="title">💜 Purple Chat</div>
-  <button class="header-btn" id="openSettingsBtn">
-    ⚙️ تخصيص AI
-  </button>
-</header>
-
-<!-- Utility Bar -->
-<div class="actions-bar">
-  <button class="btn ghost" style="padding:6px 12px; font-size:12px" id="btnLoad">📂 استرجاع</button>
-  <button class="btn ghost" style="padding:6px 12px; font-size:12px" id="btnExport">💾 حفظ JSON</button>
-  <button class="btn danger" style="padding:6px 12px; font-size:12px" id="btnClear">🗑️ مسح الكل</button>
-</div>
-
-<!-- Main Chat -->
-<div class="wrap">
-  <div class="chat" id="chat">
-    <!-- سيتم ملء الرسائل هنا -->
-  </div>
-</div>
-
-<!-- Attachments Area -->
-<div class="attachRow">
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <label class="btn ghost" style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px">
-      📎 رفع ملف نصي (TXT/Code)
-      <input id="file" type="file" accept=".txt,.md,.json,.js,.html,.css,.py" style="display:none">
-    </label>
-    <div id="fileChipWrap" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-  </div>
-</div>
-
-<!-- Footer -->
-<footer>
-  <div class="composer">
-    <textarea id="msg" placeholder="اكتب رسالتك هنا..." rows="1"></textarea>
-    <button id="sendBtn" class="btn primary" type="button">إرسال</button>
-    <button id="stopBtn" class="btn ghost" type="button" disabled>إيقاف</button>
-  </div>
-  <div style="text-align:center;font-size:11px;color:var(--mut);margin-top:6px">
-    Enter للإرسال | Shift+Enter لسطر جديد | /code لكتابة أكواد
-  </div>
-</footer>
-
-<script>
-/* ========= 1. إدارة الحالة (State Management) ========= */
-const chat = document.getElementById('chat');
-const msgEl = document.getElementById('msg');
-const sendBtn = document.getElementById('sendBtn');
-const stopBtn = document.getElementById('stopBtn');
-
-// Settings Elements
-const settingsModal = document.getElementById('settingsModal');
-const openSettingsBtn = document.getElementById('openSettingsBtn');
-const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-const closeModal = document.getElementById('closeModal');
-const personaEl = document.getElementById('persona');
-const lenLevelEl = document.getElementById('lenLevel');
-const tempEl = document.getElementById('temp');
-const tempValEl = document.getElementById('tempVal');
-
-// Tools Elements
-const btnLoad = document.getElementById('btnLoad');
-const btnClear = document.getElementById('btnClear');
-const btnExport = document.getElementById('btnExport');
-const fileEl = document.getElementById('file');
-const fileChipWrap = document.getElementById('fileChipWrap');
-
-let convo = []; // تخزين المحادثة
-let attachments = []; // تخزين الملفات
-let aborter = null; // لإيقاف التوليد
-const LS_KEY = "purple_gemini_chat_clean";
-
-/* ========= 2. Modal Logic (تخصيص AI) ========= */
-openSettingsBtn.addEventListener('click', () => {
-  settingsModal.classList.add('active');
-});
-
-const closeSettings = () => {
-  settingsModal.classList.remove('active');
-  saveChat(); // حفظ الإعدادات عند الإغلاق
-};
-saveSettingsBtn.addEventListener('click', closeSettings);
-closeModal.addEventListener('click', closeSettings);
-
-// تحديث رقم الـ Temperature
-tempEl.addEventListener('input', () => {
-  tempValEl.textContent = (Number(tempEl.value)/100).toFixed(2);
-});
-
-/* ========= 3. UI Helpers (الواجهة) ========= */
-function addBubble(role, text) {
-  const b = document.createElement('div');
-  b.className = 'bubble ' + (role === 'user' ? 'user' : 'ai');
-
-  const content = document.createElement('div');
-  content.className = 'content';
-  content.textContent = text || '';
-
-  const meta = document.createElement('div');
-  meta.className = 'meta';
-  meta.textContent = (role === 'user') ? '👤 أنت' : '🤖 AI';
-
-  b.appendChild(content);
-  b.appendChild(meta);
-  chat.appendChild(b);
-  chat.scrollTop = chat.scrollHeight;
-  return { b, content, meta };
-}
-
-function autosize() {
-  msgEl.style.height = 'auto';
-  msgEl.style.height = Math.min(msgEl.scrollHeight, 160) + 'px';
-}
-msgEl.addEventListener('input', autosize);
-autosize();
-
-// التعامل مع مفتاح Enter للإرسال
-msgEl.addEventListener('keydown', (e) => {
-  if(e.key === 'Enter' && !e.shiftKey){
-    e.preventDefault();
-    send();
-  }
-});
-
-/* ========= 4. File Upload (Text Only) ========= */
-function renderAttachments(){
-  fileChipWrap.innerHTML = "";
-  attachments.forEach((f, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'fileChip';
-    chip.innerHTML = `📄 <b>${escapeHtml(f.name)}</b> 
-      <span style="cursor:pointer;color:red;margin-right:5px" onclick="removeFile(${i})">✕</span>`;
-    fileChipWrap.appendChild(chip);
-  });
-}
-
-// دالة حذف الملف (global scope عشان onclick)
-window.removeFile = function(index){
-  attachments.splice(index, 1);
-  renderAttachments();
-}
-
-fileEl.addEventListener('change', async () => {
-  const file = fileEl.files?.[0];
-  if(!file) return;
-
+export default async function handler(req, res) {
   try {
-    const text = await file.text();
-    attachments.push({ name: file.name, text: text.slice(0, 20000) }); // حد أقصى للحجم
-    renderAttachments();
-  } catch(e) {
-    alert("فشل قراءة الملف النصي.");
-  } finally {
-    fileEl.value = "";
-  }
-});
+    if (req.method !== "POST") {
+      res.statusCode = 405;
+      return res.end("Method Not Allowed");
+    }
 
-/* ========= 5. Send Logic (Core) ========= */
-sendBtn.addEventListener('click', () => send());
-stopBtn.addEventListener('click', stopStream);
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      res.statusCode = 500;
+      return res.end("Missing GEMINI_API_KEY");
+    }
 
-async function send() {
-  const text = msgEl.value.trim();
-  if(!text && attachments.length === 0) return;
+    const body = req.body || {};
+    const system = String(body.system || "");
+    const message = String(body.message || "");
+    const history = Array.isArray(body.history) ? body.history : [];
+    const temperature = typeof body.temperature === "number" ? body.temperature : 0.35;
+    const maxOutputTokens = typeof body.maxOutputTokens === "number" ? body.maxOutputTokens : 450;
 
-  // 1. إضافة رسالة المستخدم للواجهة
-  addBubble('user', text);
-  convo.push({ role: 'user', text: text });
-  
-  msgEl.value = '';
-  autosize();
-  sendBtn.disabled = true;
-  stopBtn.disabled = false;
+    if (!message) {
+      res.statusCode = 400;
+      return res.end("Missing message");
+    }
 
-  // 2. تحضير السياق (Context)
-  const systemPrompt = getSystemPrompt();
-  
-  // دمج المرفقات مع الرسالة
-  let finalMsg = text;
-  if(attachments.length > 0){
-    const filesContent = attachments.map(f => `--- File: ${f.name} ---\n${f.text}`).join("\n\n");
-    finalMsg += `\n\n[Attached Files Content]:\n${filesContent}`;
-  }
+    const contents = [];
+    for (const h of history) {
+      if (!h?.text) continue;
+      const role = h.role === "user" ? "user" : "model";
+      contents.push({ role, parts: [{ text: String(h.text) }] });
+    }
+    contents.push({ role: "user", parts: [{ text: message }] });
 
-  // فقاعة الـ AI (فارغة مؤقتاً)
-  const aiBubble = addBubble('ai', '');
-  aiBubble.content.innerHTML = '<span class="dotTyping"><span></span><span></span><span></span></span>';
-  
-  // 3. الاتصال بالـ API (Streaming)
-  aborter = new AbortController();
-  
-  try {
-    // ملاحظة: استبدل الرابط أدناه برابط السيرفر الحقيقي الخاص بك
-    const res = await fetch('/api/chat-stream', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent`;
+
+    const upstream = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-goog-api-key": apiKey
+      },
       body: JSON.stringify({
-        message: finalMsg,
-        history: convo.map(c => ({ role: c.role, text: c.text })), // إرسال التاريخ
-        system: systemPrompt,
-        temperature: Number(tempEl.value) / 100,
-        maxTokens: getLenTokens()
-      }),
-      signal: aborter.signal
+        systemInstruction: system ? { parts: [{ text: system }] } : undefined,
+        contents,
+        generationConfig: { temperature, maxOutputTokens }
+      })
     });
 
-    if(!res.ok) throw new Error("API Error or Offline");
+    if (!upstream.ok) {
+      const errText = await upstream.text();
+      res.statusCode = 500;
+      return res.end(errText);
+    }
 
-    // قراءة الستريم
-    const reader = res.body.getReader();
+    const reader = upstream.body.getReader();
     const decoder = new TextDecoder("utf-8");
-    let fullText = "";
-    
-    aiBubble.content.textContent = ""; // مسح الأنيميشن
+    let buffer = "";
 
-    while(true){
+    while (true) {
       const { value, done } = await reader.read();
-      if(done) break;
-      
-      const chunk = decoder.decode(value, {stream: true});
-      // معالجة البيانات القادمة (تعتمد على تنسيق السيرفر، هنا نفترض json lines)
-      const lines = chunk.split("\n").filter(Boolean);
-      for(const line of lines){
-        try {
-          const json = JSON.parse(line);
-          if(json.delta) {
-            fullText += json.delta;
-            aiBubble.content.textContent = fullText;
-            chat.scrollTop = chat.scrollHeight;
-          }
-        } catch(e){}
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        const s = line.trim();
+        if (!s) continue;
+        let obj;
+        try { obj = JSON.parse(s); } catch { continue; }
+
+        const text = obj?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+        if (text) res.write(JSON.stringify({ delta: text }) + "\n");
       }
     }
 
-    convo.push({ role: 'model', text: fullText });
-    saveChat();
+    try {
+      const s = buffer.trim();
+      if (s) {
+        const obj = JSON.parse(s);
+        const text = obj?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+        if (text) res.write(JSON.stringify({ delta: text }) + "\n");
+      }
+    } catch {}
 
-  } catch (err) {
-    if(err.name === 'AbortError'){
-      aiBubble.content.textContent += " [تم الإيقاف]";
-    } else {
-      // في حالة عدم وجود سيرفر، سنقوم بمحاكاة رد (للتيست فقط)
-      console.warn("API Failed, simulating response...", err);
-      aiBubble.content.textContent = "عذراً، لا يوجد اتصال بالسيرفر الخلفي (Backend) حالياً.\nهذا رد تجريبي لأن الكود يعمل كواجهة أمامية فقط.";
-      convo.push({ role: 'model', text: aiBubble.content.textContent });
-    }
-  } finally {
-    sendBtn.disabled = false;
-    stopBtn.disabled = true;
-    aborter = null;
-    attachments = []; // مسح المرفقات بعد الإرسال
-    renderAttachments();
-    msgEl.focus();
+    res.end(JSON.stringify({ done: true }) + "\n");
+  } catch (e) {
+    res.statusCode = 500;
+    res.end(String(e?.message || e));
   }
 }
-
-function stopStream(){
-  if(aborter){
-    aborter.abort();
-    aborter = null;
-  }
-}
-
-/* ========= 6. Helpers for Settings ========= */
-function getSystemPrompt(){
-  const p = personaEl.value;
-  const map = {
-    helper: "أنت مساعد ذكي مفيد.",
-    coder: "أنت خبير برمجة. قدم حلولاً برمجية كاملة ونظيفة.",
-    teacher: "اشرح بأسلوب مبسط وتفاعلي مثل مدرس صبور.",
-    marketer: "أنت خبير تسويق، ركز على المبيعات والنمو.",
-    pi_dev: "أنت خبير في شبكة Pi Network وتطوير تطبيقاتها."
-  };
-  return map[p] || map.helper;
-}
-
-function getLenTokens(){
-  const l = lenLevelEl.value;
-  if(l === 'short') return 200;
-  if(l === 'long') return 1000;
-  return 500;
-}
-
-function escapeHtml(text) {
-  if(!text) return text;
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-/* ========= 7. Save/Load LocalStorage ========= */
-function saveChat(){
-  const data = {
-    convo, 
-    persona: personaEl.value,
-    len: lenLevelEl.value,
-    temp: tempEl.value
-  };
-  localStorage.setItem(LS_KEY, JSON.stringify(data));
-}
-
-function loadChat(){
-  const raw = localStorage.getItem(LS_KEY);
-  if(raw){
-    const data = JSON.parse(raw);
-    convo = data.convo || [];
-    personaEl.value = data.persona || 'helper';
-    lenLevelEl.value = data.len || 'medium';
-    tempEl.value = data.temp || 40;
-    tempValEl.textContent = (Number(tempEl.value)/100).toFixed(2);
-    
-    chat.innerHTML = "";
-    if(convo.length === 0){
-      addBubble('ai', 'أهلاً بك! 👋\nاضغط على "تخصيص AI" في الأعلى لضبط الإعدادات.\nأنا جاهز للمساعدة.');
-    } else {
-      convo.forEach(m => addBubble(m.role, m.text));
-    }
-  } else {
-    addBubble('ai', 'أهلاً بك! 👋\nاضغط على "تخصيص AI" في الأعلى لضبط الإعدادات.\nأنا جاهز للمساعدة.');
-  }
-}
-
-btnClear.addEventListener('click', () => {
-  if(confirm("هل أنت متأكد من مسح المحادثة؟")){
-    convo = [];
-    chat.innerHTML = "";
-    saveChat();
-    addBubble('ai', 'تم مسح المحادثة.');
-  }
-});
-
-btnExport.addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(convo, null, 2)], {type : 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = "chat_history.json";
-  a.click();
-});
-
-btnLoad.addEventListener('click', loadChat);
-
-// بدء التشغيل
-loadChat();
-
-</script>
-</body>
-</html>
