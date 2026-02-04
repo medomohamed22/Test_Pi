@@ -71,6 +71,52 @@ button{
 }
 button:disabled{opacity:.6;cursor:not-allowed}
 .smallHint{width:min(920px,100%);margin:8px auto 0;color:var(--mut);font-size:12px;padding:0 2px}
+
+/* ====== Code block styling + Copy button ====== */
+.codeWrap{
+  border:1px solid var(--stroke);
+  border-radius:14px;
+  overflow:hidden;
+  margin-top:10px;
+  background:#fff;
+}
+.codeTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 10px;
+  border-bottom:1px solid var(--stroke);
+  background:#faf9ff;
+}
+.codeLang{
+  font-size:12px;
+  color:var(--mut);
+  font-weight:800;
+}
+.copyBtn{
+  border:none;
+  background:var(--p);
+  color:#fff;
+  padding:8px 10px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+}
+.copyBtn:active{transform:scale(.98)}
+pre{
+  margin:0;
+  padding:12px;
+  overflow:auto;
+  direction:ltr;
+  text-align:left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size:13px;
+  line-height:1.6;
+  background:#ffffff;
+}
+code{font-family:inherit}
 </style>
 </head>
 
@@ -93,6 +139,11 @@ button:disabled{opacity:.6;cursor:not-allowed}
 </div>
 
 <script>
+// ✅ غيّر ده حسب استضافتك:
+// Vercel:  "/api/chat"
+// Netlify: "/.netlify/functions/chat"
+const API_ENDPOINT = "/api/chat";
+
 const chat = document.getElementById('chat');
 const msgEl = document.getElementById('msg');
 const sendBtn = document.getElementById('sendBtn');
@@ -175,6 +226,102 @@ msgEl.addEventListener('keydown', (e)=>{
 
 sendBtn.addEventListener('click', send);
 
+/* ===== Helpers for code blocks ===== */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+// Parses markdown fences ```lang ... ```
+function parseCodeFences(text){
+  const blocks = [];
+  const re = /```([\w#+-]*)\n([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let m;
+  while((m = re.exec(text)) !== null){
+    if(m.index > lastIndex){
+      blocks.push({ type:"text", value: text.slice(lastIndex, m.index) });
+    }
+    blocks.push({ type:"code", lang: (m[1] || "code").trim(), value: m[2] });
+    lastIndex = re.lastIndex;
+  }
+  if(lastIndex < text.length){
+    blocks.push({ type:"text", value: text.slice(lastIndex) });
+  }
+  return blocks;
+}
+
+// fallback: لو الرد عبارة عن HTML صريح بدون ``` ```
+function looksLikeHtmlCode(text){
+  const t = text.trim();
+  return t.startsWith("<!DOCTYPE html") || (t.startsWith("<html") && t.includes("</html>"));
+}
+
+async function copyToClipboard(text, btn){
+  try{
+    await navigator.clipboard.writeText(text);
+    const old = btn.textContent;
+    btn.textContent = "✅ تم النسخ";
+    setTimeout(()=>btn.textContent = old, 1200);
+  }catch{
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    const old = btn.textContent;
+    btn.textContent = "✅ تم النسخ";
+    setTimeout(()=>btn.textContent = old, 1200);
+  }
+}
+
+function renderAiWithCode(container, reply){
+  container.innerHTML = ""; // هنحط عناصر بدل textContent
+
+  // لو مفيش fences بس شكله HTML كامل: نعرضه ككود
+  if(!reply.includes("```") && looksLikeHtmlCode(reply)){
+    const wrap = document.createElement("div");
+    wrap.className = "codeWrap";
+    wrap.innerHTML = `
+      <div class="codeTop">
+        <div class="codeLang">html</div>
+        <button class="copyBtn" type="button">نسخ الكود</button>
+      </div>
+      <pre><code>${escapeHtml(reply)}</code></pre>
+    `;
+    wrap.querySelector(".copyBtn").addEventListener("click", (e)=>copyToClipboard(reply, e.target));
+    container.appendChild(wrap);
+    return;
+  }
+
+  const parts = parseCodeFences(reply);
+  for(const part of parts){
+    if(part.type === "text"){
+      const p = document.createElement("div");
+      p.textContent = part.value.trim();
+      if(p.textContent) container.appendChild(p);
+    } else {
+      const code = part.value.replace(/\s+$/,"");
+      const lang = (part.lang || "code").toLowerCase();
+
+      const wrap = document.createElement("div");
+      wrap.className = "codeWrap";
+      wrap.innerHTML = `
+        <div class="codeTop">
+          <div class="codeLang">${escapeHtml(lang)}</div>
+          <button class="copyBtn" type="button">نسخ الكود</button>
+        </div>
+        <pre><code>${escapeHtml(code)}</code></pre>
+      `;
+      wrap.querySelector(".copyBtn").addEventListener("click", (e)=>copyToClipboard(code, e.target));
+      container.appendChild(wrap);
+    }
+  }
+}
+
 async function send(){
   const text = (msgEl.value || '').trim();
   if(!text) return;
@@ -192,17 +339,16 @@ async function send(){
   const typing = addTyping();
 
   try{
-    // ✅ مهم: نتأكد أن الرد JSON فعلاً
-    const res = await fetch('/api/chat', {
+    const res = await fetch(API_ENDPOINT, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
         message: text,
-        history: convo.slice(0, -1) // اختياري
+        history: convo.slice(0, -1)
       })
     });
 
-    const rawText = await res.text(); // نقرأها نص الأول
+    const rawText = await res.text();
     let data;
     try { data = JSON.parse(rawText); }
     catch { throw new Error("API رجّع HTML/نص مش JSON:\n" + rawText.slice(0, 200)); }
@@ -217,18 +363,23 @@ async function send(){
     }
 
     typing.meta.textContent = '🤖 AI';
-    await typewriter(typing.b.querySelector('.content'), reply, 12);
+
+    // لو الرد فيه كود: نعرضه كـ blocks + زر نسخ
+    if(reply.includes("```") || looksLikeHtmlCode(reply)){
+      // بدل typewriter، هنظهره مرة واحدة
+      renderAiWithCode(typing.content, reply);
+    } else {
+      await typewriter(typing.content, reply, 12);
+    }
 
     convo.push({ role:'model', text: reply });
     setStatus("Ready", false);
 
   }catch(err){
     typing.meta.textContent = '🤖 AI (Error)';
-    typing.b.querySelector('.content').textContent =
-      "حصل خطأ:\n" + (err?.message || err);
+    typing.content.textContent = "حصل خطأ:\n" + (err?.message || err);
     setStatus("Error", false);
     console.error(err);
-
   }finally{
     sendBtn.disabled = false;
     msgEl.disabled = false;
@@ -236,7 +387,7 @@ async function send(){
   }
 }
 
-addBubble('ai', 'أهلاً 👋 ابعت رسالتك وأنا هرد عليك.');
+addBubble('ai', 'أهلاً 👋 ابعت رسالتك وأنا هرد عليك.\nلو طلبت كود، خليه يبعته داخل ``` ``` علشان يظهر زر النسخ.');
 </script>
 </body>
 </html>
