@@ -1,37 +1,66 @@
-export default async function handler(req, res) {
+exports.handler = async (event) => {
   try {
-    if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+    if (event.httpMethod !== "POST") {
+      return { statusCode: 405, body: "Method Not Allowed" };
+    }
     
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
+    if (!apiKey) {
+      return { statusCode: 500, body: JSON.stringify({ error: "Missing GEMINI_API_KEY" }) };
+    }
     
-    const { message, history } = req.body || {};
-    if (!message) return res.status(400).json({ error: "Missing message" });
+    const body = JSON.parse(event.body || "{}");
+    const system = String(body.system || "");
+    const message = String(body.message || "");
+    const history = Array.isArray(body.history) ? body.history : [];
+    const temperature = typeof body.temperature === "number" ? body.temperature : 0.35;
+    const maxOutputTokens = typeof body.maxOutputTokens === "number" ? body.maxOutputTokens : 450;
+    
+    if (!message) {
+      return { statusCode: 400, body: JSON.stringify({ error: "Missing message" }) };
+    }
     
     const contents = [];
-    if (Array.isArray(history)) {
-      for (const h of history) {
-        if (!h?.text) continue;
-        contents.push({ role: h.role === "user" ? "user" : "model", parts: [{ text: String(h.text) }] });
-      }
+    for (const h of history) {
+      if (!h?.text) continue;
+      const role = h.role === "user" ? "user" : "model";
+      contents.push({ role, parts: [{ text: String(h.text) }] });
     }
-    contents.push({ role: "user", parts: [{ text: String(message) }] });
+    contents.push({ role: "user", parts: [{ text: message }] });
     
     const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
     
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-goog-api-key": apiKey },
-      body: JSON.stringify({ contents })
-    });
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-goog-api-key": apiKey
+        },
+        body: JSON.stringify({
+          systemInstruction: system ? { parts: [{ text: system }] } : undefined,
+          contents,
+          generationConfig: { temperature, maxOutputTokens }
+        })
+      }
+    );
     
     const data = await r.json();
-    if (!r.ok) return res.status(500).json({ error: "Gemini API Error", details: data });
+    if (!r.ok) {
+      return { statusCode: 500, body: JSON.stringify({ error: "Gemini API Error", details: data }) };
+    }
     
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    return res.status(200).json({ reply });
+    const reply =
+      data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+    
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reply })
+    };
     
   } catch (e) {
-    return res.status(500).json({ error: "Server error", details: String(e?.message || e) });
+    return { statusCode: 500, body: JSON.stringify({ error: "Server error", details: String(e?.message || e) }) };
   }
-}
+};
