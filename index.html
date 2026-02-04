@@ -3,485 +3,548 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>HF Image Gen | AI Art</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <title>AI Studio | Image Gen</title>
+  <!-- خط 'Cairo' لعصري أكثر -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      --primary:#7B2FF7;
-      --secondary:#9B6DFF;
-      --accent: #00f2ff; /* لون السكانر */
-      --bg0:#0b0820;
-      --bg1:#1b1440;
-      --glass: rgba(255,255,255,.06);
-      --border: rgba(255,255,255,.12);
-      --text: #fff;
-      --mut: rgba(255,255,255,.65);
-      --shadow: 0 18px 55px rgba(0,0,0,.45);
-      --r: 24px;
+    :root {
+      /* لوحة الألوان الجديدة - Purple & White Theme */
+      --primary: #6366f1;       /* أرجواني أساسي */
+      --primary-dark: #4f46e5;  /* أرجواني غامق */
+      --accent: #d946ef;        /* فوشيا للتدرجات */
+      --bg-body: #f8fafc;       /* خلفية الموقع (رمادي مائل للأزرق فاتح جداً) */
+      --surface: #ffffff;       /* لون الكروت */
+      --text-main: #1e293b;     /* لون النص الأساسي */
+      --text-sub: #64748b;      /* لون النص الثانوي */
+      --border: #e2e8f0;        /* لون الحدود */
+      --input-bg: #f1f5f9;      /* خلفية حقل الإدخال */
+      
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 20px 25px -5px rgba(99, 102, 241, 0.15), 0 8px 10px -6px rgba(99, 102, 241, 0.1);
+      
+      --radius-xl: 24px;
+      --radius-md: 12px;
     }
 
-    *{ box-sizing:border-box; font-family:'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
-    html,body{height:100%}
-
-    body{
-      margin:0;
-      min-height:100vh;
-      color:var(--text);
-      background:
-        radial-gradient(900px 520px at 15% -10%, rgba(123,47,247,.35), transparent 60%),
-        radial-gradient(900px 520px at 85% 110%, rgba(155,109,255,.25), transparent 55%),
-        linear-gradient(135deg, var(--bg0), var(--bg1));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
+    * { box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: var(--bg-body);
+      /* زخرفة خلفية بسيطة */
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(217, 70, 239, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
-    .container{
-      width:100%;
-      max-width:640px;
-      background:var(--glass);
-      border:1px solid var(--border);
-      border-radius: var(--r);
-      padding:26px 22px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      position:relative;
-      overflow:hidden;
-      z-index: 10;
-    }
-
-    /* خلفية جمالية للحاوية */
-    .container:before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(600px 220px at 20% 0%, rgba(123,47,247,.25), transparent 60%),
-        radial-gradient(600px 220px at 80% 100%, rgba(155,109,255,.18), transparent 55%);
-      pointer-events:none;
-      filter: blur(10px);
-      opacity:.9;
-      z-index: -1;
-    }
-
-    .top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .brand{ display:flex; align-items:center; gap:12px; }
-
-    .logo{
-      width:46px; height:46px; border-radius:16px;
-      background:
-        radial-gradient(18px 18px at 30% 25%, rgba(255,255,255,.65), transparent 60%),
-        linear-gradient(135deg, rgba(123,47,247,1), rgba(155,109,255,1));
-      box-shadow: 0 10px 25px rgba(123,47,247,.25);
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid #fff;
       position: relative;
       overflow: hidden;
     }
-    .logo::after {
-      content:''; position:absolute; inset:0;
-      background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.4) 50%, transparent 60%);
-      animation: shine 4s infinite;
+
+    /* === Header === */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
     }
 
-    h1{
-      margin:0; font-size:22px; font-weight:900; line-height:1.2;
-      background: linear-gradient(to left, #fff, rgba(255,255,255,.7));
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .chip{
-      font-size:11px; padding:6px 10px; border:1px solid var(--border);
-      border-radius:999px; color:var(--mut); background: rgba(0,0,0,.18);
-      display:flex; align-items:center; gap:6px;
-    }
-    .chip .dot{
-      width:6px; height:6px; border-radius:999px;
-      background: #0f0; box-shadow: 0 0 8px #0f0;
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
-    .subtitle{ margin: 0 0 16px; color:var(--mut); font-size:13px; text-align:right; }
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(to right, var(--text-main), var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-    .input-wrapper { position: relative; margin-bottom: 10px; }
+    .badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+
+    /* === Input Section === */
+    .input-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      background: var(--input-bg);
+      border: 2px solid transparent;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-size: 16px;
+      color: var(--text-main);
+      resize: none;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    textarea:focus {
+      background: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    textarea::placeholder { color: #94a3b8; }
+
+    /* === Quick Styles Chips === */
+    .chips-scroller {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none; /* Hide scrollbar Firefox */
+    }
+    .chips-scroller::-webkit-scrollbar { display: none; }
+
+    .chip {
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(99, 102, 241, 0.05);
+      transform: translateY(-2px);
+    }
+
+    /* === Action Buttons === */
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .btn-main {
+      flex: 2;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5);
+    }
+    .btn-main:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .btn-sec {
+      flex: 1;
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-sub);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-sec:hover { background: var(--input-bg); color: var(--text-main); }
+
+    /* === Image Viewer & Scanner === */
+    .display-area {
+      position: relative;
+      width: 100%;
+      min-height: 380px;
+      background: #0f172a; /* Dark Slate BG for contrast */
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 4px solid #fff;
+      box-shadow: 0 0 0 1px var(--border);
+    }
+
+    .display-area img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: none;
+      animation: zoomIn 0.5s ease;
+      z-index: 2;
+    }
+
+    /* The Placeholder */
+    .empty-state {
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .empty-state svg { width: 60px; height: 60px; opacity: 0.5; }
+
+    /* === SCANNER EFFECT === */
+    .scan-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      display: none; /* مخفي افتراضياً */
+      background: rgba(15, 23, 42, 0.6); /* تعتيم الخلفية قليلاً */
+    }
+
+    .scan-beam {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #a855f7; /* Purple Beam */
+      box-shadow: 
+        0 0 10px #a855f7, 
+        0 0 20px #d946ef;
+      animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      top: -10%;
+    }
     
-    textarea{
-      width:100%; background: rgba(0,0,0,.25); border:1px solid var(--border);
-      border-radius: 18px; padding: 14px 14px; color:#fff; font-size:15px;
-      resize:none; height:110px; outline:none; transition: .25s;
-    }
-    textarea:focus{
-      border-color: rgba(123,47,247,.75); box-shadow: 0 0 0 4px rgba(123,47,247,.15);
-    }
-
-    .tools-row {
-      display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px;
-      scrollbar-width: none;
-    }
-    .tools-row::-webkit-scrollbar { display: none; }
-    
-    .style-pill {
-      background: rgba(255,255,255,0.08); border: 1px solid var(--border);
-      border-radius: 8px; padding: 6px 12px; font-size: 12px; color: var(--mut);
-      cursor: pointer; white-space: nowrap; transition: 0.2s;
-    }
-    .style-pill:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateY(-1px); }
-    .style-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-
-    .actions{ display:flex; gap:10px; align-items:center; }
-
-    #generateBtn{
-      flex:1; padding: 14px; background: linear-gradient(90deg, var(--primary), var(--secondary));
-      border:none; border-radius: 14px; color:#fff; font-size:15px; font-weight:900;
-      cursor:pointer; transition: .2s; display:flex; align-items:center; justify-content:center; gap:10px;
-      box-shadow: 0 10px 26px rgba(123,47,247,.22); position: relative; overflow: hidden;
-    }
-    #generateBtn:hover{ transform: translateY(-2px); box-shadow: 0 14px 35px rgba(123,47,247,.35); }
-    #generateBtn:disabled{ opacity:.75; cursor:not-allowed; transform:none; filter: grayscale(0.5); }
-    
-    /* تأثير الموجة عند الضغط */
-    #generateBtn::after {
-      content: ""; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
-      background: rgba(255,255,255,0.3); border-radius: 50%; transform: translate(-50%, -50%);
-      transition: width 0.4s ease-out, height 0.4s ease-out;
-    }
-    #generateBtn:active::after { width: 300px; height: 300px; opacity: 0; }
-
-    .ghost-btn{
-      padding: 14px; background: rgba(0,0,0,.18); border:1px solid var(--border);
-      border-radius: 14px; color: var(--mut); font-weight:700; cursor:pointer; transition:.2s;
-      min-width: 50px; display: flex; align-items: center; justify-content: center;
-    }
-    .ghost-btn:hover{ background: rgba(255,255,255,.1); color: #fff; }
-
-    /* ================= IMAGE AREA & SCANNER ================= */
-    .image-area{
-      margin-top: 16px; min-height: 340px; border-radius: 18px; position: relative;
-      overflow:hidden; border: 1px dashed rgba(255,255,255,.18); background: rgba(0,0,0,.3);
-      display:flex; align-items:center; justify-content:center;
-    }
-
-    .image-area img{
-      width:100%; height:100%; display:none; border-radius:18px;
-      object-fit: contain; background: #000; animation: fadeIn .7s ease; cursor: zoom-in;
-    }
-
-    /* THE SCANNER EFFECT */
-    .scanner-overlay {
-      position: absolute; inset: 0; z-index: 5; pointer-events: none; display: none;
-    }
-    
-    .scan-line {
-      position: absolute; top: 0; left: 0; width: 100%; height: 4px;
-      background: var(--accent);
-      box-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent);
-      opacity: 0.8;
-      animation: scanMove 2.5s ease-in-out infinite;
-    }
-    
-    /* الشبكة الخلفية أثناء المسح */
     .scan-grid {
-      position: absolute; inset: 0;
-      background-image: 
-        linear-gradient(rgba(0, 242, 255, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 242, 255, 0.1) 1px, transparent 1px);
-      background-size: 40px 40px;
-      mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
-      -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
-      opacity: 0;
-      transition: opacity 0.5s;
+      position: absolute;
+      inset: 0;
+      background-size: 50px 50px;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+      animation: gridMove 20s linear infinite;
     }
 
-    @keyframes scanMove {
+    .loading-status {
+      position: absolute;
+      bottom: 30px;
+      left: 0; right: 0;
+      text-align: center;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* === Footer / Download === */
+    .download-bar {
+      margin-top: 16px;
+      display: none;
+      animation: slideUp 0.3s ease;
+    }
+    .btn-download {
+      width: 100%;
+      padding: 12px;
+      background: var(--text-main);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      transition: 0.2s;
+    }
+    .btn-download:hover { background: #000; }
+
+    /* === Animations === */
+    @keyframes scan {
       0% { top: 0%; opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
       100% { top: 100%; opacity: 0; }
     }
+    @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 500px; } }
+    @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    .status-text {
-      position: absolute; bottom: 20px; left: 0; right: 0;
-      text-align: center; color: var(--accent); font-size: 14px;
-      font-weight: 700; text-shadow: 0 0 10px rgba(0,242,255,0.5);
-      letter-spacing: 1px;
+    /* === Toast === */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text-main);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-size: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 999;
     }
 
-    /* Placeholder State */
-    .placeholder-content{
-      color: rgba(255,255,255,.45); display:flex; flex-direction:column;
-      align-items:center; gap:12px; text-align:center;
+    /* Responsive */
+    @media (max-width: 480px) {
+      .container { padding: 20px; border-radius: 20px; }
+      .display-area { min-height: 300px; }
+      .actions { flex-direction: column; }
+      .btn-main, .btn-sec { width: 100%; }
     }
-
-    .download-btn{
-      width:100%; padding: 14px; margin-top: 12px;
-      background: rgba(255,255,255,.05); border: 1px solid var(--border);
-      border-radius: 14px; color:#fff; font-weight:700; cursor:pointer;
-      display:none; transition:.2s;
-    }
-    .download-btn:hover{ background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.3); }
-
-    /* Lightbox Modal */
-    .lightbox {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px);
-    }
-    .lightbox.active { opacity: 1; pointer-events: all; }
-    .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 0 50px rgba(0,0,0,0.8); transform: scale(0.9); transition: 0.3s; }
-    .lightbox.active img { transform: scale(1); }
-    .close-lb { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; }
-
-    .toast{
-      position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px;
-      background: rgba(11, 8, 32, 0.9); border: 1px solid var(--primary);
-      color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 14px;
-      display:none; z-index: 9999; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-      animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    @keyframes shine { 0% {left: -100%;} 20% {left: 100%;} 100% {left: 100%;} }
-    @keyframes fadeIn { from{opacity:0; transform:scale(.95)} to{opacity:1; transform:scale(1)} }
-    @keyframes slideUp { from{opacity:0; transform:translate(-50%, 20px)} to{opacity:1; transform:translate(-50%, 0)} }
-
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="top">
+  
+  <!-- Header -->
+  <div class="header">
     <div class="brand">
-      <div class="logo"></div>
+      <div class="logo-icon">AI</div>
       <div>
-        <h1>HF Image Gen</h1>
-        <div class="subtitle" style="margin:0; font-size:12px; opacity:0.7">الإصدار المحسن v2.0</div>
+        <h1>Imagine AI</h1>
       </div>
     </div>
-    <div class="chip">
-      <span class="dot"></span>
-      <span>Live</span>
-    </div>
+    <div class="badge">V2.0 PRO</div>
   </div>
 
-  <div class="input-wrapper">
-    <textarea id="prompt" placeholder="اكتب وصف خيالي... مثلاً: رائد فضاء يتجول في شوارع القاهرة القديمة بأسلوب السايبر بانك..."></textarea>
+  <!-- Input Area -->
+  <div class="input-group">
+    <textarea id="prompt" placeholder="اطلق العنان لخيالك.. مثلاً: قطة رائد فضاء تجلس على سطح القمر، إضاءة سينمائية، جودة 4k"></textarea>
   </div>
 
-  <!-- New Feature: Quick Styles -->
-  <div class="tools-row">
-    <div class="style-pill" onclick="addStyle('Cinematic Lighting, 8k')">🎬 سينمائي</div>
-    <div class="style-pill" onclick="addStyle('Anime Style, Studio Ghibli')">🎌 أنيمي</div>
-    <div class="style-pill" onclick="addStyle('Cyberpunk, Neon Lights')">🤖 سايبر بانك</div>
-    <div class="style-pill" onclick="addStyle('Oil Painting, Van Gogh')">🎨 رسم زيتي</div>
-    <div class="style-pill" onclick="addStyle('3D Render, Unreal Engine')">🧊 3D</div>
-    <div class="style-pill" onclick="addStyle('Minimalist, Flat Design')">📝 بسيط</div>
+  <!-- Quick Styles (Horizontal Scroll) -->
+  <div class="chips-scroller">
+    <div class="chip" onclick="addTag('Realistic, 8k')">📸 واقعي</div>
+    <div class="chip" onclick="addTag('Cyberpunk, Neon')">🤖 سايبر بانك</div>
+    <div class="chip" onclick="addTag('Anime, Studio Ghibli')">🌸 أنيمي</div>
+    <div class="chip" onclick="addTag('3D Render, Unreal Engine')">🧊 ثلاثي الأبعاد</div>
+    <div class="chip" onclick="addTag('Oil Painting')">🎨 رسم زيتي</div>
+    <div class="chip" onclick="addTag('Cinematic Lighting')">🎬 سينمائي</div>
   </div>
 
+  <!-- Actions -->
   <div class="actions">
-    <button id="generateBtn" onclick="generateImage()">
-      <span id="btnIcon">✨</span>
+    <button id="generateBtn" class="btn-main" onclick="generateImage()">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg>
       <span id="btnText">توليد الصورة</span>
     </button>
-    <button class="ghost-btn" onclick="copyPrompt()" title="نسخ النص">📋</button>
-    <button class="ghost-btn" onclick="fillExample()" title="مثال عشوائي">🎲</button>
+    <button class="btn-sec" onclick="fillRandom()">🎲 مثال</button>
   </div>
 
-  <div class="image-area" id="imageContainer">
+  <!-- Image Display & Scanner -->
+  <div class="display-area" id="displayArea">
     
-    <!-- Scanner Animation Overlay -->
-    <div class="scanner-overlay" id="scannerOverlay">
-      <div class="scan-grid" id="scanGrid"></div>
-      <div class="scan-line"></div>
-      <div class="status-text" id="statusText">جاري الاتصال...</div>
+    <!-- Scanner Animation -->
+    <div class="scan-overlay" id="scanOverlay">
+      <div class="scan-grid"></div>
+      <div class="scan-beam"></div>
+      <div class="loading-status" id="loadingText">جاري تهيئة النظام...</div>
     </div>
 
-    <!-- Placeholder -->
-    <div class="placeholder-content" id="placeholder">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.6">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-        <polyline points="21 15 16 10 5 21"></polyline>
-      </svg>
-      <span style="font-size:14px">المساحة الإبداعية</span>
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+      <span>الصورة ستظهر هنا</span>
     </div>
 
-    <!-- Result Image -->
-    <img id="resultImage" src="" alt="AI Generated Image" onclick="openLightbox()">
+    <!-- The Image -->
+    <img id="resultImage" src="" alt="AI Art">
   </div>
 
-  <button id="downloadBtn" class="download-btn" onclick="downloadImage()">
-    ⬇️ تحميل بجودة عالية
-  </button>
+  <!-- Download Section -->
+  <div class="download-bar" id="downloadBar">
+    <button class="btn-download" onclick="downloadImg()">
+      ⬇️ تحميل الصورة بجودة عالية
+    </button>
+  </div>
+
 </div>
 
-<!-- Lightbox Modal -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <span class="close-lb">&times;</span>
-  <img id="lightboxImg" src="">
-</div>
-
-<div class="toast" id="toast"></div>
+<!-- Simple Toast Notification -->
+<div class="toast" id="toast">رسالة تنبيه</div>
 
 <script>
-  // --- Variables ---
-  const messages = [
-    "📡 الاتصال بالخادم...",
-    "🧠 تحليل النص...",
-    "🎨 تخيل المشهد...",
-    "🖌️ رسم التفاصيل الأولية...",
-    "💡 ضبط الإضاءة...",
-    "✨ إضافة اللمسات السحرية..."
+  // --- النصوص المتغيرة أثناء التحميل ---
+  const loadingMessages = [
+    "🚀 الاتصال بالسيرفر...",
+    "🧠 الذكاء الاصطناعي يفكر...",
+    "🎨 يتم الآن رسم التفاصيل...",
+    "💡 ضبط الإضاءة والألوان...",
+    "✨ وضع اللمسات الأخيرة..."
   ];
   let msgInterval;
 
-  // --- Utility Functions ---
-  function toast(msg){
+  function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.style.display = 'block';
-    setTimeout(()=> t.style.display='none', 3000);
+    t.style.animation = 'slideUp 0.3s ease';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
   }
 
-  function addStyle(styleText) {
-    const box = document.getElementById('prompt');
-    if(box.value.includes(styleText)) return;
-    box.value = box.value ? box.value + ", " + styleText : styleText;
-    toast(`تم إضافة نمط: ${styleText}`);
+  function addTag(tag) {
+    const input = document.getElementById('prompt');
+    if (input.value.includes(tag)) return;
+    input.value = input.value ? input.value + ", " + tag : tag;
+    showToast(`تم إضافة: ${tag}`);
   }
 
-  function copyPrompt(){
-    const text = document.getElementById('prompt').value;
-    if(!text) return toast("لا يوجد نص لنسخه!");
-    navigator.clipboard.writeText(text);
-    toast("تم نسخ الوصف 📋");
-  }
-
-  function fillExample(){
-    const examples = [
-      "A futuristic city in Egypt with pyramids, flying cars, cyberpunk style, neon lights, 8k resolution",
-      "Cute isometric 3D room with gaming setup, purple lighting, soft shadows, blender render",
-      "Portrait of an astronaut cat, digital art, highly detailed, galaxy background"
+  function fillRandom() {
+    const prompts = [
+      "A futuristic sleek sports car on a rainy neon street, cyberpunk, 8k, realistic",
+      "Portrait of an ancient Egyptian queen, gold jewelry, cinematic lighting, hyper realistic",
+      "Tiny cute isometric house in a glass jar, magical forest background, 3d render",
+      "Astronaut riding a horse on Mars, epic composition, dust particles, dramatic light"
     ];
-    document.getElementById('prompt').value = examples[Math.floor(Math.random() * examples.length)];
-    toast("تم وضع مثال عشوائي 🎲");
+    document.getElementById('prompt').value = prompts[Math.floor(Math.random() * prompts.length)];
+    showToast("تم اختيار مثال عشوائي 🎲");
   }
 
-  // --- Animation & States ---
-  function startLoadingAnimation() {
-    const scanner = document.getElementById('scannerOverlay');
-    const grid = document.getElementById('scanGrid');
-    const status = document.getElementById('statusText');
-    const btnText = document.getElementById('btnText');
-    const btnIcon = document.getElementById('btnIcon');
-    
-    scanner.style.display = "block";
-    grid.style.opacity = "1";
-    
+  // --- تشغيل الأنيميشن ---
+  function startLoading() {
+    const overlay = document.getElementById('scanOverlay');
+    const txt = document.getElementById('loadingText');
+    const btn = document.getElementById('generateBtn');
+    const empty = document.getElementById('emptyState');
+    const img = document.getElementById('resultImage');
+    const dl = document.getElementById('downloadBar');
+
+    overlay.style.display = 'block';
+    empty.style.display = 'none';
+    img.style.display = 'none';
+    dl.style.display = 'none';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    document.getElementById('btnText').textContent = "جاري التوليد...";
+
     let i = 0;
-    status.innerText = messages[0];
-    btnText.innerText = "جاري التخيل...";
-    btnIcon.innerText = "⏳";
-    
+    txt.textContent = loadingMessages[0];
     msgInterval = setInterval(() => {
-      i = (i + 1) % messages.length;
-      status.innerText = messages[i];
+      i = (i + 1) % loadingMessages.length;
+      txt.textContent = loadingMessages[i];
     }, 1500);
   }
 
-  function stopLoadingAnimation() {
+  function stopLoading(success) {
     clearInterval(msgInterval);
-    document.getElementById('scannerOverlay').style.display = "none";
-    document.getElementById('scanGrid').style.opacity = "0";
-    document.getElementById('btnText').innerText = "توليد مرة أخرى";
-    document.getElementById('btnIcon').innerText = "🎨";
+    const overlay = document.getElementById('scanOverlay');
+    const btn = document.getElementById('generateBtn');
+    
+    overlay.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    document.getElementById('btnText').textContent = "توليد مرة أخرى";
+
+    if (!success) {
+      document.getElementById('emptyState').style.display = 'flex';
+    }
   }
 
-  // --- Main Logic ---
+  // --- دالة التوليد الرئيسية ---
   async function generateImage() {
-    const promptInput = document.getElementById('prompt');
-    const generateBtn = document.getElementById('generateBtn');
-    const resultImage = document.getElementById('resultImage');
-    const placeholder = document.getElementById('placeholder');
-    const downloadBtn = document.getElementById('downloadBtn');
-
-    const text = (promptInput.value || "").trim();
-    if (!text) {
-      toast("⚠️ اكتب وصف للصورة الأول!");
-      promptInput.focus();
+    const promptVal = document.getElementById('prompt').value.trim();
+    if (!promptVal) {
+      showToast("⚠️ الرجاء كتابة وصف للصورة أولاً!");
       return;
     }
 
-    // UI Update: Loading
-    generateBtn.disabled = true;
-    placeholder.style.display = "none";
-    resultImage.style.display = "none";
-    downloadBtn.style.display = "none";
-    
-    startLoadingAnimation();
+    startLoading();
 
     try {
-      // Fetch request (Using Netlify Function proxy based on previous context)
-      // If you are testing locally without netlify functions, this will fail.
+      // محاكاة الاتصال بالسيرفر (استبدل هذا بالرابط الفعلي الخاص بك)
       const response = await fetch('/.netlify/functions/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text })
+        body: JSON.stringify({ prompt: promptVal })
       });
 
-      let data = null;
-      try { data = await response.json(); } catch(e) {}
+      let data = {};
+      try { data = await response.json(); } catch(e){}
 
-      if (!response.ok) throw new Error(data?.error || "خطأ في الاتصال");
-      if (!data?.dataUrl) throw new Error("لم يتم استلام الصورة");
+      if (!response.ok) throw new Error(data.error || "خطأ في السيرفر");
+      if (!data.dataUrl) throw new Error("لم يتم إرجاع صورة");
 
-      // UI Update: Success
-      resultImage.onload = () => {
-        stopLoadingAnimation();
-        generateBtn.disabled = false;
-        resultImage.style.display = "block";
-        downloadBtn.style.display = "block";
-        toast("تم التوليد بنجاح! 🚀");
+      // عرض الصورة عند التحميل الناجح
+      const img = document.getElementById('resultImage');
+      img.onload = () => {
+        stopLoading(true);
+        img.style.display = 'block';
+        document.getElementById('downloadBar').style.display = 'block';
+        showToast("تم التوليد بنجاح! 🎉");
       };
-      
-      resultImage.onerror = () => { throw new Error("فشل عرض الصورة"); };
-      resultImage.src = data.dataUrl;
+      img.src = data.dataUrl;
 
     } catch (err) {
       console.error(err);
-      stopLoadingAnimation();
-      generateBtn.disabled = false;
-      placeholder.style.display = "flex";
-      toast("❌ حدث خطأ: " + (err.message || "فشل التوليد"));
+      stopLoading(false);
+      showToast("❌ حدث خطأ: " + (err.message || "فشل الاتصال"));
     }
   }
 
-  // --- Lightbox Functions ---
-  function openLightbox(){
-    const src = document.getElementById('resultImage').src;
-    if(!src) return;
-    document.getElementById('lightboxImg').src = src;
-    document.getElementById('lightbox').classList.add('active');
-  }
-  function closeLightbox(){
-    document.getElementById('lightbox').classList.remove('active');
-  }
-
-  function downloadImage() {
+  function downloadImg() {
     const img = document.getElementById('resultImage');
     if (!img.src) return;
     const a = document.createElement('a');
     a.href = img.src;
-    a.download = 'AI-Art-' + Date.now() + '.png';
+    a.download = `AI-Gen-${Date.now()}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    toast("جاري التحميل... ⬇️");
+    showToast("جاري التحميل... ⬇️");
   }
 </script>
 
