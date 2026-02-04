@@ -8,14 +8,12 @@ exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers };
 
   try {
-    const { prompt } = JSON.parse(event.body);
-    // تنظيف الوصف
-    const cleanPrompt = encodeURIComponent(prompt.trim());
-    // رقم عشوائي لضمان عدم تكرار الصورة
+    const body = JSON.parse(event.body);
+    const prompt = encodeURIComponent(body.prompt || "cat");
     const seed = Math.floor(Math.random() * 1000000);
     
-    // رابط الصورة المباشر من سيرفر Pollinations
-    const imageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux`;
+    // الرابط المباشر
+    const imageUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux`;
 
     return {
       statusCode: 200,
@@ -26,7 +24,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: "خطأ في السيرفر: " + err.message }),
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
