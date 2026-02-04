@@ -1,3 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Art Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7B2FF7;
+            --secondary: #9B6DFF;
+            --bg: #0f0c29;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            background: linear-gradient(to right, #fff, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        p.subtitle {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 15px;
+            color: #fff;
+            font-size: 16px;
+            resize: none;
+            height: 100px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(123, 47, 247, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(123, 47, 247, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: wait;
+            transform: none;
+        }
+
+        .image-area {
+            margin-top: 25px;
+            min-height: 300px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px dashed var(--border);
+            position: relative;
+        }
+
+        .image-area img {
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            display: none;
+            animation: fadeIn 1s ease;
+        }
+
+        .placeholder-text {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loader {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+        .download-btn:hover { background: rgba(255,255,255,0.1); }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>✨ Gemini Image Gen</h1>
+    <p class="subtitle">حول خيالك إلى صور باستخدام الذكاء الاصطناعي</p>
+
+    <div class="input-group">
+        <textarea id="prompt" placeholder="صف الصورة التي تريد تخيلها... (مثلاً: قطة في الفضاء)"></textarea>
+    </div>
+
+    <button id="generateBtn" onclick="generateImage()">
+        <span>🎨 توليد الصورة</span>
+    </button>
+
+    <div class="image-area" id="imageContainer">
+        <div class="placeholder-text" id="placeholder">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <span>الصورة ستظهر هنا</span>
+        </div>
+        <div class="loader" id="loader"></div>
+        <img id="resultImage" src="" alt="AI Generated Image">
+    </div>
+
+    <button id="downloadBtn" class="download-btn" onclick="downloadImage()">
+        ⬇️ تحميل الصورة
+    </button>
+</div>
 <!-- استبدل جزء الـ <script> في ملف index.html بهذا الجزء المحدث -->
 <script>
     async function generateImage() {
@@ -74,3 +278,5 @@
         }
     }
 </script>
+</body>
+</html>
