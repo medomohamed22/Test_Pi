@@ -11,3 +11,10 @@
   from = "/api/chat"
   to = "/.netlify/functions/chat"
   status = 200
+[build]
+  publish = "."
+  command = "npm install"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
