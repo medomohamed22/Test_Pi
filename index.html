@@ -213,19 +213,34 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
   display:flex;align-items:center;justify-content:space-between;gap:10px
 }
 .codeTitle{font-weight:900;color:var(--p)}
-.codeBox{
+..codeBox{
   direction:ltr;
   font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size:12px;
   line-height:1.6;
-  white-space:pre;
-  overflow:auto;
+
+  /* ✅ أهم تعديل: لف السطور بدل ما تكسر الشاشة */
+  white-space: pre-wrap;        /* يحافظ على الـ enter + يعمل wrap */
+  overflow-wrap: anywhere;      /* يكسر الكلمات/السلاسل الطويلة */
+  word-break: break-word;       /* دعم إضافي للموبايل */
+
+  /* ✅ ما يخليش البلوك يطلع برة */
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;             /* لو كود مستحيل يتلف زي base64 هتقدر تسحب */
+  -webkit-overflow-scrolling: touch;
+
   border:1px solid var(--border);
   background:#faf8ff;
   border-radius:12px;
   padding:10px;
   max-height:220px;
 }
+.iconBtn{
+  font-size:13px;
+  padding:6px 12px;
+  min-width:56px;
+  text-align:center;
 </style>
 </head>
 
@@ -488,7 +503,7 @@ function show(id, btn){
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
 
-  if(id === 'codes') renderCodes();
+  if(id === 'codes') `renderCode`();
 }
 
 /* Load */
@@ -1079,7 +1094,13 @@ function codeCardHtml(x){
           </div>
         </div>
         <div class="actions">
-          <button class="iconBtn" onclick="copyText(${JSON.stringify(x.code||'')})">نسخ</button>
+          <button
+  class="iconBtn copyBtn"
+  data-code="${encodeURIComponent(x.code || '')}"
+  onclick="copyFromBtn(this)"
+>
+  نسخ
+</button>
           ${canDelete ? `<button class="iconBtn" onclick="deleteCode('${x.id}')">حذف</button>` : ``}
         </div>
       </div>
@@ -1113,7 +1134,10 @@ function renderCodes() {
     ? otherList.map(codeCardHtml).join('')
     : `<div class="card"><h3>لا يوجد أكواد أخرى</h3><div class="mut">شجّع الناس تضيف أكواد.</div></div>`;
 }
-
+function copyFromBtn(btn) {
+  const code = decodeURIComponent(btn.dataset.code || '');
+  copyText(code);
+}
 function copyText(t){
   const text = String(t ?? '');
   if(navigator.clipboard?.writeText){
