@@ -399,7 +399,10 @@ let state = {
   q: ""
 };
 
-/* UI */
+// ====== ✅ Realtime channels ======
+let rt = { posts:null, comments:null, projects:null, codes:null };
+
+// ====== UI ======
 function escapeHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
@@ -434,6 +437,7 @@ function openModal(title, innerHtml){
   }, 0);
 }
 function closeModal(){
+  window.__openCommentsPostId = null; // ✅ مهم
   const w=document.getElementById('modalWrap');
   if(w) w.classList.remove('show');
 }
@@ -446,7 +450,7 @@ function setSkeleton(containerId, count=6){
   c.innerHTML = new Array(count).fill(0).map(()=>`<div class="skel"></div>`).join('');
 }
 
-/* FAB */
+// ====== FAB ======
 function toggleFab(force){
   const menu = document.getElementById('fabMenu');
   const back = document.getElementById('fabBackdrop');
@@ -456,7 +460,7 @@ function toggleFab(force){
   back.style.display = show ? 'block' : 'none';
 }
 
-/* Auth */
+// ====== Auth ======
 async function ensureSession(){
   const { data } = await sb.auth.getSession();
   if(!data?.session){
@@ -487,8 +491,7 @@ function setUIAuthed(){
     if(chipText) chipText.textContent = piUser.username;
     loginBtn?.classList.add('hidden');
     if(fabBtn) fabBtn.style.display = 'block';
-    // ✅ أي حد يقدر يضيف كود
-    if(addCodeItem) addCodeItem.style.display = 'flex';
+    if(addCodeItem) addCodeItem.style.display = 'flex'; // ✅ كل الناس تقدر تضيف كود
   }else{
     chip?.classList.remove('ok');
     if(chipText) chipText.textContent = 'ضيف';
@@ -499,7 +502,7 @@ function setUIAuthed(){
   }
 }
 
-/* ✅ FIX: hide pages فقط مش كل sections */
+// ====== ✅ FIX: show pages فقط + renderCodes صح ======
 function show(id, btn){
   if(id !== 'group') stopProjectRealtime();
 
@@ -510,15 +513,94 @@ function show(id, btn){
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
 
-  if(id === 'codes') `renderCode`();
+  if(id === 'codes') renderCodes(); // ✅ بدل `renderCode`()
 }
 
-/* Load */
+// ====== Helpers (prevent duplicates) ======
+function unshiftUnique(list, row){
+  if(!row?.id) return;
+  if(list.some(x => x.id === row.id)) return;
+  list.unshift(row);
+}
+function removeById(list, id){
+  if(!id) return list;
+  return list.filter(x => x.id !== id);
+}
+
+// ====== ✅ Realtime (posts/projects/codes/comments) ======
+function stopRealtime(){
+  Object.values(rt).forEach(ch=>{
+    if(ch) sb.removeChannel(ch);
+  });
+  rt = { posts:null, comments:null, projects:null, codes:null };
+}
+
+function startRealtime(){
+  stopRealtime();
+
+  // ✅ posts
+  rt.posts = sb.channel('rt_posts')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'posts' }, (payload)=>{
+      unshiftUnique(state.posts, payload.new);
+      renderPosts();
+    })
+    .on('postgres_changes', { event:'DELETE', schema:'public', table:'posts' }, (payload)=>{
+      const id = payload.old?.id;
+      state.posts = removeById(state.posts, id);
+      renderPosts();
+    })
+    .subscribe();
+
+  // ✅ projects
+  rt.projects = sb.channel('rt_projects')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'projects' }, (payload)=>{
+      unshiftUnique(state.projects, payload.new);
+      renderProjects();
+    })
+    .on('postgres_changes', { event:'DELETE', schema:'public', table:'projects' }, (payload)=>{
+      const id = payload.old?.id;
+      state.projects = removeById(state.projects, id);
+      renderProjects();
+    })
+    .subscribe();
+
+  // ✅ codes
+  rt.codes = sb.channel('rt_codes')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'pi_codes' }, (payload)=>{
+      unshiftUnique(state.codes, payload.new);
+      renderCodes();
+    })
+    .on('postgres_changes', { event:'DELETE', schema:'public', table:'pi_codes' }, (payload)=>{
+      const id = payload.old?.id;
+      state.codes = removeById(state.codes, id);
+      renderCodes();
+    })
+    .subscribe();
+
+  // ✅ comments (update counter + refresh modal if open)
+  rt.comments = sb.channel('rt_comments')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'post_comments' }, (payload)=>{
+      const postId = payload.new?.post_id;
+      if(!postId) return;
+      state.commentsCount.set(postId, (state.commentsCount.get(postId)||0) + 1);
+      renderPosts();
+      if(window.__openCommentsPostId === postId) openComments(postId);
+    })
+    .on('postgres_changes', { event:'DELETE', schema:'public', table:'post_comments' }, (payload)=>{
+      const postId = payload.old?.post_id;
+      if(!postId) return;
+      state.commentsCount.set(postId, Math.max(0, (state.commentsCount.get(postId)||1) - 1));
+      renderPosts();
+      if(window.__openCommentsPostId === postId) openComments(postId);
+    })
+    .subscribe();
+}
+
+// ====== Load ======
 async function loadAll(){
   setSkeleton('home', 6);
   setSkeleton('projects', 6);
 
-  // ✅ Skeleton للأكواد حسب التقسيم الجديد
   const adminGrid = document.getElementById('codesAdminGrid');
   const otherGrid = document.getElementById('codesOtherGrid');
   if(adminGrid) adminGrid.innerHTML = new Array(2).fill(0).map(()=>`<div class="skel"></div>`).join('');
@@ -563,7 +645,7 @@ async function loadAll(){
   renderCodes();
 }
 
-/* Filters */
+// ====== Filters ======
 function setTag(t){
   state.activeTag = t || null;
   toast(state.activeTag ? `فلترة بالوسم: ${state.activeTag}` : 'تم مسح الفلتر');
@@ -571,7 +653,7 @@ function setTag(t){
   renderProjects();
 }
 
-/* Posts */
+// ====== Posts ======
 function renderPosts(){
   const c=document.getElementById('home');
   if(!c) return;
@@ -648,6 +730,7 @@ async function toggleLike(postId){
 }
 
 async function openComments(postId){
+  window.__openCommentsPostId = postId; // ✅ مهم
   try{
     const { data, error } = await sb.from('post_comments')
       .select('*')
@@ -674,7 +757,7 @@ async function openComments(postId){
       </div>
       <div class="footerBtns">
         <button class="primaryBtn" onclick="addComment('${postId}')">نشر التعليق</button>
-        <button class="btnGhost btnSmall" onclick="closeModal()">إغلاق</button>
+        <button class="iconBtn" onclick="closeModal()">إغلاق</button>
       </div>
     `);
 
@@ -698,13 +781,16 @@ async function addComment(postId){
       body
     };
 
-    const { error } = await sb.from('post_comments').insert(payload);
+    // ✅ نخليها ترجع الصف
+    const { data, error } = await sb.from('post_comments').insert(payload).select().single();
     if(error) throw error;
 
+    // ✅ Update محلي فورًا (وكمان الريل تايم هيزبط الباقي)
     state.commentsCount.set(postId, (state.commentsCount.get(postId)||0) + 1);
     toast('تم نشر التعليق ✅');
-    closeModal();
-    renderPosts();
+    // سيب المودال مفتوح واتحدث تلقائيًا بالريلتيم
+    openComments(postId);
+
   }catch(e){
     console.error('addComment', e);
     toast(e?.message || 'فشل إضافة التعليق (RLS?)', false);
@@ -715,10 +801,9 @@ async function deleteComment(commentId, postId){
   try{
     const { error } = await sb.from('post_comments').delete().eq('id', commentId);
     if(error) throw error;
-    state.commentsCount.set(postId, Math.max(0, (state.commentsCount.get(postId)||1) - 1));
     toast('تم حذف التعليق');
-    closeModal();
-    renderPosts();
+    // الريلتيم هيعمل تحديث، لكن لو المودال مفتوح نحدث فورًا
+    openComments(postId);
   }catch(e){
     console.error('deleteComment', e);
     toast(e?.message || 'فشل حذف التعليق', false);
@@ -730,14 +815,14 @@ async function deletePost(id){
     const { error } = await sb.from('posts').delete().eq('id', id);
     if(error) throw error;
     toast('تم حذف البوست');
-    await loadAll();
+    // الريلتيم هيشيله من عند الكل
   }catch(e){
     console.error('deletePost', e);
     toast(e?.message || 'فشل الحذف', false);
   }
 }
 
-/* Projects */
+// ====== Projects ======
 function renderProjects(){
   const c=document.getElementById('projects');
   if(!c) return;
@@ -831,21 +916,21 @@ async function deleteProject(id){
     const { error } = await sb.from('projects').delete().eq('id', id);
     if(error) throw error;
     toast('تم حذف المشروع');
-    await loadAll();
+    // الريلتيم هيشيله من عند الكل
   }catch(e){
     console.error('deleteProject', e);
     toast(e?.message || 'فشل الحذف', false);
   }
 }
 
-/* Group chat + images */
+// ====== Group chat (already realtime per project) ======
 async function openGroup(projectId, projectName){
   activeProject = { id: projectId, name: projectName };
   document.getElementById('groupTitle').textContent = `جروب: ${projectName}`;
   document.getElementById('groupSub').textContent = `شارك في حل المشكلة وبناء المشروع — إرسال صور متاح`;
   show('group', null);
   await loadProjectMessages();
-  startProjectRealtime();
+  startProjectRealtime(); // ✅ ده بيخلي الرسائل تظهر فورًا لكل الناس في نفس الجروب
 }
 
 async function loadProjectMessages(){
@@ -966,13 +1051,14 @@ async function sendMessage(){
     if(!text) return;
     input.value = '';
     await insertProjectMessage(text, null);
+    // الريلتيم هيظهرها للجميع فورًا
   }catch(e){
     console.error('sendMessage', e);
     toast(e?.message || 'فشل إرسال الرسالة (RLS?)', false);
   }
 }
 
-/* Create Post / Project */
+// ====== Create Post / Project ======
 function openCreatePost(){
   if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
 
@@ -991,7 +1077,7 @@ function openCreatePost(){
     </div>
     <div class="footerBtns">
       <button class="primaryBtn" onclick="createPost()">نشر</button>
-      <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
+      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
     </div>
   `);
 }
@@ -1009,12 +1095,16 @@ async function createPost(){
       pi_username: piUser.username,
       title, content, tags
     };
-    const { error } = await sb.from('posts').insert(payload);
+
+    const { data, error } = await sb.from('posts').insert(payload).select().single();
     if(error) throw error;
 
     closeModal();
     toast('تم نشر البوست ✅');
-    await loadAll();
+    // الريلتيم هيظهره عند الكل فورًا (وعندك كمان تحديث محلي سريع)
+    unshiftUnique(state.posts, data);
+    renderPosts();
+
   }catch(e){
     console.error('createPost', e);
     toast(e?.message || 'فشل نشر البوست (RLS?)', false);
@@ -1043,7 +1133,7 @@ function openCreateProject(){
     </div>
     <div class="footerBtns">
       <button class="primaryBtn" onclick="createProject()">نشر المشروع</button>
-      <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
+      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
     </div>
   `);
 }
@@ -1077,17 +1167,19 @@ async function createProject(){
 
     closeModal();
     toast('تم نشر المشروع ✅ وتم إنشاء الجروب');
-    await loadAll();
+    unshiftUnique(state.projects, data);
+    renderProjects();
     await openGroup(data.id, data.name);
+
   }catch(e){
     console.error('createProject', e);
     toast(e?.message || 'فشل نشر المشروع (RLS?)', false);
   }
 }
 
-/* ✅ Codes (Admin + Other) */
+// ====== Codes ======
 function codeCardHtml(x){
-  const canDelete = isAdmin(); // ✅ الحذف للأدمن فقط
+  const canDelete = isAdmin();
   const official = (x.created_by_pi_username === ADMIN_PI_USERNAME);
 
   return `
@@ -1101,13 +1193,7 @@ function codeCardHtml(x){
           </div>
         </div>
         <div class="actions">
-          <button
-  class="iconBtn copyBtn"
-  data-code="${encodeURIComponent(x.code || '')}"
-  onclick="copyFromBtn(this)"
->
-  نسخ
-</button>
+          <button class="iconBtn copyBtn" data-code="${encodeURIComponent(x.code || '')}" onclick="copyFromBtn(this)">نسخ</button>
           ${canDelete ? `<button class="iconBtn" onclick="deleteCode('${x.id}')">حذف</button>` : ``}
         </div>
       </div>
@@ -1115,7 +1201,6 @@ function codeCardHtml(x){
     </div>
   `;
 }
-
 function renderCodes() {
   const adminGrid = document.getElementById('codesAdminGrid');
   const otherGrid = document.getElementById('codesOtherGrid');
@@ -1141,6 +1226,7 @@ function renderCodes() {
     ? otherList.map(codeCardHtml).join('')
     : `<div class="card"><h3>لا يوجد أكواد أخرى</h3><div class="mut">شجّع الناس تضيف أكواد.</div></div>`;
 }
+
 function copyFromBtn(btn) {
   const code = decodeURIComponent(btn.dataset.code || '');
   copyText(code);
@@ -1176,7 +1262,7 @@ function openCreateCode(){
     </div>
     <div class="footerBtns">
       <button class="primaryBtn" onclick="createCode()">حفظ</button>
-      <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
+      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
     </div>
   `);
 }
@@ -1196,13 +1282,14 @@ async function createCode(){
       code
     };
 
-    const { error } = await sb.from('pi_codes').insert(payload);
+    const { data, error } = await sb.from('pi_codes').insert(payload).select().single();
     if(error) throw error;
 
     closeModal();
     toast('تم حفظ الكود ✅');
-    await loadAll();
+    unshiftUnique(state.codes, data);
     renderCodes();
+
   }catch(e){
     console.error('createCode', e);
     toast(e?.message || 'فشل حفظ الكود (RLS?)', false);
@@ -1215,7 +1302,8 @@ async function deleteCode(id){
     const { error } = await sb.from('pi_codes').delete().eq('id', id);
     if(error) throw error;
     toast('تم حذف الكود');
-    await loadAll();
+    // الريلتيم هيشيله عند الكل
+    state.codes = state.codes.filter(x=>x.id !== id);
     renderCodes();
   }catch(e){
     console.error('deleteCode', e);
@@ -1223,7 +1311,7 @@ async function deleteCode(id){
   }
 }
 
-/* Pi Login + verify */
+// ====== Pi Login + verify ======
 async function verifyAndSetAuth(pi_uid, pi_username){
   const sess = await ensureSession();
   const access = sess?.access_token;
@@ -1260,14 +1348,17 @@ async function login(){
 
     setUIAuthed();
     toast('تم تسجيل الدخول ✅');
-    await loadAll();
+
+    // ✅ بعد تسجيل الدخول شغل ريلتايم لو مش شغال
+    startRealtime();
+
   }catch(e){
     console.error('login', e);
     toast('فشل تسجيل الدخول/التحقق: ' + (e?.message || e), false);
   }
 }
 
-/* Restore + init */
+// ====== Restore + init ======
 function restoreLogin(){
   try{
     const saved = localStorage.getItem('piUser');
@@ -1294,7 +1385,11 @@ async function init(){
     await ensureSession();
     await refreshAuthUid();
     setUIAuthed();
+
     await loadAll();
+
+    // ✅ شغل الريلتيم مرة واحدة (الناس كلها هتشوف الإضافات فورًا)
+    startRealtime();
 
     if(isVerified && piUser?.uid && piUser?.username){
       try{ await verifyAndSetAuth(piUser.uid, piUser.username); }catch(_){}
