@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "next": "14.x",
+    "react": "18.x",
+    "react-dom": "18.x"
+  }
+}
