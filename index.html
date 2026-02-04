@@ -5,65 +5,30 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Purple Gemini Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-
 <style>
 :root{
   --p:#7B2FF7; --p2:#9B6DFF;
   --bg:#F6F3FF; --card:#FFFFFF;
   --stroke:#E6E0FF;
   --text:#1F1F2E; --mut:#6B6B85;
-
-  --userBg:#EDE7FF;
-  --aiBg:#FFFFFF;
-
+  --userBg:#EDE7FF; --aiBg:#FFFFFF;
   --r:18px;
   --shadow: 0 10px 28px rgba(123,47,247,.10);
 }
 *{box-sizing:border-box;font-family:Tajawal,system-ui}
 html,body{height:100%}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  display:flex;
-  flex-direction:column;
-}
-
+body{margin:0;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
 header{
   background:linear-gradient(135deg,var(--p),var(--p2));
-  color:#fff;
-  padding:14px 16px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
+  color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px
 }
-header .title{font-weight:900;font-size:16px;letter-spacing:.2px}
+header .title{font-weight:900;font-size:16px}
 header .badge{
-  background:rgba(255,255,255,.18);
-  border:1px solid rgba(255,255,255,.25);
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:12px;
-  white-space:nowrap;
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);
+  padding:6px 10px;border-radius:999px;font-size:12px;white-space:nowrap
 }
-
-.wrap{
-  width:min(920px, 100%);
-  margin:0 auto;
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
-
-.chat{
-  flex:1;
-  padding:16px;
-  overflow:auto;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
+.wrap{width:min(920px,100%);margin:0 auto;flex:1;display:flex;flex-direction:column}
+.chat{flex:1;padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
 
 .bubble{
   max-width:86%;
@@ -73,96 +38,39 @@ header .badge{
   box-shadow:var(--shadow);
   border:1px solid var(--stroke);
   position:relative;
-  word-wrap:break-word;
   white-space:pre-wrap;
+  word-break:break-word;
 }
-.bubble.user{
-  align-self:flex-start;
-  background:var(--userBg);
-}
-.bubble.ai{
-  align-self:flex-end;
-  background:var(--aiBg);
-}
-.meta{
-  font-size:11px;
-  color:var(--mut);
-  margin-top:6px;
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
+.bubble.user{align-self:flex-start;background:var(--userBg)}
+.bubble.ai{align-self:flex-end;background:var(--aiBg)}
+
+.meta{font-size:11px;color:var(--mut);margin-top:6px;display:flex;gap:8px;align-items:center}
 .bubble.user .meta{justify-content:flex-start}
 .bubble.ai .meta{justify-content:flex-end}
 
-.dotTyping{
-  display:inline-flex;
-  gap:4px;
-  align-items:center;
-}
+.dotTyping{display:inline-flex;gap:4px;align-items:center}
 .dotTyping span{
   width:6px;height:6px;border-radius:50%;
-  background:var(--p);
-  display:inline-block;
-  animation:bounce 1s infinite ease-in-out;
-  opacity:.75;
+  background:var(--p);display:inline-block;
+  animation:bounce 1s infinite ease-in-out;opacity:.75
 }
 .dotTyping span:nth-child(2){animation-delay:.12s}
 .dotTyping span:nth-child(3){animation-delay:.24s}
-@keyframes bounce{
-  0%,80%,100%{transform:translateY(0);opacity:.55}
-  40%{transform:translateY(-5px);opacity:1}
-}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.55}40%{transform:translateY(-5px);opacity:1}}
 
-footer{
-  background:var(--card);
-  border-top:1px solid var(--stroke);
-  padding:12px;
-}
-.composer{
-  width:min(920px, 100%);
-  margin:0 auto;
-  display:flex;
-  gap:10px;
-  align-items:flex-end;
-}
+footer{background:var(--card);border-top:1px solid var(--stroke);padding:12px}
+.composer{width:min(920px,100%);margin:0 auto;display:flex;gap:10px;align-items:flex-end}
 textarea{
-  flex:1;
-  resize:none;
-  min-height:46px;
-  max-height:140px;
-  padding:12px 12px;
-  border-radius:16px;
-  border:1px solid var(--stroke);
-  outline:none;
-  font-size:15px;
-  background:#fff;
+  flex:1;resize:none;min-height:46px;max-height:140px;
+  padding:12px;border-radius:16px;border:1px solid var(--stroke);
+  outline:none;font-size:15px;background:#fff
 }
 button{
-  border:none;
-  background:var(--p);
-  color:#fff;
-  padding:12px 16px;
-  border-radius:16px;
-  font-weight:800;
-  cursor:pointer;
+  border:none;background:var(--p);color:#fff;
+  padding:12px 16px;border-radius:16px;font-weight:800;cursor:pointer
 }
 button:disabled{opacity:.6;cursor:not-allowed}
-.smallHint{
-  width:min(920px, 100%);
-  margin:8px auto 0;
-  color:var(--mut);
-  font-size:12px;
-  padding:0 2px;
-}
-kbd{
-  background:#f3f0ff;
-  border:1px solid var(--stroke);
-  border-bottom-width:2px;
-  padding:2px 6px;
-  border-radius:8px;
-  font-size:11px;
-}
+.smallHint{width:min(920px,100%);margin:8px auto 0;color:var(--mut);font-size:12px;padding:0 2px}
 </style>
 </head>
 
@@ -178,7 +86,7 @@ kbd{
   <footer>
     <div class="composer">
       <textarea id="msg" placeholder="اكتب رسالتك..." rows="1"></textarea>
-      <button id="sendBtn" onclick="sendMsg()">إرسال</button>
+      <button id="sendBtn" type="button">إرسال</button>
     </div>
     <div class="smallHint">Enter لإرسال — Shift+Enter لسطر جديد</div>
   </footer>
@@ -190,16 +98,16 @@ const msgEl = document.getElementById('msg');
 const sendBtn = document.getElementById('sendBtn');
 const statusEl = document.getElementById('status');
 
-let convo = []; // {role:"user"|"model", text:"..."}
+let convo = []; // {role:'user'|'model', text:'...'}
 
 function setStatus(text, busy=false){
-  statusEl.textContent = (busy ? "● " : "● ") + text;
+  statusEl.textContent = "● " + text;
   statusEl.style.opacity = busy ? 0.9 : 1;
 }
 
-function makeBubble(role, text){
-  const wrap = document.createElement('div');
-  wrap.className = 'bubble ' + (role === 'user' ? 'user' : 'ai');
+function addBubble(role, text){
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (role === 'user' ? 'user' : 'ai');
 
   const content = document.createElement('div');
   content.className = 'content';
@@ -207,38 +115,35 @@ function makeBubble(role, text){
 
   const meta = document.createElement('div');
   meta.className = 'meta';
-  meta.textContent = role === 'user' ? '👤 أنت' : '🤖 AI';
+  meta.textContent = (role === 'user') ? '👤 أنت' : '🤖 AI';
 
-  wrap.appendChild(content);
-  wrap.appendChild(meta);
-  chat.appendChild(wrap);
+  b.appendChild(content);
+  b.appendChild(meta);
+  chat.appendChild(b);
   chat.scrollTop = chat.scrollHeight;
-  return { wrap, content, meta };
+  return { b, content, meta };
 }
 
-function makeTypingBubble(){
-  const wrap = document.createElement('div');
-  wrap.className = 'bubble ai';
+function addTyping(){
+  const b = document.createElement('div');
+  b.className = 'bubble ai';
 
   const content = document.createElement('div');
-  content.innerHTML = `
-    <span class="dotTyping" title="AI يكتب...">
-      <span></span><span></span><span></span>
-    </span>
-  `;
+  content.className = 'content';
+  content.innerHTML = `<span class="dotTyping"><span></span><span></span><span></span></span>`;
 
   const meta = document.createElement('div');
   meta.className = 'meta';
   meta.textContent = '🤖 AI يكتب...';
 
-  wrap.appendChild(content);
-  wrap.appendChild(meta);
-  chat.appendChild(wrap);
+  b.appendChild(content);
+  b.appendChild(meta);
+  chat.appendChild(b);
   chat.scrollTop = chat.scrollHeight;
-  return { wrap, content, meta };
+  return { b, content, meta };
 }
 
-function typewriter(el, text, speed=14){
+function typewriter(el, text, speed=12){
   el.textContent = '';
   let i = 0;
   return new Promise(resolve=>{
@@ -264,52 +169,66 @@ autosize();
 msgEl.addEventListener('keydown', (e)=>{
   if(e.key === 'Enter' && !e.shiftKey){
     e.preventDefault();
-    sendMsg();
+    send();
   }
 });
 
-async function sendMsg(){
+sendBtn.addEventListener('click', send);
+
+async function send(){
   const text = (msgEl.value || '').trim();
   if(!text) return;
 
-  makeBubble('user', text);
+  addBubble('user', text);
   convo.push({ role:'user', text });
 
   msgEl.value = '';
   autosize();
+
   sendBtn.disabled = true;
   msgEl.disabled = true;
   setStatus("Thinking...", true);
 
-  const typing = makeTypingBubble();
+  const typing = addTyping();
 
   try{
+    // ✅ مهم: نتأكد أن الرد JSON فعلاً
     const res = await fetch('/api/chat', {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
         message: text,
-        history: convo.slice(0, -1) // قبل آخر رسالة المستخدم (اختياري)
+        history: convo.slice(0, -1) // اختياري
       })
     });
 
-    const data = await res.json();
-    if(!res.ok) throw new Error(data?.error || 'Request failed');
+    const rawText = await res.text(); // نقرأها نص الأول
+    let data;
+    try { data = JSON.parse(rawText); }
+    catch { throw new Error("API رجّع HTML/نص مش JSON:\n" + rawText.slice(0, 200)); }
 
-    const reply = data.reply || '...';
+    if(!res.ok){
+      throw new Error((data && (data.error || data.message)) ? JSON.stringify(data) : "Request failed");
+    }
+
+    const reply = data.reply || "";
+    if(!reply){
+      throw new Error("الـ API رجّع JSON بس مفيش reply.");
+    }
 
     typing.meta.textContent = '🤖 AI';
-    // استبدل الـ typing بنص بيتكتب تدريجي
-    await typewriter(typing.wrap.querySelector('.content'), reply, 12);
+    await typewriter(typing.b.querySelector('.content'), reply, 12);
 
     convo.push({ role:'model', text: reply });
     setStatus("Ready", false);
+
   }catch(err){
-    typing.meta.textContent = '🤖 AI (خطأ)';
-    typing.wrap.querySelector('.content').textContent =
-      'حصل خطأ في الاتصال بالباك اند أو Gemini. تأكد من API Key وتشغيل السيرفر.';
+    typing.meta.textContent = '🤖 AI (Error)';
+    typing.b.querySelector('.content').textContent =
+      "حصل خطأ:\n" + (err?.message || err);
     setStatus("Error", false);
     console.error(err);
+
   }finally{
     sendBtn.disabled = false;
     msgEl.disabled = false;
@@ -317,8 +236,7 @@ async function sendMsg(){
   }
 }
 
-// رسالة ترحيب
-makeBubble('ai', 'أهلاً 👋 ابعت سؤالك وأنا هرد عليك.');
+addBubble('ai', 'أهلاً 👋 ابعت رسالتك وأنا هرد عليك.');
 </script>
 </body>
 </html>
