@@ -13,106 +13,621 @@
 :root{
   --p:#7B2FF7;--p2:#9B6DFF;--bg:#F4F0FF;--card:#fff;
   --text:#1F1F2E;--mut:#6B6B85;--border:#E6E0FF;
+  --shadow:0 8px 24px rgba(123,47,247,.12);
+  --r:16px;
 }
 *{box-sizing:border-box;font-family:Tajawal,system-ui}
-body{margin:0;background:var(--bg);color:var(--text)}
+body{margin:0;background:var(--bg);color:var(--text);padding-bottom:64px}
+
 header{
   position:sticky;top:0;z-index:9;
   background:#fff;border-bottom:1px solid var(--border);
   padding:12px 14px;display:flex;gap:10px;align-items:center
 }
-header h1{margin:0;font-size:18px;color:var(--p)}
-header input{flex:1;padding:10px;border-radius:12px;border:1px solid var(--border)}
-header button{padding:10px 14px;border-radius:12px;border:none;background:var(--p);color:#fff}
+header h1{margin:0;font-size:18px;color:var(--p);white-space:nowrap}
+header input{flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);outline:none}
+header input:focus{border-color:rgba(123,47,247,.5);box-shadow:0 0 0 3px rgba(123,47,247,.12)}
+header button{padding:10px 14px;border-radius:12px;border:none;background:var(--p);color:#fff;cursor:pointer}
+header button:disabled{opacity:.55;cursor:not-allowed}
+.headerRow{display:flex;gap:10px;align-items:center;flex:1}
+.headerActions{display:flex;gap:8px;align-items:center}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:999px;
+  border:1px solid var(--border);background:#fff;color:var(--text);
+  box-shadow:0 4px 14px rgba(123,47,247,.08);
+  font-size:13px;white-space:nowrap
+}
+.chip .dot{width:8px;height:8px;border-radius:99px;background:var(--mut)}
+.chip.ok .dot{background:#29c36a}
+.btnGhost{
+  background:#fff;color:var(--p);
+  border:1px solid var(--border);
+}
+.btnSmall{padding:10px 12px}
 
 main{padding:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .card{
-  background:var(--card);border-radius:16px;padding:14px;
-  box-shadow:0 8px 24px rgba(123,47,247,.12)
+  background:var(--card);border-radius:var(--r);padding:14px;
+  box-shadow:var(--shadow);border:1px solid rgba(230,224,255,.85)
 }
-.card h3{margin:0 0 8px;color:var(--p)}
+.card h3{margin:0 0 8px;color:var(--p);font-size:16px}
 .mut{color:var(--mut);font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{
+  font-size:12px;padding:6px 10px;border-radius:999px;
+  background:rgba(123,47,247,.10);color:var(--p);border:1px solid rgba(123,47,247,.18);
+  cursor:pointer;user-select:none
+}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.actions{display:flex;gap:8px;align-items:center}
+.iconBtn{
+  border:1px solid var(--border);background:#fff;color:var(--text);
+  padding:8px 10px;border-radius:12px;cursor:pointer
+}
+.iconBtn:hover{border-color:rgba(123,47,247,.35)}
+.primaryBtn{
+  border:none;background:var(--p);color:#fff;padding:10px 12px;border-radius:12px;cursor:pointer
+}
+.primaryBtn:hover{filter:brightness(.98)}
+.hidden{display:none}
 
 nav{
-  position:fixed;bottom:0;left:0;right:0;
+  position:fixed;bottom:0;left:0;right:0;z-index:8;
   background:#fff;border-top:1px solid var(--border);
   display:flex;justify-content:space-around;padding:8px
 }
-nav button{background:none;border:none;color:var(--mut)}
-nav button.active{color:var(--p);font-weight:700}
+nav button{background:none;border:none;color:var(--mut);cursor:pointer;padding:10px 8px;border-radius:12px}
+nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)}
 
-.hidden{display:none}
+.toast{
+  position:fixed;top:14px;left:14px;right:14px;z-index:99;
+  display:none;align-items:center;justify-content:space-between;gap:10px;
+  background:#fff;border:1px solid var(--border);box-shadow:var(--shadow);
+  padding:12px 14px;border-radius:14px
+}
+.toast.show{display:flex}
+.toast b{color:var(--p)}
+.toast .x{cursor:pointer;border:none;background:none;font-size:18px;color:var(--mut)}
+
+.modalWrap{
+  position:fixed;inset:0;z-index:98;
+  background:rgba(31,31,46,.35);
+  display:none;align-items:center;justify-content:center;padding:16px
+}
+.modalWrap.show{display:flex}
+.modal{
+  width:min(520px,100%);
+  background:#fff;border-radius:18px;border:1px solid var(--border);
+  box-shadow:0 20px 60px rgba(31,31,46,.25);
+  padding:14px
+}
+.modalHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.modalHead h2{margin:0;font-size:16px;color:var(--p)}
+.closeBtn{border:none;background:none;font-size:20px;color:var(--mut);cursor:pointer}
+.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.field label{font-size:13px;color:var(--mut)}
+.field input,.field textarea{
+  border:1px solid var(--border);border-radius:12px;padding:10px;outline:none;
+  background:#fff
+}
+.field textarea{min-height:110px;resize:vertical}
+.help{font-size:12px;color:var(--mut);margin-top:6px}
+.footerBtns{display:flex;gap:8px;justify-content:flex-start;margin-top:10px}
+.skel{
+  height:110px;border-radius:16px;background:linear-gradient(90deg,#fff, #f3edff, #fff);
+  border:1px solid var(--border);box-shadow:0 8px 24px rgba(123,47,247,.08);
+  animation:sh 1.2s infinite linear
+}
+@keyframes sh{0%{background-position:0 0}100%{background-position:800px 0}}
 </style>
 </head>
 
 <body>
+<div class="toast" id="toast"><span id="toastText"></span><button class="x" onclick="hideToast()">×</button></div>
+
 <header>
   <h1>Pi Dev Hub</h1>
-  <input id="search" placeholder="بحث..." />
-  <button id="loginBtn">تسجيل دخول Pi</button>
+  <div class="headerRow">
+    <input id="search" placeholder="بحث..." />
+    <div class="headerActions">
+      <span class="chip" id="userChip"><span class="dot"></span><span id="userChipText">ضيف</span></span>
+
+      <!-- أزرار الإضافة (مقفولة لحد ما التحقق يتم) -->
+      <button class="btnGhost btnSmall hidden" id="addPostBtn" data-need-auth>➕ بوست</button>
+      <button class="btnGhost btnSmall hidden" id="addProjectBtn" data-need-auth>➕ مشروع</button>
+
+      <button id="loginBtn">تسجيل دخول Pi</button>
+      <button class="btnGhost btnSmall hidden" id="logoutBtn">خروج</button>
+    </div>
+  </div>
 </header>
 
 <main>
   <section id="home" class="grid"></section>
   <section id="projects" class="grid hidden"></section>
-  <section id="profile" class="hidden"></section>
+
+  <section id="profile" class="hidden">
+    <div class="card">
+      <h3>حسابي</h3>
+      <div class="mut" id="profileInfo">سجّل دخول عشان يظهر حسابك هنا.</div>
+      <div class="row" style="margin-top:12px">
+        <div class="mut">إحصائيات</div>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-top:10px">
+        <div class="card" style="box-shadow:none;border:1px dashed var(--border)">
+          <div class="mut">Posts</div>
+          <div style="font-weight:900;font-size:22px;color:var(--p)" id="statPosts">0</div>
+        </div>
+        <div class="card" style="box-shadow:none;border:1px dashed var(--border)">
+          <div class="mut">Projects</div>
+          <div style="font-weight:900;font-size:22px;color:var(--p)" id="statProjects">0</div>
+        </div>
+      </div>
+      <div class="help">✅ بعد التحقق، تقدر تضيف بوست/مشروع وهيتسجلوا بصلاحيات RLS باسمك (owner_auth_uid).</div>
+    </div>
+  </section>
 </main>
 
 <nav>
-  <button onclick="show('home')" class="active">الرئيسية</button>
-  <button onclick="show('projects')">المشاريع</button>
-  <button onclick="show('profile')">حسابي</button>
+  <button data-tab="home" class="active" onclick="show('home', this)">الرئيسية</button>
+  <button data-tab="projects" onclick="show('projects', this)">المشاريع</button>
+  <button data-tab="profile" onclick="show('profile', this)">حسابي</button>
 </nav>
+
+<!-- ====== Modals ====== -->
+<div class="modalWrap" id="modalWrap" onclick="overlayClose(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modalHead">
+      <h2 id="modalTitle">Modal</h2>
+      <button class="closeBtn" onclick="closeModal()">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL="https://xncapmzlwuisupkjlftb.supabase.co";
 const SUPABASE_ANON="sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-let session=null, piUser=null;
+let piUser = null;
+let isVerified = false;
+let authUid = null;
 
-async function init(){
-  await sb.auth.signInAnonymously();
-  const {data}=await sb.from('posts').select('*').order('created_at',{ascending:false});
-  renderPosts(data||[]);
-}
-init();
-
-function renderPosts(list){
-  const c=document.getElementById('home');
-  c.innerHTML=list.map(p=>`
-    <div class="card">
-      <h3>${p.title}</h3>
-      <div class="mut">${p.pi_username||''}</div>
-      <p>${p.content}</p>
-    </div>
-  `).join('');
-}
-
-document.getElementById('loginBtn').onclick=async()=>{
-  Pi.init({version:"2.0",sandbox:false});
-  const auth=await Pi.authenticate(['username'],()=>{});
-  piUser=auth.user;
-  session=await sb.auth.getSession();
-  await fetch('/api/pi/verify',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      pi_uid:piUser.uid,
-      pi_username:piUser.username,
-      supabase_access_token:session.data.session.access_token
-    })
-  });
-  alert('تم تسجيل الدخول');
+let state = {
+  posts: [],
+  projects: [],
+  activeTag: null,
+  q: ""
 };
 
-function show(id){
+function toast(msg, ok=true){
+  const el=document.getElementById('toast');
+  document.getElementById('toastText').innerHTML = ok ? `<b>✔</b> ${escapeHtml(msg)}` : `<b>⚠</b> ${escapeHtml(msg)}`;
+  el.classList.add('show');
+  clearTimeout(window.__t);
+  window.__t=setTimeout(()=>hideToast(), 2500);
+}
+function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+async function ensureSession(){
+  const { data } = await sb.auth.getSession();
+  if(!data?.session){
+    const r = await sb.auth.signInAnonymously();
+    if(r.error) throw r.error;
+  }
+  const sess = await sb.auth.getSession();
+  return sess.data.session;
+}
+
+async function refreshAuthUid(){
+  const { data, error } = await sb.auth.getUser();
+  if(error) throw error;
+  authUid = data?.user?.id || null;
+  return authUid;
+}
+
+function setUIAuthed(){
+  const chip = document.getElementById('userChip');
+  const chipText = document.getElementById('userChipText');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  const addBtns = document.querySelectorAll('[data-need-auth]');
+
+  if(isVerified && piUser?.username){
+    chip.classList.add('ok');
+    chipText.textContent = piUser.username;
+    loginBtn.classList.add('hidden');
+    logoutBtn.classList.remove('hidden');
+    addBtns.forEach(b=>b.classList.remove('hidden'));
+    document.getElementById('profileInfo').textContent = `مرحباً ${piUser.username} — UID: ${piUser.uid}`;
+  }else{
+    chip.classList.remove('ok');
+    chipText.textContent = 'ضيف';
+    loginBtn.classList.remove('hidden');
+    logoutBtn.classList.add('hidden');
+    addBtns.forEach(b=>b.classList.add('hidden'));
+    document.getElementById('profileInfo').textContent = 'سجّل دخول عشان يظهر حسابك هنا.';
+  }
+}
+
+function show(id, btn){
   document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
+  if(btn) btn.classList.add('active');
 }
+
+function setSkeleton(containerId, count=6){
+  const c=document.getElementById(containerId);
+  c.innerHTML = new Array(count).fill(0).map(()=>`<div class="skel"></div>`).join('');
+}
+
+function renderPosts(){
+  const c=document.getElementById('home');
+  const q = (state.q || '').toLowerCase().trim();
+  const tag = state.activeTag;
+
+  const filtered = (state.posts||[]).filter(p=>{
+    const inText = !q || (p.title||'').toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q) || (p.pi_username||'').toLowerCase().includes(q);
+    const inTag  = !tag || (Array.isArray(p.tags) && p.tags.includes(tag));
+    return inText && inTag;
+  });
+
+  c.innerHTML = filtered.map(p=>`
+    <div class="card">
+      <h3>${escapeHtml(p.title)}</h3>
+      <div class="mut">${escapeHtml(p.pi_username||'')}</div>
+      <p style="margin:10px 0 0;line-height:1.7">${escapeHtml(p.content)}</p>
+
+      <div class="tags">
+        ${(p.tags||[]).slice(0,6).map(t=>`<span class="tag" onclick="setTag('${escapeHtml(t)}')">#${escapeHtml(t)}</span>`).join('')}
+      </div>
+
+      <div class="row">
+        <div class="mut">${new Date(p.created_at).toLocaleString('ar-EG')}</div>
+        ${p.owner_auth_uid === authUid ? `
+          <div class="actions">
+            <button class="iconBtn" onclick="deletePost('${p.id}')">حذف</button>
+          </div>` : `<div></div>`
+        }
+      </div>
+    </div>
+  `).join('');
+
+  if(!filtered.length){
+    c.innerHTML = `<div class="card"><h3>لا يوجد نتائج</h3><div class="mut">جرّب بحث مختلف أو امسح الفلتر.</div></div>`;
+  }
+}
+
+function renderProjects(){
+  const c=document.getElementById('projects');
+  const q = (state.q || '').toLowerCase().trim();
+  const tag = state.activeTag;
+
+  const filtered = (state.projects||[]).filter(p=>{
+    const inText = !q || (p.name||'').toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q) || (p.pi_username||'').toLowerCase().includes(q);
+    const inTag  = !tag || (Array.isArray(p.stack) && p.stack.includes(tag));
+    return inText && inTag;
+  });
+
+  c.innerHTML = filtered.map(p=>`
+    <div class="card">
+      <h3>${escapeHtml(p.name)}</h3>
+      <div class="mut">${escapeHtml(p.pi_username||'')}</div>
+      <p style="margin:10px 0 0;line-height:1.7">${escapeHtml(p.description)}</p>
+
+      <div class="tags">
+        ${(p.stack||[]).slice(0,6).map(t=>`<span class="tag" onclick="setTag('${escapeHtml(t)}')">${escapeHtml(t)}</span>`).join('')}
+      </div>
+
+      <div class="row">
+        <div class="mut">${new Date(p.created_at).toLocaleString('ar-EG')}</div>
+        ${p.owner_auth_uid === authUid ? `
+          <div class="actions">
+            <button class="iconBtn" onclick="deleteProject('${p.id}')">حذف</button>
+          </div>` : `<div></div>`
+        }
+      </div>
+    </div>
+  `).join('');
+
+  if(!filtered.length){
+    c.innerHTML = `<div class="card"><h3>لا يوجد مشاريع</h3><div class="mut">جرّب إضافة مشروع جديد.</div></div>`;
+  }
+}
+
+function setTag(t){
+  state.activeTag = t || null;
+  toast(state.activeTag ? `فلترة بالوسم: ${state.activeTag}` : 'تم مسح الفلتر');
+  renderPosts();
+  renderProjects();
+}
+
+async function loadAll(){
+  // Skeletons
+  setSkeleton('home', 6);
+  setSkeleton('projects', 6);
+
+  // public read allowed by RLS
+  const [{data:posts, error:pe},{data:projects, error:pr}] = await Promise.all([
+    sb.from('posts').select('*').order('created_at',{ascending:false}),
+    sb.from('projects').select('*').order('created_at',{ascending:false})
+  ]);
+
+  if(pe) console.error(pe);
+  if(pr) console.error(pr);
+
+  state.posts = posts || [];
+  state.projects = projects || [];
+
+  renderPosts();
+  renderProjects();
+  updateStats();
+}
+
+function updateStats(){
+  const myPosts = (state.posts||[]).filter(p=>p.owner_auth_uid === authUid).length;
+  const myProjects = (state.projects||[]).filter(p=>p.owner_auth_uid === authUid).length;
+  document.getElementById('statPosts').textContent = myPosts;
+  document.getElementById('statProjects').textContent = myProjects;
+}
+
+function openModal(title, innerHtml){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = innerHtml;
+  document.getElementById('modalWrap').classList.add('show');
+  setTimeout(()=>{
+    const first = document.querySelector('#modalBody input, #modalBody textarea');
+    if(first) first.focus();
+  }, 0);
+}
+function closeModal(){ document.getElementById('modalWrap').classList.remove('show'); }
+function overlayClose(e){ if(e.target.id === 'modalWrap') closeModal(); }
+window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+
+function openCreatePost(){
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
+
+  openModal('إضافة بوست', `
+    <div class="field">
+      <label>العنوان</label>
+      <input id="p_title" placeholder="مثال: مشكلة في Pi SDK" />
+    </div>
+    <div class="field">
+      <label>المحتوى</label>
+      <textarea id="p_content" placeholder="اكتب تفاصيل البوست..."></textarea>
+      <div class="help">سيتم حفظ البوست باسمك مع owner_auth_uid تلقائيًا من جلسة Supabase.</div>
+    </div>
+    <div class="field">
+      <label>Tags (افصل بينهم بفاصلة)</label>
+      <input id="p_tags" placeholder="pi-sdk, supabase, nextjs" />
+    </div>
+    <div class="footerBtns">
+      <button class="primaryBtn" onclick="createPost()">نشر</button>
+      <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+}
+
+async function createPost(){
+  try{
+    const title = (document.getElementById('p_title').value||'').trim();
+    const content = (document.getElementById('p_content').value||'').trim();
+    const tags = (document.getElementById('p_tags').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+
+    if(!title || !content) return toast('اكتب العنوان والمحتوى', false);
+    if(!authUid) await refreshAuthUid();
+
+    const payload = {
+      owner_auth_uid: authUid,           // ✅ مطلوب عشان RLS
+      pi_uid: piUser.uid,
+      pi_username: piUser.username,
+      title,
+      content,
+      tags
+    };
+
+    const { error } = await sb.from('posts').insert(payload);
+    if(error) throw error;
+
+    closeModal();
+    toast('تم نشر البوست ✅');
+    await loadAll();
+  }catch(e){
+    console.error('createPost', e);
+    toast(e?.message || 'فشل نشر البوست (RLS?)', false);
+  }
+}
+
+async function deletePost(id){
+  try{
+    if(!authUid) await refreshAuthUid();
+    const { error } = await sb.from('posts').delete().eq('id', id);
+    if(error) throw error;
+    toast('تم حذف البوست');
+    await loadAll();
+  }catch(e){
+    console.error('deletePost', e);
+    toast(e?.message || 'فشل الحذف', false);
+  }
+}
+
+function openCreateProject(){
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
+
+  openModal('إضافة مشروع', `
+    <div class="field">
+      <label>اسم المشروع</label>
+      <input id="pr_name" placeholder="مثال: Pi Shop" />
+    </div>
+    <div class="field">
+      <label>وصف مختصر</label>
+      <textarea id="pr_desc" placeholder="اكتب وصف سريع..."></textarea>
+    </div>
+    <div class="field">
+      <label>Tech Stack (افصل بينهم بفاصلة)</label>
+      <input id="pr_stack" placeholder="nextjs, supabase, pi-sdk" />
+    </div>
+    <div class="field">
+      <label>أدوار مطلوبة (اختياري)</label>
+      <input id="pr_roles" placeholder="frontend, backend, uiux" />
+    </div>
+    <div class="footerBtns">
+      <button class="primaryBtn" onclick="createProject()">حفظ</button>
+      <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+}
+
+async function createProject(){
+  try{
+    const name = (document.getElementById('pr_name').value||'').trim();
+    const description = (document.getElementById('pr_desc').value||'').trim();
+    const stack = (document.getElementById('pr_stack').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const needed_roles = (document.getElementById('pr_roles').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+
+    if(!name || !description) return toast('اكتب اسم المشروع والوصف', false);
+    if(!authUid) await refreshAuthUid();
+
+    const payload = {
+      owner_auth_uid: authUid,          // ✅ مطلوب عشان RLS
+      pi_uid: piUser.uid,
+      pi_username: piUser.username,
+      name,
+      description,
+      stack,
+      needed_roles
+    };
+
+    const { error } = await sb.from('projects').insert(payload);
+    if(error) throw error;
+
+    closeModal();
+    toast('تم إضافة المشروع ✅');
+    await loadAll();
+  }catch(e){
+    console.error('createProject', e);
+    toast(e?.message || 'فشل إضافة المشروع (RLS?)', false);
+  }
+}
+
+async function deleteProject(id){
+  try{
+    if(!authUid) await refreshAuthUid();
+    const { error } = await sb.from('projects').delete().eq('id', id);
+    if(error) throw error;
+    toast('تم حذف المشروع');
+    await loadAll();
+  }catch(e){
+    console.error('deleteProject', e);
+    toast(e?.message || 'فشل الحذف', false);
+  }
+}
+
+async function verifyAndSetAuth(pi_uid, pi_username){
+  const sess = await ensureSession();
+  const access = sess?.access_token;
+  if(!access) throw new Error('no_session');
+
+  const r = await fetch('/api/pi/verify', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      pi_uid,
+      pi_username,
+      supabase_access_token: access
+    })
+  });
+
+  const j = await r.json().catch(()=> ({}));
+  if(!r.ok) throw new Error(j?.error || 'verify_failed');
+}
+
+async function login(){
+  try{
+    await ensureSession();
+    await refreshAuthUid();
+
+    Pi.init({version:"2.0", sandbox:false});
+    const auth = await Pi.authenticate(['username'], ()=>{});
+    piUser = auth.user;
+
+    await verifyAndSetAuth(piUser.uid, piUser.username);
+
+    isVerified = true;
+    localStorage.setItem('piUser', JSON.stringify(piUser));
+    localStorage.setItem('isVerified', '1');
+    setUIAuthed();
+
+    toast('تم تسجيل الدخول ✅');
+    await loadAll();
+  }catch(e){
+    console.error('login', e);
+    toast('فشل تسجيل الدخول/التحقق: ' + (e?.message || e), false);
+  }
+}
+
+async function logout(){
+  piUser = null;
+  isVerified = false;
+  localStorage.removeItem('piUser');
+  localStorage.removeItem('isVerified');
+  setUIAuthed();
+  toast('تم تسجيل الخروج');
+}
+
+document.getElementById('loginBtn').onclick = login;
+document.getElementById('logoutBtn').onclick = logout;
+
+document.getElementById('addPostBtn').onclick = openCreatePost;
+document.getElementById('addProjectBtn').onclick = openCreateProject;
+
+document.getElementById('search').addEventListener('input', (e)=>{
+  state.q = e.target.value || '';
+  renderPosts();
+  renderProjects();
+});
+
+function restoreLogin(){
+  try{
+    const saved = localStorage.getItem('piUser');
+    const v = localStorage.getItem('isVerified');
+    if(saved && v === '1'){
+      piUser = JSON.parse(saved);
+      isVerified = true;
+    }
+  }catch{}
+}
+
+async function init(){
+  try{
+    restoreLogin();
+    await ensureSession();
+    await refreshAuthUid();
+
+    setUIAuthed();
+    await loadAll();
+
+    // لو user محفوظ (verified سابقًا) جرّب تعمل verify سريعًا لتجديد الربط (اختياري)
+    // (لو /api/pi/verify لا يحتاج إعادة تأكيد دائمًا، سيترك كما هو)
+    if(isVerified && piUser?.uid && piUser?.username){
+      // ملاحظة: لو بتحب تمنع call إضافي، تقدر تشيل الجزء ده
+      try{ await verifyAndSetAuth(piUser.uid, piUser.username); } catch(_){}
+    }
+  }catch(e){
+    console.error('init', e);
+    toast('مشكلة في تهيئة الجلسة: ' + (e?.message || e), false);
+  }
+}
+init();
 </script>
 </body>
 </html>
