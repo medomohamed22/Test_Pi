@@ -1178,10 +1178,11 @@ async function createProject(){
 }
 
 // ====== Codes ======
-function codeCardHtml(x){
-  const canDelete = isAdmin();
+function codeCardHtml(x) {
+  // ✅ الحذف للأدمن أو لصاحب الكود
+  const canDelete = isVerified && authUid && (isAdmin() || x.owner_auth_uid === authUid);
   const official = (x.created_by_pi_username === ADMIN_PI_USERNAME);
-
+  
   return `
     <div class="codeCard">
       <div class="codeHead">
@@ -1194,7 +1195,11 @@ function codeCardHtml(x){
         </div>
         <div class="actions">
           <button class="iconBtn copyBtn" data-code="${encodeURIComponent(x.code || '')}" onclick="copyFromBtn(this)">نسخ</button>
-          ${canDelete ? `<button class="iconBtn" onclick="deleteCode('${x.id}')">حذف</button>` : ``}
+          ${
+            canDelete
+              ? `<button class="iconBtn" onclick="deleteCode('${x.id}','${x.owner_auth_uid || ''}')">حذف</button>`
+              : ``
+          }
         </div>
       </div>
       <div class="codeBox">${escapeHtml(x.code||'')}</div>
@@ -1296,16 +1301,19 @@ async function createCode(){
   }
 }
 
-async function deleteCode(id){
-  if(!isAdmin()) return toast('الحذف للأدمن فقط', false);
-  try{
+async function deleteCode(id, ownerAuthUid) {
+  // ✅ السماح للأدمن أو لصاحب الكود فقط
+  const allowed = isAdmin() || (isVerified && authUid && ownerAuthUid && ownerAuthUid === authUid);
+  if (!allowed) return toast('الحذف لصاحب الكود أو الأدمن فقط', false);
+  
+  try {
     const { error } = await sb.from('pi_codes').delete().eq('id', id);
-    if(error) throw error;
+    if (error) throw error;
+    
     toast('تم حذف الكود');
-    // الريلتيم هيشيله عند الكل
-    state.codes = state.codes.filter(x=>x.id !== id);
+    state.codes = state.codes.filter(x => x.id !== id);
     renderCodes();
-  }catch(e){
+  } catch (e) {
     console.error('deleteCode', e);
     toast(e?.message || 'فشل الحذف', false);
   }
