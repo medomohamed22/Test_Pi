@@ -67,7 +67,7 @@ exports.handler = async (event) => {
     }
     contents.push({ role: "user", parts: [{ text: message.slice(0, 12000) }] });
 
-    const modelEnv = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    const modelEnv = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
     const fallbackModel = process.env.GEMINI_FALLBACK_MODEL || "gemini-2.5-flash-lite";
 
     async function callGemini(modelName, payload) {
