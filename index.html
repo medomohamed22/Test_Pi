@@ -18,20 +18,25 @@
 }
 *{box-sizing:border-box;font-family:Tajawal,system-ui}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);padding-bottom:84px}
+body{margin:0;background:var(--bg);color:var(--text);padding-bottom:92px}
 
+/* Header */
 header{
   position:sticky;top:0;z-index:9;
   background:#fff;border-bottom:1px solid var(--border);
   padding:12px 14px;display:flex;gap:10px;align-items:center
 }
 header h1{margin:0;font-size:18px;color:var(--p);white-space:nowrap}
-header input{flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);outline:none}
+.headerRow{display:flex;gap:10px;align-items:center;flex:1;min-width:0}
+header input{
+  flex:1;min-width:0;
+  padding:10px 12px;border-radius:12px;border:1px solid var(--border);
+  outline:none
+}
 header input:focus{border-color:rgba(123,47,247,.5);box-shadow:0 0 0 3px rgba(123,47,247,.12)}
+.headerActions{display:flex;gap:8px;align-items:center;flex-shrink:0}
 header button{padding:10px 14px;border-radius:12px;border:none;background:var(--p);color:#fff;cursor:pointer}
 header button:disabled{opacity:.55;cursor:not-allowed}
-.headerRow{display:flex;gap:10px;align-items:center;flex:1}
-.headerActions{display:flex;gap:8px;align-items:center}
 .chip{
   display:inline-flex;align-items:center;gap:8px;
   padding:8px 10px;border-radius:999px;
@@ -42,15 +47,9 @@ header button:disabled{opacity:.55;cursor:not-allowed}
 .chip .dot{width:8px;height:8px;border-radius:99px;background:var(--mut)}
 .chip.ok .dot{background:#29c36a}
 
+/* Layout */
 main{padding:14px;max-width:1100px;margin:0 auto}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-@media (max-width:520px){
-  header{padding:10px 10px}
-  header h1{font-size:16px}
-  .grid{grid-template-columns:1fr}
-  main{padding:10px}
-}
-
 .card{
   background:var(--card);border-radius:var(--r);padding:14px;
   box-shadow:var(--shadow);border:1px solid rgba(230,224,255,.85)
@@ -76,14 +75,20 @@ main{padding:14px;max-width:1100px;margin:0 auto}
 .primaryBtn:hover{filter:brightness(.98)}
 .hidden{display:none}
 
+/* Bottom nav */
 nav{
   position:fixed;bottom:0;left:0;right:0;z-index:8;
   background:#fff;border-top:1px solid var(--border);
-  display:flex;justify-content:space-around;padding:8px
+  display:flex;justify-content:space-around;padding:8px;
+  padding-bottom:max(8px, env(safe-area-inset-bottom))
 }
-nav button{background:none;border:none;color:var(--mut);cursor:pointer;padding:10px 8px;border-radius:12px}
+nav button{
+  background:none;border:none;color:var(--mut);cursor:pointer;
+  padding:10px 10px;border-radius:12px;min-width:90px
+}
 nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)}
 
+/* Toast */
 .toast{
   position:fixed;top:14px;left:14px;right:14px;z-index:99;
   display:none;align-items:center;justify-content:space-between;gap:10px;
@@ -94,19 +99,21 @@ nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)
 .toast b{color:var(--p)}
 .toast .x{cursor:pointer;border:none;background:none;font-size:18px;color:var(--mut)}
 
+/* Modal */
 .modalWrap{
   position:fixed;inset:0;z-index:98;
   background:rgba(31,31,46,.35);
-  display:none;align-items:center;justify-content:center;padding:16px
+  display:none;align-items:center;justify-content:center;
+  padding:16px;padding-bottom:max(16px, env(safe-area-inset-bottom))
 }
 .modalWrap.show{display:flex}
 .modal{
   width:min(560px,100%);
   background:#fff;border-radius:18px;border:1px solid var(--border);
   box-shadow:0 20px 60px rgba(31,31,46,.25);
-  padding:14px
+  padding:14px;max-height:86vh;overflow:auto
 }
-.modalHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.modalHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;position:sticky;top:0;background:#fff;padding-top:2px}
 .modalHead h2{margin:0;font-size:16px;color:var(--p)}
 .closeBtn{border:none;background:none;font-size:20px;color:var(--mut);cursor:pointer}
 .field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
@@ -123,7 +130,6 @@ nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)
   animation:sh 1.2s infinite linear
 }
 @keyframes sh{0%{background-position:0 0}100%{background-position:800px 0}}
-
 hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 .small{font-size:12px}
 .badge{
@@ -136,7 +142,7 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 
 /* Floating + */
 .fab{
-  position:fixed;left:14px;bottom:84px;z-index:95;
+  position:fixed;left:14px;bottom:90px;z-index:95;
   width:54px;height:54px;border-radius:999px;border:none;
   background:var(--p);color:#fff;font-size:28px;line-height:0;
   box-shadow:0 16px 40px rgba(123,47,247,.28);
@@ -144,14 +150,14 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 }
 .fab:active{transform:scale(.98)}
 .fabMenu{
-  position:fixed;left:14px;bottom:144px;z-index:95;
+  position:fixed;left:14px;bottom:152px;z-index:95;
   display:none;flex-direction:column;gap:10px
 }
 .fabItem{
   display:flex;align-items:center;gap:10px;
   background:#fff;border:1px solid var(--border);
   padding:10px 12px;border-radius:14px;box-shadow:var(--shadow);
-  cursor:pointer;min-width:170px
+  cursor:pointer;min-width:190px
 }
 .fabItem b{color:var(--p)}
 .fabBackdrop{position:fixed;inset:0;z-index:94;background:transparent;display:none}
@@ -159,14 +165,14 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 /* Chat UI */
 .chatWrap{display:grid;grid-template-columns:1fr;gap:12px}
 .chatBox{
-  height:54vh;min-height:320px;max-height:560px;
+  height:56vh;min-height:320px;max-height:620px;
   border:1px solid var(--border);border-radius:16px;background:#fff;
   box-shadow:var(--shadow);
   display:flex;flex-direction:column;overflow:hidden
 }
 .chatMsgs{padding:12px;overflow:auto;display:flex;flex-direction:column;gap:10px}
 .bubble{
-  max-width:80%;padding:10px 12px;border-radius:14px;border:1px solid var(--border);
+  max-width:84%;padding:10px 12px;border-radius:14px;border:1px solid var(--border);
   background:#fff;line-height:1.7
 }
 .bubble.me{margin-right:auto;background:rgba(123,47,247,.08);border-color:rgba(123,47,247,.18)}
@@ -177,28 +183,22 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
   padding:10px;display:flex;gap:8px;align-items:center
 }
 .chatSend input[type="text"]{
-  flex:1;border:1px solid var(--border);border-radius:12px;padding:10px;outline:none
+  flex:1;min-width:0;border:1px solid var(--border);border-radius:12px;padding:10px;outline:none
 }
 .fileBtn{
   border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px;cursor:pointer
 }
 .fileBtn input{display:none}
 
-/* ✅ Comments modal: fixed height + scroll list (mobile friendly) */
-.cList{
-  max-height:42vh;
-  overflow:auto;
-  padding-right:4px;
-}
-@media (max-width:520px){
-  .cList{max-height:46vh}
-}
+/* Comments modal: fixed height + scroll list */
+.cList{max-height:42vh;overflow:auto;padding-right:4px}
+@media (max-width:520px){ .cList{max-height:46vh} }
 .cItem{
   padding:10px;border:1px solid var(--border);border-radius:12px;
   margin:8px 0;background:#fff
 }
 
-/* ✅ Code cards */
+/* Code cards */
 .codeCard{
   border:1px solid var(--border);
   border-radius:14px;
@@ -209,22 +209,32 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
   flex-direction:column;
   gap:10px;
 }
-.codeHead{
-  display:flex;align-items:center;justify-content:space-between;gap:10px
-}
+.codeHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .codeTitle{font-weight:900;color:var(--p)}
 .codeBox{
   direction:ltr;
-  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size:12px;
-  line-height:1.6;
-  white-space:pre;
-  overflow:auto;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  font-size:12px;line-height:1.6;
+  white-space:pre;overflow:auto;
   border:1px solid var(--border);
-  background:#faf8ff;
-  border-radius:12px;
-  padding:10px;
-  max-height:220px;
+  background:#faf8ff;border-radius:12px;
+  padding:10px;max-height:220px;
+}
+
+/* Mobile refinements */
+@media (max-width:520px){
+  header{padding:10px 10px;gap:8px}
+  header h1{font-size:16px}
+  .chip{padding:8px 9px}
+  .grid{grid-template-columns:1fr}
+  main{padding:10px}
+  nav button{min-width:auto;padding:10px 8px}
+  .fab{left:12px;bottom:96px}
+  .fabMenu{left:12px;bottom:160px}
+  .actions .iconBtn{padding:8px 9px}
+}
+@media (max-width:380px){
+  header h1{display:none}
 }
 </style>
 </head>
@@ -239,7 +249,6 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
     <div class="headerActions">
       <span class="chip" id="userChip"><span class="dot"></span><span id="userChipText">ضيف</span></span>
       <button id="loginBtn">تسجيل دخول Pi</button>
-      <!-- ✅ logout removed -->
     </div>
   </div>
 </header>
@@ -257,7 +266,7 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
         </div>
         <div class="actions">
           <button class="iconBtn" onclick="leaveGroup()">مغادرة</button>
-          <button class="btnGhost btnSmall" onclick="show('projects', document.querySelector('[data-tab=projects]'))">رجوع</button>
+          <button class="iconBtn" onclick="show('projects', document.querySelector('[data-tab=projects]'))">رجوع</button>
         </div>
       </div>
       <hr />
@@ -278,7 +287,6 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
     </div>
   </section>
 
-  <!-- ✅ Codes page -->
   <section id="codes" class="hidden">
     <div class="card" style="margin-bottom:14px">
       <h3 style="margin:0 0 6px">أكواد Pi</h3>
@@ -286,7 +294,6 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
     </div>
     <section id="codesGrid" class="grid"></section>
   </section>
-
 </main>
 
 <nav>
@@ -427,19 +434,25 @@ function setUIAuthed(){
   }
 }
 
+/* Navigation */
 function show(id, btn){
   if(id !== 'group') stopProjectRealtime();
+
   document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
+
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+
+  if(id === 'codes'){
+    loadCodesOnly();
+  }
 }
 
 /* Load */
 async function loadAll(){
   setSkeleton('home', 6);
   setSkeleton('projects', 6);
-  // codes skeleton (optional)
   document.getElementById('codesGrid').innerHTML = new Array(4).fill(0).map(()=>`<div class="skel"></div>`).join('');
 
   const [postsR, projectsR, likesR, commentsR, membersR, codesR] = await Promise.all([
@@ -447,8 +460,7 @@ async function loadAll(){
     sb.from('projects').select('*').order('created_at',{ascending:false}),
     sb.from('post_likes').select('post_id, owner_auth_uid'),
     sb.from('post_comments').select('post_id'),
-    (authUid ? sb.from('project_members').select('project_id').eq('member_auth_uid', authUid) : Promise.resolve({data:[]}))
-    ,
+    (authUid ? sb.from('project_members').select('project_id').eq('member_auth_uid', authUid) : Promise.resolve({data:[]})),
     sb.from('pi_codes').select('*').order('created_at',{ascending:false})
   ]);
 
@@ -474,7 +486,6 @@ async function loadAll(){
   });
 
   state.myMemberProjects = new Set((membersR.data||[]).map(x=>x.project_id));
-
   state.codes = codesR.data || [];
 
   renderPosts();
@@ -592,7 +603,7 @@ async function openComments(postId){
       </div>
       <div class="footerBtns">
         <button class="primaryBtn" onclick="addComment('${postId}')">نشر التعليق</button>
-        <button class="btnGhost btnSmall" onclick="closeModal()">إغلاق</button>
+        <button class="iconBtn" onclick="closeModal()">إغلاق</button>
       </div>
     `);
 
@@ -655,7 +666,7 @@ async function deletePost(id){
   }
 }
 
-/* Projects as groups */
+/* Projects */
 function renderProjects(){
   const c=document.getElementById('projects');
   const q = (state.q || '').toLowerCase().trim();
@@ -779,6 +790,7 @@ async function loadProjectMessages(){
   }
   renderMessages(data||[]);
 }
+
 function renderMessages(list){
   const wrap = document.getElementById('chatMsgs');
   wrap.innerHTML = (list||[]).map(m=>{
@@ -794,6 +806,7 @@ function renderMessages(list){
   }).join('');
   wrap.scrollTop = wrap.scrollHeight + 9999;
 }
+
 function startProjectRealtime(){
   stopProjectRealtime();
   activeProjectSub = sb.channel('project_messages_'+activeProject.id)
@@ -817,6 +830,7 @@ function startProjectRealtime(){
     )
     .subscribe();
 }
+
 function stopProjectRealtime(){
   if(activeProjectSub){
     sb.removeChannel(activeProjectSub);
@@ -868,6 +882,7 @@ async function insertProjectMessage(text, imageUrl){
   const { error } = await sb.from('project_messages').insert(payload);
   if(error) throw error;
 }
+
 async function sendMessage(){
   if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
   if(!activeProject?.id) return toast('افتح جروب مشروع الأول', false);
@@ -904,15 +919,17 @@ function openCreatePost(){
     </div>
     <div class="footerBtns">
       <button class="primaryBtn" onclick="createPost()">نشر</button>
-      <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
+      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
     </div>
   `);
 }
+
 async function createPost(){
   try{
     const title = (document.getElementById('p_title').value||'').trim();
     const content = (document.getElementById('p_content').value||'').trim();
     const tags = (document.getElementById('p_tags').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+
     if(!title || !content) return toast('اكتب العنوان والمحتوى', false);
     if(!authUid) await refreshAuthUid();
 
@@ -922,6 +939,7 @@ async function createPost(){
       pi_username: piUser.username,
       title, content, tags
     };
+
     const { error } = await sb.from('posts').insert(payload);
     if(error) throw error;
 
@@ -930,7 +948,7 @@ async function createPost(){
     await loadAll();
   }catch(e){
     console.error('createPost', e);
-    toast(e?.message || 'فشل نشر البوست (RLS?)', false);
+    toast(e?.message ||.extract?.() || 'فشل نشر البوست (RLS?)', false);
   }
 }
 
@@ -956,10 +974,11 @@ function openCreateProject(){
     </div>
     <div class="footerBtns">
       <button class="primaryBtn" onclick="createProject()">نشر المشروع</button>
-      <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
+      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
     </div>
   `);
 }
+
 async function createProject(){
   try{
     const name = (document.getElementById('pr_name').value||'').trim();
@@ -998,7 +1017,7 @@ async function createProject(){
   }
 }
 
-/* ✅ Codes */
+/* Codes */
 function renderCodes(){
   const grid = document.getElementById('codesGrid');
   const q = (state.q || '').toLowerCase().trim();
@@ -1060,7 +1079,7 @@ function openCreateCode(){
     </div>
     <div class="footerBtns">
       <button class="primaryBtn" onclick="createCode()">حفظ</button>
-      <button class="btnGhost btnSmall" onclick="closeModal()">إلغاء</button>
+      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
     </div>
   `);
 }
@@ -1085,7 +1104,9 @@ async function createCode(){
 
     closeModal();
     toast('تم حفظ الكود ✅');
-    await loadAll();
+
+    await loadCodesOnly();
+    // لو المستخدم لسه على الرئيسية/مشاريع، هنسيبه
   }catch(e){
     console.error('createCode', e);
     toast(e?.message || 'فشل حفظ الكود (RLS?)', false);
@@ -1098,7 +1119,7 @@ async function deleteCode(id){
     const { error } = await sb.from('pi_codes').delete().eq('id', id);
     if(error) throw error;
     toast('تم حذف الكود');
-    await loadAll();
+    await loadCodesOnly();
   }catch(e){
     console.error('deleteCode', e);
     toast(e?.message || 'فشل الحذف', false);
@@ -1169,6 +1190,29 @@ document.getElementById('search').addEventListener('input', (e)=>{
   renderProjects();
   renderCodes();
 });
+
+/* Codes-only loader (fix: always fresh when opening tab) */
+async function loadCodesOnly(){
+  const grid = document.getElementById('codesGrid');
+  if(!grid) return;
+
+  grid.innerHTML = new Array(4).fill(0).map(()=>`<div class="skel"></div>`).join('');
+
+  const { data, error } = await sb.from('pi_codes').select('*').order('created_at', { ascending:false });
+
+  if(error){
+    console.error('pi_codes select error =>', error);
+    grid.innerHTML = `
+      <div class="card">
+        <h3>مشكلة في تحميل الأكواد</h3>
+        <div class="mut">${escapeHtml(error.message || 'unknown error')}</div>
+      </div>`;
+    return;
+  }
+
+  state.codes = data || [];
+  renderCodes();
+}
 
 async function init(){
   try{
