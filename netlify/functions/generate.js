@@ -1,32 +1,34 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-exports.handler = async (event, context) => {
-  // إعدادات الـ CORS للسماح بالاتصال من واجهة الموقع
+exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
 
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers };
-  }
+  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers };
 
   try {
     const { prompt } = JSON.parse(event.body);
 
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("API Key is missing in Netlify environment variables.");
-    }
+    // --- نظام تدوير المفاتيح لزيادة الليمت ---
+    // يمكنك وضع مفتاح واحد أو عدة مفاتيح في Netlify (GEMINI_API_KEY, GEMINI_API_KEY_2, إلخ)
+    const apiKeys = [
+      process.env.GEMINI_API_KEY,
+      process.env.GEMINI_API_KEY_2, // اختياري: أضف مفتاح ثانٍ من حساب جيميل آخر
+    ].filter(k => k); // تصفية المفاتيح الموجودة فقط
 
-    // إعداد الـ AI باستخدام المفتاح الخاص بك
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    // اختيار مفتاح عشوائي عند كل طلب لتوزيع الضغط
+    const selectedKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+    
+    if (!selectedKey) throw new Error("API Key is missing!");
 
-    // استخدام النموذج الذي طلبته بالضبط
-    // ملاحظة: إذا ظهر خطأ 404، استبدله بـ "gemini-2.0-flash"
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-image" });
+    const genAI = new GoogleGenerativeAI(selectedKey);
 
-    // إرسال الطلب بنفس هيكلة الكود الخاص بك
+    // --- تغيير الموديل هنا لأنه المستقر حالياً لتوليد الصور ---
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }]
     });
@@ -34,22 +36,22 @@ exports.handler = async (event, context) => {
     const response = await result.response;
     let imageBase64 = "";
 
-    // البحث عن الصورة داخل أجزاء الاستجابة (Parts) كما في الكود الخاص بك
-    const parts = response.candidates[0].content.parts;
-    for (const part of parts) {
-      if (part.inlineData) {
-        imageBase64 = part.inlineData.data; // استخراج بيانات الـ Base64
-        break;
+    // استخراج الصورة من أجزاء الاستجابة
+    if (response.candidates && response.candidates[0].content.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          imageBase64 = part.inlineData.data;
+          break;
+        }
       }
     }
 
     if (!imageBase64) {
-      // محاولة استخراج النص إذا لم تكن هناك صورة (ربما الموديل رد بنص فقط)
-      let textResponse = response.text();
-      throw new Error("الموديل لم يرسل صورة، الرد كان: " + textResponse);
+        // لو الموديل رد بنص بس (مثلاً رفض يولد صورة بسبب سياسات المحتوى)
+        const textResponse = response.text();
+        throw new Error("جوجل رفضت توليد الصورة، الرد كان: " + textResponse);
     }
 
-    // إرسال الصورة بنجاح
     return {
       statusCode: 200,
       headers,
@@ -57,18 +59,17 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error("Error Details:", error);
+    console.error("Gemini Error:", error.message);
     
-    // معالجة خطأ الليمت (Quota) لتنبيه المستخدم
-    let errorMessage = error.message;
-    if (errorMessage.includes("429")) {
-      errorMessage = "تجاوزت الحد المسموح به. انتظر دقيقة ثم حاول مجدداً.";
+    let userFriendlyError = error.message;
+    if (userFriendlyError.includes("429")) {
+        userFriendlyError = "تجاوزت الحد المسموح (Quota). انتظر 60 ثانية أو استخدم VPN أمريكا لتجديد الليمت.";
     }
 
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: errorMessage }),
+      body: JSON.stringify({ error: userFriendlyError }),
     };
   }
 };
