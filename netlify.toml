@@ -1,17 +1,4 @@
 [build]
-  functions = "netlify/functions"
-  publish = "."
-
-[[redirects]]
-  from = "/api/chat-stream"
-  to = "/.netlify/functions/chat-stream"
-  status = 200
-
-[[redirects]]
-  from = "/api/chat"
-  to = "/.netlify/functions/chat"
-  status = 200
-[build]
   publish = "."
   command = "npm install"
 
