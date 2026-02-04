@@ -279,14 +279,25 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
   </section>
 
   <!-- ✅ Codes page -->
-  <section id="codes" class="hidden">
-    <div class="card" style="margin-bottom:14px">
-      <h3 style="margin:0 0 6px">أكواد Pi</h3>
-      <div class="mut">قسم الأكواد + زر نسخ. الإضافة مسموحة فقط للأدمن: <b>medomohamed22</b></div>
-    </div>
-    <section id="codesGrid" class="grid"></section>
-  </section>
-
+<!-- ✅ Codes page -->
+<section id="codes" class="hidden">
+  <div class="card" style="margin-bottom:14px">
+    <h3 style="margin:0 0 6px">أكواد Pi</h3>
+    <div class="mut">قسم الأكواد + زر نسخ. (الأدمن: <b>medomohamed22</b>)</div>
+  </div>
+  
+  <div class="card" style="margin-bottom:14px">
+    <h3 style="margin:0 0 6px;color:#7B2FF7">أكواد الأدمن ⭐</h3>
+    <div class="mut">الأكواد الرسمية من: <b>medomohamed22</b></div>
+  </div>
+  <section id="codesAdminGrid" class="grid"></section>
+  
+  <div class="card" style="margin:14px 0">
+    <h3 style="margin:0 0 6px;color:#7B2FF7">أكواد أخرى 🌍</h3>
+    <div class="mut">مساهمات المجتمع</div>
+  </div>
+  <section id="codesOtherGrid" class="grid"></section>
+</section>
 </main>
 
 <nav>
@@ -349,12 +360,19 @@ let state = {
 /* UI */
 function toast(msg, ok=true){
   const el=document.getElementById('toast');
-  document.getElementById('toastText').innerHTML = ok ? `<b>✔</b> ${escapeHtml(msg)}` : `<b>⚠</b> ${escapeHtml(msg)}`;
+  if(!el) return;
+  const textEl = document.getElementById('toastText');
+  if(textEl){
+    textEl.innerHTML = ok ? `<b>✔</b> ${escapeHtml(msg)}` : `<b>⚠</b> ${escapeHtml(msg)}`;
+  }
   el.classList.add('show');
   clearTimeout(window.__t);
   window.__t=setTimeout(()=>hideToast(), 2500);
 }
-function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+function hideToast(){
+  const el=document.getElementById('toast');
+  if(el) el.classList.remove('show');
+}
 function escapeHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
@@ -367,12 +385,16 @@ function openModal(title, innerHtml){
     if(first) first.focus();
   }, 0);
 }
-function closeModal(){ document.getElementById('modalWrap').classList.remove('show'); }
+function closeModal(){
+  const w=document.getElementById('modalWrap');
+  if(w) w.classList.remove('show');
+}
 function overlayClose(e){ if(e.target.id === 'modalWrap') closeModal(); }
 window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
 
 function setSkeleton(containerId, count=6){
   const c=document.getElementById(containerId);
+  if(!c) return;
   c.innerHTML = new Array(count).fill(0).map(()=>`<div class="skel"></div>`).join('');
 }
 
@@ -380,6 +402,7 @@ function setSkeleton(containerId, count=6){
 function toggleFab(force){
   const menu = document.getElementById('fabMenu');
   const back = document.getElementById('fabBackdrop');
+  if(!menu || !back) return;
   const show = (typeof force === 'boolean') ? force : (menu.style.display !== 'flex');
   menu.style.display = show ? 'flex' : 'none';
   back.style.display = show ? 'block' : 'none';
@@ -412,35 +435,47 @@ function setUIAuthed(){
   const addCodeItem = document.getElementById('addCodeItem');
 
   if(isVerified && piUser?.username){
-    chip.classList.add('ok');
-    chipText.textContent = piUser.username;
-    loginBtn.classList.add('hidden');
-    fabBtn.style.display = 'block';
-    addCodeItem.style.display = isAdmin() ? 'flex' : 'none';
+    chip?.classList.add('ok');
+    if(chipText) chipText.textContent = piUser.username;
+    loginBtn?.classList.add('hidden');
+    if(fabBtn) fabBtn.style.display = 'block';
+
+    // ✅ أي حد يقدر يضيف كود (مش الأدمن بس)
+    if(addCodeItem) addCodeItem.style.display = 'flex';
   }else{
-    chip.classList.remove('ok');
-    chipText.textContent = 'ضيف';
-    loginBtn.classList.remove('hidden');
-    fabBtn.style.display = 'none';
-    addCodeItem.style.display = 'none';
+    chip?.classList.remove('ok');
+    if(chipText) chipText.textContent = 'ضيف';
+    loginBtn?.classList.remove('hidden');
+    if(fabBtn) fabBtn.style.display = 'none';
+    if(addCodeItem) addCodeItem.style.display = 'none';
     toggleFab(false);
   }
 }
 
 function show(id, btn){
   if(id !== 'group') stopProjectRealtime();
+
   document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
+  const sec = document.getElementById(id);
+  if(sec) sec.classList.remove('hidden');
+
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+
+  // ✅ لما تفتح تبويب الأكواد ارسم الأكواد فوراً
+  if(id === 'codes') renderCodes();
 }
 
 /* Load */
 async function loadAll(){
   setSkeleton('home', 6);
   setSkeleton('projects', 6);
-  // codes skeleton (optional)
-  document.getElementById('codesGrid').innerHTML = new Array(4).fill(0).map(()=>`<div class="skel"></div>`).join('');
+
+  // ✅ Skeleton للأكواد حسب التقسيم الجديد
+  const adminGrid = document.getElementById('codesAdminGrid');
+  const otherGrid = document.getElementById('codesOtherGrid');
+  if(adminGrid) adminGrid.innerHTML = new Array(2).fill(0).map(()=>`<div class="skel"></div>`).join('');
+  if(otherGrid) otherGrid.innerHTML = new Array(4).fill(0).map(()=>`<div class="skel"></div>`).join('');
 
   const [postsR, projectsR, likesR, commentsR, membersR, codesR] = await Promise.all([
     sb.from('posts').select('*').order('created_at',{ascending:false}),
@@ -474,7 +509,6 @@ async function loadAll(){
   });
 
   state.myMemberProjects = new Set((membersR.data||[]).map(x=>x.project_id));
-
   state.codes = codesR.data || [];
 
   renderPosts();
@@ -493,6 +527,8 @@ function setTag(t){
 /* Posts */
 function renderPosts(){
   const c=document.getElementById('home');
+  if(!c) return;
+
   const q = (state.q || '').toLowerCase().trim();
   const tag = state.activeTag;
 
@@ -655,9 +691,11 @@ async function deletePost(id){
   }
 }
 
-/* Projects as groups */
+/* Projects */
 function renderProjects(){
   const c=document.getElementById('projects');
+  if(!c) return;
+
   const q = (state.q || '').toLowerCase().trim();
   const tag = state.activeTag;
 
@@ -766,6 +804,7 @@ async function openGroup(projectId, projectName){
 
 async function loadProjectMessages(){
   const wrap = document.getElementById('chatMsgs');
+  if(!wrap) return;
   wrap.innerHTML = `<div class="mut">تحميل الرسائل...</div>`;
   const { data, error } = await sb.from('project_messages')
     .select('*')
@@ -781,6 +820,7 @@ async function loadProjectMessages(){
 }
 function renderMessages(list){
   const wrap = document.getElementById('chatMsgs');
+  if(!wrap) return;
   wrap.innerHTML = (list||[]).map(m=>{
     const me = (m.sender_auth_uid === authUid);
     return `
@@ -801,6 +841,7 @@ function startProjectRealtime(){
       { event: 'INSERT', schema: 'public', table: 'project_messages', filter: `project_id=eq.${activeProject.id}` },
       (payload) => {
         const wrap = document.getElementById('chatMsgs');
+        if(!wrap) return;
         const m = payload.new;
         const me = (m.sender_auth_uid === authUid);
         const html = `
@@ -838,7 +879,7 @@ async function uploadImageToStorage(file){
   return data.publicUrl;
 }
 
-document.getElementById('imgInput').addEventListener('change', async (e)=>{
+document.getElementById('imgInput')?.addEventListener('change', async (e)=>{
   const f = e.target.files?.[0];
   if(!f) return;
   if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
@@ -875,7 +916,7 @@ async function sendMessage(){
   try{
     if(!authUid) await refreshAuthUid();
     const input = document.getElementById('msgText');
-    const text = (input.value||'').trim();
+    const text = (input?.value||'').trim();
     if(!text) return;
     input.value = '';
     await insertProjectMessage(text, null);
@@ -910,9 +951,9 @@ function openCreatePost(){
 }
 async function createPost(){
   try{
-    const title = (document.getElementById('p_title').value||'').trim();
-    const content = (document.getElementById('p_content').value||'').trim();
-    const tags = (document.getElementById('p_tags').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const title = (document.getElementById('p_title')?.value||'').trim();
+    const content = (document.getElementById('p_content')?.value||'').trim();
+    const tags = (document.getElementById('p_tags')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
     if(!title || !content) return toast('اكتب العنوان والمحتوى', false);
     if(!authUid) await refreshAuthUid();
 
@@ -962,10 +1003,10 @@ function openCreateProject(){
 }
 async function createProject(){
   try{
-    const name = (document.getElementById('pr_name').value||'').trim();
-    const description = (document.getElementById('pr_desc').value||'').trim();
-    const stack = (document.getElementById('pr_stack').value||'').split(',').map(s=>s.trim()).filter(Boolean);
-    const needed_roles = (document.getElementById('pr_roles').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const name = (document.getElementById('pr_name')?.value||'').trim();
+    const description = (document.getElementById('pr_desc')?.value||'').trim();
+    const stack = (document.getElementById('pr_stack')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const needed_roles = (document.getElementById('pr_roles')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
 
     if(!name || !description) return toast('اكتب اسم المشروع والوصف', false);
     if(!authUid) await refreshAuthUid();
@@ -998,35 +1039,57 @@ async function createProject(){
   }
 }
 
-/* ✅ Codes */
-function renderCodes(){
-  const grid = document.getElementById('codesGrid');
-  const q = (state.q || '').toLowerCase().trim();
+/* ✅ Codes (Admin + Other) */
+function codeCardHtml(x){
+  const canDelete = isAdmin(); // ✅ الحذف للأدمن فقط
+  const official = (x.created_by_pi_username === ADMIN_PI_USERNAME);
 
-  const filtered = (state.codes||[]).filter(x=>{
-    const inText = !q || (x.title||'').toLowerCase().includes(q) || (x.code||'').toLowerCase().includes(q);
-    return inText;
-  });
-
-  grid.innerHTML = filtered.map(x=>`
+  return `
     <div class="codeCard">
       <div class="codeHead">
         <div>
           <div class="codeTitle">${escapeHtml(x.title)}</div>
-          <div class="mut small">${escapeHtml(x.created_by_pi_username||'')}</div>
+          <div class="mut small">
+            ${escapeHtml(x.created_by_pi_username||'')}
+            ${official ? ` <span class="badge">⭐ رسمي</span>` : ``}
+          </div>
         </div>
         <div class="actions">
           <button class="iconBtn" onclick="copyText(${JSON.stringify(x.code||'')})">نسخ</button>
-          ${isAdmin() ? `<button class="iconBtn" onclick="deleteCode('${x.id}')">حذف</button>` : ``}
+          ${canDelete ? `<button class="iconBtn" onclick="deleteCode('${x.id}')">حذف</button>` : ``}
         </div>
       </div>
       <div class="codeBox">${escapeHtml(x.code||'')}</div>
     </div>
-  `).join('');
+  `;
+}
 
-  if(!filtered.length){
-    grid.innerHTML = `<div class="card"><h3>لا يوجد أكواد</h3><div class="mut">الأدمن يقدر يضيف أكواد من زر +</div></div>`;
-  }
+function renderCodes() {
+  const adminGrid = document.getElementById('codesAdminGrid');
+  const otherGrid = document.getElementById('codesOtherGrid');
+
+  // ✅ حماية من null
+  if (!adminGrid || !otherGrid) return;
+
+  const q = (state.q || '').toLowerCase().trim();
+
+  const all = (state.codes || []).filter(x => {
+    return !q ||
+      (x.title || '').toLowerCase().includes(q) ||
+      (x.code || '').toLowerCase().includes(q) ||
+      (x.created_by_pi_username || '').toLowerCase().includes(q);
+  });
+
+  const adminList = all.filter(x => x.created_by_pi_username === ADMIN_PI_USERNAME);
+  const otherList = all.filter(x => x.created_by_pi_username !== ADMIN_PI_USERNAME);
+
+  adminGrid.innerHTML = adminList.length
+    ? adminList.map(codeCardHtml).join('')
+    : `<div class="card"><h3>لا يوجد أكواد أدمن</h3><div class="mut">لسه مفيش أكواد رسمية.</div></div>`;
+
+  otherGrid.innerHTML = otherList.length
+    ? otherList.map(codeCardHtml).join('')
+    : `<div class="card"><h3>لا يوجد أكواد أخرى</h3><div class="mut">شجّع الناس تضيف أكواد.</div></div>`;
 }
 
 function copyText(t){
@@ -1046,9 +1109,9 @@ function fallbackCopy(text){
 }
 
 function openCreateCode(){
-  if(!isAdmin()) return toast('الإضافة للأدمن فقط', false);
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
 
-  openModal('إضافة كود (Admin)', `
+  openModal('إضافة كود', `
     <div class="field">
       <label>اسم الكود</label>
       <input id="cd_title" placeholder="مثال: Pi Login snippet" />
@@ -1056,7 +1119,7 @@ function openCreateCode(){
     <div class="field">
       <label>الكود</label>
       <textarea id="cd_code" placeholder="الصق الكود هنا..."></textarea>
-      <div class="help">سيظهر زر نسخ للناس.</div>
+      <div class="help">هيظهر للناس زر نسخ.</div>
     </div>
     <div class="footerBtns">
       <button class="primaryBtn" onclick="createCode()">حفظ</button>
@@ -1066,16 +1129,16 @@ function openCreateCode(){
 }
 
 async function createCode(){
-  if(!isAdmin()) return toast('الإضافة للأدمن فقط', false);
+  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
   try{
     if(!authUid) await refreshAuthUid();
-    const title = (document.getElementById('cd_title').value||'').trim();
-    const code  = (document.getElementById('cd_code').value||'').trim();
+    const title = (document.getElementById('cd_title')?.value||'').trim();
+    const code  = (document.getElementById('cd_code')?.value||'').trim();
     if(!title || !code) return toast('اكتب اسم الكود والكود', false);
 
     const payload = {
       owner_auth_uid: authUid,
-      created_by_pi_username: piUser.username,
+      created_by_pi_username: piUser?.username || '',
       title,
       code
     };
@@ -1086,6 +1149,7 @@ async function createCode(){
     closeModal();
     toast('تم حفظ الكود ✅');
     await loadAll();
+    renderCodes();
   }catch(e){
     console.error('createCode', e);
     toast(e?.message || 'فشل حفظ الكود (RLS?)', false);
@@ -1093,12 +1157,13 @@ async function createCode(){
 }
 
 async function deleteCode(id){
-  if(!isAdmin()) return toast('للأدمن فقط', false);
+  if(!isAdmin()) return toast('الحذف للأدمن فقط', false);
   try{
     const { error } = await sb.from('pi_codes').delete().eq('id', id);
     if(error) throw error;
     toast('تم حذف الكود');
     await loadAll();
+    renderCodes();
   }catch(e){
     console.error('deleteCode', e);
     toast(e?.message || 'فشل الحذف', false);
@@ -1161,9 +1226,9 @@ function restoreLogin(){
   }catch{}
 }
 
-document.getElementById('loginBtn').onclick = login;
+document.getElementById('loginBtn')?.addEventListener('click', login);
 
-document.getElementById('search').addEventListener('input', (e)=>{
+document.getElementById('search')?.addEventListener('input', (e)=>{
   state.q = e.target.value || '';
   renderPosts();
   renderProjects();
