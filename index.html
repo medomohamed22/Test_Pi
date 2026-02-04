@@ -3,1411 +3,322 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Pi Dev Hub</title>
-
+<title>Purple Gemini Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
 <style>
 :root{
-  --p:#7B2FF7;--p2:#9B6DFF;--bg:#F4F0FF;--card:#fff;
-  --text:#1F1F2E;--mut:#6B6B85;--border:#E6E0FF;
-  --shadow:0 8px 24px rgba(123,47,247,.12);
-  --r:16px;
+  --p:#7B2FF7; --p2:#9B6DFF;
+  --bg:#F6F3FF; --card:#FFFFFF;
+  --stroke:#E6E0FF;
+  --text:#1F1F2E; --mut:#6B6B85;
+
+  --userBg:#EDE7FF;
+  --aiBg:#FFFFFF;
+
+  --r:18px;
+  --shadow: 0 10px 28px rgba(123,47,247,.10);
 }
 *{box-sizing:border-box;font-family:Tajawal,system-ui}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);padding-bottom:84px}
-
-header{
-  position:sticky;top:0;z-index:9;
-  background:#fff;border-bottom:1px solid var(--border);
-  padding:12px 14px;display:flex;gap:10px;align-items:center
-}
-header h1{margin:0;font-size:18px;color:var(--p);white-space:nowrap}
-header input{flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);outline:none}
-header input:focus{border-color:rgba(123,47,247,.5);box-shadow:0 0 0 3px rgba(123,47,247,.12)}
-header button{padding:10px 14px;border-radius:12px;border:none;background:var(--p);color:#fff;cursor:pointer}
-header button:disabled{opacity:.55;cursor:not-allowed}
-.headerRow{display:flex;gap:10px;align-items:center;flex:1}
-.headerActions{display:flex;gap:8px;align-items:center}
-.chip{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:8px 10px;border-radius:999px;
-  border:1px solid var(--border);background:#fff;color:var(--text);
-  box-shadow:0 4px 14px rgba(123,47,247,.08);
-  font-size:13px;white-space:nowrap
-}
-.chip .dot{width:8px;height:8px;border-radius:99px;background:var(--mut)}
-.chip.ok .dot{background:#29c36a}
-
-main{padding:14px;max-width:1100px;margin:0 auto}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-@media (max-width:520px){
-  header{padding:10px 10px}
-  header h1{font-size:16px}
-  .grid{grid-template-columns:1fr}
-  main{padding:10px}
-}
-
-.card{
-  background:var(--card);border-radius:var(--r);padding:14px;
-  box-shadow:var(--shadow);border:1px solid rgba(230,224,255,.85)
-}
-.card h3{margin:0 0 8px;color:var(--p);font-size:16px}
-.mut{color:var(--mut);font-size:13px}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.tag{
-  font-size:12px;padding:6px 10px;border-radius:999px;
-  background:rgba(123,47,247,.10);color:var(--p);border:1px solid rgba(123,47,247,.18);
-  cursor:pointer;user-select:none
-}
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
-.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.iconBtn{
-  border:1px solid var(--border);background:#fff;color:var(--text);
-  padding:8px 10px;border-radius:12px;cursor:pointer
-}
-.iconBtn:hover{border-color:rgba(123,47,247,.35)}
-.primaryBtn{
-  border:none;background:var(--p);color:#fff;padding:10px 12px;border-radius:12px;cursor:pointer
-}
-.primaryBtn:hover{filter:brightness(.98)}
-.hidden{display:none}
-
-nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:8;
-  background:#fff;border-top:1px solid var(--border);
-  display:flex;justify-content:space-around;padding:8px
-}
-nav button{background:none;border:none;color:var(--mut);cursor:pointer;padding:10px 8px;border-radius:12px}
-nav button.active{color:var(--p);font-weight:700;background:rgba(123,47,247,.07)}
-
-.toast{
-  position:fixed;top:14px;left:14px;right:14px;z-index:99;
-  display:none;align-items:center;justify-content:space-between;gap:10px;
-  background:#fff;border:1px solid var(--border);box-shadow:var(--shadow);
-  padding:12px 14px;border-radius:14px
-}
-.toast.show{display:flex}
-.toast b{color:var(--p)}
-.toast .x{cursor:pointer;border:none;background:none;font-size:18px;color:var(--mut)}
-
-.modalWrap{
-  position:fixed;inset:0;z-index:98;
-  background:rgba(31,31,46,.35);
-  display:none;align-items:center;justify-content:center;padding:16px
-}
-.modalWrap.show{display:flex}
-.modal{
-  width:min(560px,100%);
-  background:#fff;border-radius:18px;border:1px solid var(--border);
-  box-shadow:0 20px 60px rgba(31,31,46,.25);
-  padding:14px
-}
-.modalHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.modalHead h2{margin:0;font-size:16px;color:var(--p)}
-.closeBtn{border:none;background:none;font-size:20px;color:var(--mut);cursor:pointer}
-.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-.field label{font-size:13px;color:var(--mut)}
-.field input,.field textarea{
-  border:1px solid var(--border);border-radius:12px;padding:10px;outline:none;background:#fff
-}
-.field textarea{min-height:110px;resize:vertical}
-.help{font-size:12px;color:var(--mut);margin-top:6px}
-.footerBtns{display:flex;gap:8px;justify-content:flex-start;margin-top:10px;flex-wrap:wrap}
-.skel{
-  height:110px;border-radius:16px;background:linear-gradient(90deg,#fff, #f3edff, #fff);
-  border:1px solid var(--border);box-shadow:0 8px 24px rgba(123,47,247,.08);
-  animation:sh 1.2s infinite linear
-}
-@keyframes sh{0%{background-position:0 0}100%{background-position:800px 0}}
-
-hr{border:none;border-top:1px solid var(--border);margin:12px 0}
-.small{font-size:12px}
-.badge{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 10px;border-radius:999px;
-  border:1px solid rgba(123,47,247,.18);
-  background:rgba(123,47,247,.08);
-  color:var(--p);font-size:12px
-}
-
-/* Floating + */
-.fab{
-  position:fixed;left:14px;bottom:84px;z-index:95;
-  width:54px;height:54px;border-radius:999px;border:none;
-  background:var(--p);color:#fff;font-size:28px;line-height:0;
-  box-shadow:0 16px 40px rgba(123,47,247,.28);
-  cursor:pointer;display:none
-}
-.fab:active{transform:scale(.98)}
-.fabMenu{
-  position:fixed;left:14px;bottom:144px;z-index:95;
-  display:none;flex-direction:column;gap:10px
-}
-.fabItem{
-  display:flex;align-items:center;gap:10px;
-  background:#fff;border:1px solid var(--border);
-  padding:10px 12px;border-radius:14px;box-shadow:var(--shadow);
-  cursor:pointer;min-width:170px
-}
-.fabItem b{color:var(--p)}
-.fabBackdrop{position:fixed;inset:0;z-index:94;background:transparent;display:none}
-
-/* Chat UI */
-.chatWrap{display:grid;grid-template-columns:1fr;gap:12px}
-.chatBox{
-  height:54vh;min-height:320px;max-height:560px;
-  border:1px solid var(--border);border-radius:16px;background:#fff;
-  box-shadow:var(--shadow);
-  display:flex;flex-direction:column;overflow:hidden
-}
-.chatMsgs{padding:12px;overflow:auto;display:flex;flex-direction:column;gap:10px}
-.bubble{
-  max-width:80%;padding:10px 12px;border-radius:14px;border:1px solid var(--border);
-  background:#fff;line-height:1.7
-}
-.bubble.me{margin-right:auto;background:rgba(123,47,247,.08);border-color:rgba(123,47,247,.18)}
-.bubble .who{font-size:12px;color:var(--mut);margin-bottom:4px}
-.bubble img{max-width:100%;border-radius:12px;border:1px solid var(--border);display:block;margin-top:8px}
-.chatSend{
-  border-top:1px solid var(--border);
-  padding:10px;display:flex;gap:8px;align-items:center
-}
-.chatSend input[type="text"]{
-  flex:1;border:1px solid var(--border);border-radius:12px;padding:10px;outline:none
-}
-.fileBtn{
-  border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px;cursor:pointer
-}
-.fileBtn input{display:none}
-
-/* ✅ Comments modal: fixed height + scroll list (mobile friendly) */
-.cList{
-  max-height:42vh;
-  overflow:auto;
-  padding-right:4px;
-}
-@media (max-width:520px){
-  .cList{max-height:46vh}
-}
-.cItem{
-  padding:10px;border:1px solid var(--border);border-radius:12px;
-  margin:8px 0;background:#fff
-}
-
-/* ✅ Code cards */
-.codeCard{
-  border:1px solid var(--border);
-  border-radius:14px;
-  background:#fff;
-  box-shadow:var(--shadow);
-  padding:12px;
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
   display:flex;
   flex-direction:column;
+}
+
+header{
+  background:linear-gradient(135deg,var(--p),var(--p2));
+  color:#fff;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
   gap:10px;
 }
-.codeHead{
-  display:flex;align-items:center;justify-content:space-between;gap:10px
-}
-.codeTitle{font-weight:900;color:var(--p)}
-..codeBox{
-  direction:ltr;
-  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+header .title{font-weight:900;font-size:16px;letter-spacing:.2px}
+header .badge{
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.25);
+  padding:6px 10px;
+  border-radius:999px;
   font-size:12px;
-  line-height:1.6;
-
-  /* ✅ أهم تعديل: لف السطور بدل ما تكسر الشاشة */
-  white-space: pre-wrap;        /* يحافظ على الـ enter + يعمل wrap */
-  overflow-wrap: anywhere;      /* يكسر الكلمات/السلاسل الطويلة */
-  word-break: break-word;       /* دعم إضافي للموبايل */
-
-  /* ✅ ما يخليش البلوك يطلع برة */
-  max-width: 100%;
-  min-width: 0;
-  overflow-x: auto;             /* لو كود مستحيل يتلف زي base64 هتقدر تسحب */
-  -webkit-overflow-scrolling: touch;
-
-  border:1px solid var(--border);
-  background:#faf8ff;
-  border-radius:12px;
-  padding:10px;
-  max-height:220px;
+  white-space:nowrap;
 }
-.iconBtn{
-  font-size:13px;
-  padding:6px 12px;
-  min-width:56px;
-  text-align:center;
-  .copyBtn{
-  direction: rtl;        /* يخلي الكلمة عربية مظبوطة */
-  unicode-bidi: isolate; /* يعزلها عن الكود اللي جنبها */
-  white-space: nowrap;
-  min-width: 56px;
-  text-align: center;
+
+.wrap{
+  width:min(920px, 100%);
+  margin:0 auto;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.chat{
+  flex:1;
+  padding:16px;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.bubble{
+  max-width:86%;
+  border-radius:var(--r);
+  padding:12px 14px;
+  line-height:1.7;
+  box-shadow:var(--shadow);
+  border:1px solid var(--stroke);
+  position:relative;
+  word-wrap:break-word;
+  white-space:pre-wrap;
+}
+.bubble.user{
+  align-self:flex-start;
+  background:var(--userBg);
+}
+.bubble.ai{
+  align-self:flex-end;
+  background:var(--aiBg);
+}
+.meta{
+  font-size:11px;
+  color:var(--mut);
+  margin-top:6px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.bubble.user .meta{justify-content:flex-start}
+.bubble.ai .meta{justify-content:flex-end}
+
+.dotTyping{
+  display:inline-flex;
+  gap:4px;
+  align-items:center;
+}
+.dotTyping span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--p);
+  display:inline-block;
+  animation:bounce 1s infinite ease-in-out;
+  opacity:.75;
+}
+.dotTyping span:nth-child(2){animation-delay:.12s}
+.dotTyping span:nth-child(3){animation-delay:.24s}
+@keyframes bounce{
+  0%,80%,100%{transform:translateY(0);opacity:.55}
+  40%{transform:translateY(-5px);opacity:1}
+}
+
+footer{
+  background:var(--card);
+  border-top:1px solid var(--stroke);
+  padding:12px;
+}
+.composer{
+  width:min(920px, 100%);
+  margin:0 auto;
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+}
+textarea{
+  flex:1;
+  resize:none;
+  min-height:46px;
+  max-height:140px;
+  padding:12px 12px;
+  border-radius:16px;
+  border:1px solid var(--stroke);
+  outline:none;
+  font-size:15px;
+  background:#fff;
+}
+button{
+  border:none;
+  background:var(--p);
+  color:#fff;
+  padding:12px 16px;
+  border-radius:16px;
+  font-weight:800;
+  cursor:pointer;
+}
+button:disabled{opacity:.6;cursor:not-allowed}
+.smallHint{
+  width:min(920px, 100%);
+  margin:8px auto 0;
+  color:var(--mut);
+  font-size:12px;
+  padding:0 2px;
+}
+kbd{
+  background:#f3f0ff;
+  border:1px solid var(--stroke);
+  border-bottom-width:2px;
+  padding:2px 6px;
+  border-radius:8px;
+  font-size:11px;
 }
 </style>
 </head>
 
 <body>
-<div class="toast" id="toast">
-  <span id="toastText"></span>
-  <button class="x" onclick="hideToast()">×</button>
-</div>
-
 <header>
-  <h1>Pi Dev Hub</h1>
-  <div class="headerRow">
-    <input id="search" placeholder="بحث..." />
-    <div class="headerActions">
-      <span class="chip" id="userChip">
-        <span class="dot"></span>
-        <span id="userChipText">ضيف</span>
-      </span>
-      <button id="loginBtn">تسجيل دخول </button>
-      <!-- ✅ logout removed -->
-    </div>
-  </div>
+  <div class="title">💜 Purple Gemini Chat</div>
+  <div class="badge" id="status">● Ready</div>
 </header>
 
-<main>
-  <!-- صفحات -->
-  <section id="home" class="grid page"></section>
-  <section id="projects" class="grid hidden page"></section>
+<div class="wrap">
+  <div class="chat" id="chat"></div>
 
-  <!-- ✅ Group page -->
-  <section id="group" class="hidden page">
-    <div class="card">
-      <div class="row" style="margin-top:0">
-        <div>
-          <h3 style="margin:0" id="groupTitle">جروب المشروع</h3>
-          <div class="mut" id="groupSub">محادثة المشروع + مشاركة صور</div>
-        </div>
-        <div class="actions">
-          <button class="iconBtn" onclick="leaveGroup()">مغادرة</button>
-          <button class="iconBtn" onclick="show('projects', document.querySelector('[data-tab=projects]'))">رجوع</button>
-        </div>
-      </div>
-
-      <hr />
-
-      <div class="chatWrap">
-        <div class="chatBox">
-          <div class="chatMsgs" id="chatMsgs"></div>
-
-          <div class="chatSend">
-            <label class="fileBtn" title="إرسال صورة">
-              📎
-              <input id="imgInput" type="file" accept="image/*" />
-            </label>
-
-            <input id="msgText" type="text" placeholder="اكتب رسالة..." />
-            <button class="primaryBtn" onclick="sendMessage()">إرسال</button>
-          </div>
-
-          <div class="help">
-            ✅ رفع الصور يتم على Supabase Storage Bucket: <b>project_uploads</b>
-          </div>
-        </div>
-      </div>
+  <footer>
+    <div class="composer">
+      <textarea id="msg" placeholder="اكتب رسالتك..." rows="1"></textarea>
+      <button id="sendBtn" onclick="sendMsg()">إرسال</button>
     </div>
-  </section>
-
-  <!-- ✅ Codes page -->
-  <section id="codes" class="hidden page">
-    <div class="card" style="margin-bottom:14px">
-      <h3 style="margin:0 0 6px">أكواد Pi</h3>
-      <div class="mut">قسم الأكواد + زر نسخ. (الأدمن: <b>medomohamed22</b>)</div>
-    </div>
-
-    <div class="card" style="margin-bottom:14px">
-      <h3 style="margin:0 0 6px;color:#7B2FF7">أكواد الأدمن ⭐</h3>
-      <div class="mut">الأكواد الرسمية من: <b>medomohamed22</b></div>
-    </div>
-    <section id="codesAdminGrid" class="grid"></section>
-
-    <div class="card" style="margin:14px 0">
-      <h3 style="margin:0 0 6px;color:#7B2FF7">أكواد أخرى 🌍</h3>
-      <div class="mut">مساهمات المجتمع</div>
-    </div>
-    <section id="codesOtherGrid" class="grid"></section>
-  </section>
-</main>
-
-<nav>
-  <button data-tab="home" class="active" onclick="show('home', this)">الرئيسية</button>
-  <button data-tab="projects" onclick="show('projects', this)">المشاريع</button>
-  <button data-tab="codes" onclick="show('codes', this)">أكواد Pi</button>
-</nav>
-
-<!-- Floating + -->
-<div class="fabBackdrop" id="fabBackdrop" onclick="toggleFab(false)"></div>
-<button class="fab" id="fabBtn" title="إضافة" onclick="toggleFab()">+</button>
-
-<div class="fabMenu" id="fabMenu">
-  <div class="fabItem" onclick="toggleFab(false); openCreatePost()">
-    <span>📝</span>
-    <div><b>إضافة بوست</b><div class="mut small">نقاش + لايك + كومنت</div></div>
-  </div>
-
-  <div class="fabItem" onclick="toggleFab(false); openCreateProject()">
-    <span>👥</span>
-    <div><b>إضافة مشروع</b><div class="mut small">جروب شات للمشاركة</div></div>
-  </div>
-
-  <div class="fabItem" id="addCodeItem" onclick="toggleFab(false); openCreateCode()" style="display:none">
-    <span>💾</span>
-    <div><b>إضافة كود</b><div class="mut small">للأدمن فقط</div></div>
-  </div>
-</div>
-
-<!-- Modals -->
-<div class="modalWrap" id="modalWrap" onclick="overlayClose(event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modalHead">
-      <h2 id="modalTitle">Modal</h2>
-      <button class="closeBtn" onclick="closeModal()">×</button>
-    </div>
-    <div id="modalBody"></div>
-  </div>
+    <div class="smallHint">Enter لإرسال — Shift+Enter لسطر جديد</div>
+  </footer>
 </div>
 
 <script>
-const SUPABASE_URL="https://xncapmzlwuisupkjlftb.supabase.co";
-const SUPABASE_ANON="sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const chat = document.getElementById('chat');
+const msgEl = document.getElementById('msg');
+const sendBtn = document.getElementById('sendBtn');
+const statusEl = document.getElementById('status');
 
-const ADMIN_PI_USERNAME = "medomohamed22";
+let convo = []; // {role:"user"|"model", text:"..."}
 
-let piUser = null;
-let isVerified = false;
-let authUid = null;
-
-let activeProject = null;
-let activeProjectSub = null;
-
-let state = {
-  posts: [],
-  projects: [],
-  likesByPost: new Map(),
-  commentsCount: new Map(),
-  myMemberProjects: new Set(),
-  codes: [],
-  activeTag: null,
-  q: ""
-};
-
-// ====== ✅ Realtime channels ======
-let rt = { posts:null, comments:null, projects:null, codes:null };
-
-// ====== UI ======
-function escapeHtml(s){
-  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-function toast(msg, ok=true){
-  const el=document.getElementById('toast');
-  if(!el) return;
-  const textEl = document.getElementById('toastText');
-  if(textEl){
-    textEl.innerHTML = ok ? `<b>✔</b> ${escapeHtml(msg)}` : `<b>⚠</b> ${escapeHtml(msg)}`;
-  }
-  el.classList.add('show');
-  clearTimeout(window.__t);
-  window.__t=setTimeout(()=>hideToast(), 2500);
-}
-function hideToast(){
-  const el=document.getElementById('toast');
-  if(el) el.classList.remove('show');
-}
-function openModal(title, innerHtml){
-  const t = document.getElementById('modalTitle');
-  const b = document.getElementById('modalBody');
-  const w = document.getElementById('modalWrap');
-  if(!t || !b || !w) return;
-
-  t.textContent = title;
-  b.innerHTML = innerHtml;
-  w.classList.add('show');
-
-  setTimeout(()=>{
-    const first = document.querySelector('#modalBody input, #modalBody textarea');
-    if(first) first.focus();
-  }, 0);
-}
-function closeModal(){
-  window.__openCommentsPostId = null; // ✅ مهم
-  const w=document.getElementById('modalWrap');
-  if(w) w.classList.remove('show');
-}
-function overlayClose(e){ if(e.target.id === 'modalWrap') closeModal(); }
-window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
-
-function setSkeleton(containerId, count=6){
-  const c=document.getElementById(containerId);
-  if(!c) return;
-  c.innerHTML = new Array(count).fill(0).map(()=>`<div class="skel"></div>`).join('');
+function setStatus(text, busy=false){
+  statusEl.textContent = (busy ? "● " : "● ") + text;
+  statusEl.style.opacity = busy ? 0.9 : 1;
 }
 
-// ====== FAB ======
-function toggleFab(force){
-  const menu = document.getElementById('fabMenu');
-  const back = document.getElementById('fabBackdrop');
-  if(!menu || !back) return;
-  const show = (typeof force === 'boolean') ? force : (menu.style.display !== 'flex');
-  menu.style.display = show ? 'flex' : 'none';
-  back.style.display = show ? 'block' : 'none';
+function makeBubble(role, text){
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble ' + (role === 'user' ? 'user' : 'ai');
+
+  const content = document.createElement('div');
+  content.className = 'content';
+  content.textContent = text || '';
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.textContent = role === 'user' ? '👤 أنت' : '🤖 AI';
+
+  wrap.appendChild(content);
+  wrap.appendChild(meta);
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+  return { wrap, content, meta };
 }
 
-// ====== Auth ======
-async function ensureSession(){
-  const { data } = await sb.auth.getSession();
-  if(!data?.session){
-    const r = await sb.auth.signInAnonymously();
-    if(r.error) throw r.error;
-  }
-  const sess = await sb.auth.getSession();
-  return sess.data.session;
-}
-async function refreshAuthUid(){
-  const { data, error } = await sb.auth.getUser();
-  if(error) throw error;
-  authUid = data?.user?.id || null;
-  return authUid;
-}
-function isAdmin(){
-  return !!(isVerified && piUser?.username && piUser.username === ADMIN_PI_USERNAME);
-}
-function setUIAuthed(){
-  const chip = document.getElementById('userChip');
-  const chipText = document.getElementById('userChipText');
-  const loginBtn = document.getElementById('loginBtn');
-  const fabBtn = document.getElementById('fabBtn');
-  const addCodeItem = document.getElementById('addCodeItem');
-
-  if(isVerified && piUser?.username){
-    chip?.classList.add('ok');
-    if(chipText) chipText.textContent = piUser.username;
-    loginBtn?.classList.add('hidden');
-    if(fabBtn) fabBtn.style.display = 'block';
-    if(addCodeItem) addCodeItem.style.display = 'flex'; // ✅ كل الناس تقدر تضيف كود
-  }else{
-    chip?.classList.remove('ok');
-    if(chipText) chipText.textContent = 'ضيف';
-    loginBtn?.classList.remove('hidden');
-    if(fabBtn) fabBtn.style.display = 'none';
-    if(addCodeItem) addCodeItem.style.display = 'none';
-    toggleFab(false);
-  }
-}
-
-// ====== ✅ FIX: show pages فقط + renderCodes صح ======
-function show(id, btn){
-  if(id !== 'group') stopProjectRealtime();
-
-  document.querySelectorAll('main .page').forEach(s=>s.classList.add('hidden'));
-  const sec = document.getElementById(id);
-  if(sec) sec.classList.remove('hidden');
-
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-
-  if(id === 'codes') renderCodes(); // ✅ بدل `renderCode`()
-}
-
-// ====== Helpers (prevent duplicates) ======
-function unshiftUnique(list, row){
-  if(!row?.id) return;
-  if(list.some(x => x.id === row.id)) return;
-  list.unshift(row);
-}
-function removeById(list, id){
-  if(!id) return list;
-  return list.filter(x => x.id !== id);
-}
-
-// ====== ✅ Realtime (posts/projects/codes/comments) ======
-function stopRealtime(){
-  Object.values(rt).forEach(ch=>{
-    if(ch) sb.removeChannel(ch);
-  });
-  rt = { posts:null, comments:null, projects:null, codes:null };
-}
-
-function startRealtime(){
-  stopRealtime();
-
-  // ✅ posts
-  rt.posts = sb.channel('rt_posts')
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'posts' }, (payload)=>{
-      unshiftUnique(state.posts, payload.new);
-      renderPosts();
-    })
-    .on('postgres_changes', { event:'DELETE', schema:'public', table:'posts' }, (payload)=>{
-      const id = payload.old?.id;
-      state.posts = removeById(state.posts, id);
-      renderPosts();
-    })
-    .subscribe();
-
-  // ✅ projects
-  rt.projects = sb.channel('rt_projects')
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'projects' }, (payload)=>{
-      unshiftUnique(state.projects, payload.new);
-      renderProjects();
-    })
-    .on('postgres_changes', { event:'DELETE', schema:'public', table:'projects' }, (payload)=>{
-      const id = payload.old?.id;
-      state.projects = removeById(state.projects, id);
-      renderProjects();
-    })
-    .subscribe();
-
-  // ✅ codes
-  rt.codes = sb.channel('rt_codes')
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'pi_codes' }, (payload)=>{
-      unshiftUnique(state.codes, payload.new);
-      renderCodes();
-    })
-    .on('postgres_changes', { event:'DELETE', schema:'public', table:'pi_codes' }, (payload)=>{
-      const id = payload.old?.id;
-      state.codes = removeById(state.codes, id);
-      renderCodes();
-    })
-    .subscribe();
-
-  // ✅ comments (update counter + refresh modal if open)
-  rt.comments = sb.channel('rt_comments')
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'post_comments' }, (payload)=>{
-      const postId = payload.new?.post_id;
-      if(!postId) return;
-      state.commentsCount.set(postId, (state.commentsCount.get(postId)||0) + 1);
-      renderPosts();
-      if(window.__openCommentsPostId === postId) openComments(postId);
-    })
-    .on('postgres_changes', { event:'DELETE', schema:'public', table:'post_comments' }, (payload)=>{
-      const postId = payload.old?.post_id;
-      if(!postId) return;
-      state.commentsCount.set(postId, Math.max(0, (state.commentsCount.get(postId)||1) - 1));
-      renderPosts();
-      if(window.__openCommentsPostId === postId) openComments(postId);
-    })
-    .subscribe();
-}
-
-// ====== Load ======
-async function loadAll(){
-  setSkeleton('home', 6);
-  setSkeleton('projects', 6);
-
-  const adminGrid = document.getElementById('codesAdminGrid');
-  const otherGrid = document.getElementById('codesOtherGrid');
-  if(adminGrid) adminGrid.innerHTML = new Array(2).fill(0).map(()=>`<div class="skel"></div>`).join('');
-  if(otherGrid) otherGrid.innerHTML = new Array(4).fill(0).map(()=>`<div class="skel"></div>`).join('');
-
-  const [postsR, projectsR, likesR, commentsR, membersR, codesR] = await Promise.all([
-    sb.from('posts').select('*').order('created_at',{ascending:false}),
-    sb.from('projects').select('*').order('created_at',{ascending:false}),
-    sb.from('post_likes').select('post_id, owner_auth_uid'),
-    sb.from('post_comments').select('post_id'),
-    (authUid ? sb.from('project_members').select('project_id').eq('member_auth_uid', authUid) : Promise.resolve({data:[]}))
-    ,
-    sb.from('pi_codes').select('*').order('created_at',{ascending:false})
-  ]);
-
-  if(postsR.error) console.error(postsR.error);
-  if(projectsR.error) console.error(projectsR.error);
-  if(likesR.error) console.error(likesR.error);
-  if(commentsR.error) console.error(commentsR.error);
-  if(membersR?.error) console.error(membersR.error);
-  if(codesR.error) console.error(codesR.error);
-
-  state.posts = postsR.data || [];
-  state.projects = projectsR.data || [];
-
-  state.likesByPost = new Map();
-  (likesR.data || []).forEach(x=>{
-    if(!state.likesByPost.has(x.post_id)) state.likesByPost.set(x.post_id, new Set());
-    state.likesByPost.get(x.post_id).add(x.owner_auth_uid);
-  });
-
-  state.commentsCount = new Map();
-  (commentsR.data || []).forEach(x=>{
-    state.commentsCount.set(x.post_id, (state.commentsCount.get(x.post_id)||0) + 1);
-  });
-
-  state.myMemberProjects = new Set((membersR.data||[]).map(x=>x.project_id));
-  state.codes = codesR.data || [];
-
-  renderPosts();
-  renderProjects();
-  renderCodes();
-}
-
-// ====== Filters ======
-function setTag(t){
-  state.activeTag = t || null;
-  toast(state.activeTag ? `فلترة بالوسم: ${state.activeTag}` : 'تم مسح الفلتر');
-  renderPosts();
-  renderProjects();
-}
-
-// ====== Posts ======
-function renderPosts(){
-  const c=document.getElementById('home');
-  if(!c) return;
-
-  const q = (state.q || '').toLowerCase().trim();
-  const tag = state.activeTag;
-
-  const filtered = (state.posts||[]).filter(p=>{
-    const inText = !q || (p.title||'').toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q) || (p.pi_username||'').toLowerCase().includes(q);
-    const inTag  = !tag || (Array.isArray(p.tags) && p.tags.includes(tag));
-    return inText && inTag;
-  });
-
-  c.innerHTML = filtered.map(p=>{
-    const likedSet = state.likesByPost.get(p.id) || new Set();
-    const likes = likedSet.size;
-    const likedByMe = authUid ? likedSet.has(authUid) : false;
-    const cmCount = state.commentsCount.get(p.id) || 0;
-
-    return `
-    <div class="card">
-      <h3>${escapeHtml(p.title)}</h3>
-      <div class="mut">${escapeHtml(p.pi_username||'')}</div>
-      <p style="margin:10px 0 0;line-height:1.7">${escapeHtml(p.content)}</p>
-
-      <div class="tags">
-        ${(p.tags||[]).slice(0,6).map(t=>`<span class="tag" onclick="setTag('${escapeHtml(t)}')">#${escapeHtml(t)}</span>`).join('')}
-      </div>
-
-      <div class="row">
-        <div class="mut">${new Date(p.created_at).toLocaleString('ar-EG')}</div>
-        <div class="actions">
-          <button class="iconBtn" onclick="toggleLike('${p.id}')">${likedByMe ? '💜' : '🤍'} لايك (${likes})</button>
-          <button class="iconBtn" onclick="openComments('${p.id}')">💬 كومنت (${cmCount})</button>
-          ${p.owner_auth_uid === authUid ? `<button class="iconBtn" onclick="deletePost('${p.id}')">🗑 حذف</button>` : ``}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  if(!filtered.length){
-    c.innerHTML = `<div class="card"><h3>لا يوجد نتائج</h3><div class="mut">جرّب بحث مختلف أو امسح الفلتر.</div></div>`;
-  }
-}
-
-async function toggleLike(postId){
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-  try{
-    if(!authUid) await refreshAuthUid();
-
-    const likedSet = state.likesByPost.get(postId) || new Set();
-    const already = likedSet.has(authUid);
-
-    if(already){
-      const { error } = await sb.from('post_likes')
-        .delete()
-        .eq('post_id', postId)
-        .eq('owner_auth_uid', authUid);
-      if(error) throw error;
-      likedSet.delete(authUid);
-    }else{
-      const payload = { post_id: postId, owner_auth_uid: authUid };
-      const { error } = await sb.from('post_likes').insert(payload);
-      if(error) throw error;
-      likedSet.add(authUid);
-    }
-
-    state.likesByPost.set(postId, likedSet);
-    renderPosts();
-  }catch(e){
-    console.error('toggleLike', e);
-    toast(e?.message || 'فشل اللايك (RLS?)', false);
-  }
-}
-
-async function openComments(postId){
-  window.__openCommentsPostId = postId; // ✅ مهم
-  try{
-    const { data, error } = await sb.from('post_comments')
-      .select('*')
-      .eq('post_id', postId)
-      .order('created_at', {ascending:true});
-
-    if(error) throw error;
-
-    const list = (data||[]).map(c=>`
-      <div class="cItem">
-        <div class="mut">${escapeHtml(c.pi_username||'')}</div>
-        <div style="margin-top:6px;line-height:1.7">${escapeHtml(c.body)}</div>
-        <div class="mut" style="margin-top:6px">${new Date(c.created_at).toLocaleString('ar-EG')}</div>
-        ${c.owner_auth_uid === authUid ? `<div class="actions" style="margin-top:8px"><button class="iconBtn" onclick="deleteComment('${c.id}','${postId}')">حذف</button></div>` : ``}
-      </div>
-    `).join('');
-
-    openModal('التعليقات', `
-      <div class="cList">${list || `<div class="mut">لا يوجد تعليقات حتى الآن.</div>`}</div>
-      <hr />
-      <div class="field">
-        <label>إضافة تعليق</label>
-        <textarea id="c_body" placeholder="اكتب تعليق..."></textarea>
-      </div>
-      <div class="footerBtns">
-        <button class="primaryBtn" onclick="addComment('${postId}')">نشر التعليق</button>
-        <button class="iconBtn" onclick="closeModal()">إغلاق</button>
-      </div>
-    `);
-
-  }catch(e){
-    console.error('openComments', e);
-    toast(e?.message || 'فشل تحميل التعليقات', false);
-  }
-}
-
-async function addComment(postId){
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-  try{
-    if(!authUid) await refreshAuthUid();
-    const body = (document.getElementById('c_body')?.value||'').trim();
-    if(!body) return toast('اكتب تعليق', false);
-
-    const payload = {
-      post_id: postId,
-      owner_auth_uid: authUid,
-      pi_username: piUser?.username || '',
-      body
-    };
-
-    // ✅ نخليها ترجع الصف
-    const { data, error } = await sb.from('post_comments').insert(payload).select().single();
-    if(error) throw error;
-
-    // ✅ Update محلي فورًا (وكمان الريل تايم هيزبط الباقي)
-    state.commentsCount.set(postId, (state.commentsCount.get(postId)||0) + 1);
-    toast('تم نشر التعليق ✅');
-    // سيب المودال مفتوح واتحدث تلقائيًا بالريلتيم
-    openComments(postId);
-
-  }catch(e){
-    console.error('addComment', e);
-    toast(e?.message || 'فشل إضافة التعليق (RLS?)', false);
-  }
-}
-
-async function deleteComment(commentId, postId){
-  try{
-    const { error } = await sb.from('post_comments').delete().eq('id', commentId);
-    if(error) throw error;
-    toast('تم حذف التعليق');
-    // الريلتيم هيعمل تحديث، لكن لو المودال مفتوح نحدث فورًا
-    openComments(postId);
-  }catch(e){
-    console.error('deleteComment', e);
-    toast(e?.message || 'فشل حذف التعليق', false);
-  }
-}
-
-async function deletePost(id){
-  try{
-    const { error } = await sb.from('posts').delete().eq('id', id);
-    if(error) throw error;
-    toast('تم حذف البوست');
-    // الريلتيم هيشيله من عند الكل
-  }catch(e){
-    console.error('deletePost', e);
-    toast(e?.message || 'فشل الحذف', false);
-  }
-}
-
-// ====== Projects ======
-function renderProjects(){
-  const c=document.getElementById('projects');
-  if(!c) return;
-
-  const q = (state.q || '').toLowerCase().trim();
-  const tag = state.activeTag;
-
-  const filtered = (state.projects||[]).filter(p=>{
-    const inText = !q || (p.name||'').toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q) || (p.pi_username||'').toLowerCase().includes(q);
-    const inTag  = !tag || (Array.isArray(p.stack) && p.stack.includes(tag));
-    return inText && inTag;
-  });
-
-  c.innerHTML = filtered.map(p=>{
-    const isMember = state.myMemberProjects.has(p.id);
-    return `
-    <div class="card">
-      <h3>${escapeHtml(p.name)}</h3>
-      <div class="mut">${escapeHtml(p.pi_username||'')}</div>
-      <p style="margin:10px 0 0;line-height:1.7">${escapeHtml(p.description)}</p>
-
-      <div class="tags">
-        ${(p.stack||[]).slice(0,6).map(t=>`<span class="tag" onclick="setTag('${escapeHtml(t)}')">${escapeHtml(t)}</span>`).join('')}
-      </div>
-
-      <div class="row">
-        <div class="mut">${new Date(p.created_at).toLocaleString('ar-EG')}</div>
-        <div class="actions">
-          ${isMember
-            ? `<span class="badge">✅ عضو</span><button class="primaryBtn" onclick="openGroup('${p.id}','${escapeHtml(p.name)}')">فتح الجروب</button>`
-            : `<button class="primaryBtn" onclick="joinGroup('${p.id}','${escapeHtml(p.name)}')">انضم للجروب</button>`
-          }
-          ${p.owner_auth_uid === authUid ? `<button class="iconBtn" onclick="deleteProject('${p.id}')">🗑 حذف</button>` : ``}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  if(!filtered.length){
-    c.innerHTML = `<div class="card"><h3>لا يوجد مشاريع</h3><div class="mut">جرّب إضافة مشروع جديد.</div></div>`;
-  }
-}
-
-async function joinGroup(projectId, projectName){
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-  try{
-    if(!authUid) await refreshAuthUid();
-    const payload = {
-      project_id: projectId,
-      member_auth_uid: authUid,
-      pi_username: piUser?.username || '',
-      role: 'member'
-    };
-    const { error } = await sb.from('project_members').insert(payload);
-    if(error) throw error;
-
-    state.myMemberProjects.add(projectId);
-    toast(`انضميت لجروب: ${projectName} ✅`);
-    renderProjects();
-    openGroup(projectId, projectName);
-  }catch(e){
-    console.error('joinGroup', e);
-    toast(e?.message || 'فشل الانضمام (RLS?)', false);
-  }
-}
-
-async function leaveGroup(){
-  if(!activeProject?.id) return;
-  try{
-    const pid = activeProject.id;
-    const { error } = await sb.from('project_members')
-      .delete()
-      .eq('project_id', pid)
-      .eq('member_auth_uid', authUid);
-    if(error) throw error;
-
-    state.myMemberProjects.delete(pid);
-    toast('تمت المغادرة');
-    stopProjectRealtime();
-    activeProject = null;
-    show('projects', document.querySelector('[data-tab=projects]'));
-    renderProjects();
-  }catch(e){
-    console.error('leaveGroup', e);
-    toast(e?.message || 'فشل المغادرة', false);
-  }
-}
-
-async function deleteProject(id){
-  try{
-    const { error } = await sb.from('projects').delete().eq('id', id);
-    if(error) throw error;
-    toast('تم حذف المشروع');
-    // الريلتيم هيشيله من عند الكل
-  }catch(e){
-    console.error('deleteProject', e);
-    toast(e?.message || 'فشل الحذف', false);
-  }
-}
-
-// ====== Group chat (already realtime per project) ======
-async function openGroup(projectId, projectName){
-  activeProject = { id: projectId, name: projectName };
-  document.getElementById('groupTitle').textContent = `جروب: ${projectName}`;
-  document.getElementById('groupSub').textContent = `شارك في حل المشكلة وبناء المشروع — إرسال صور متاح`;
-  show('group', null);
-  await loadProjectMessages();
-  startProjectRealtime(); // ✅ ده بيخلي الرسائل تظهر فورًا لكل الناس في نفس الجروب
-}
-
-async function loadProjectMessages(){
-  const wrap = document.getElementById('chatMsgs');
-  if(!wrap) return;
-  wrap.innerHTML = `<div class="mut">تحميل الرسائل...</div>`;
-  const { data, error } = await sb.from('project_messages')
-    .select('*')
-    .eq('project_id', activeProject.id)
-    .order('created_at', {ascending:true});
-
-  if(error){
-    console.error(error);
-    wrap.innerHTML = `<div class="mut">فشل تحميل الرسائل</div>`;
-    return;
-  }
-  renderMessages(data||[]);
-}
-function renderMessages(list){
-  const wrap = document.getElementById('chatMsgs');
-  if(!wrap) return;
-  wrap.innerHTML = (list||[]).map(m=>{
-    const me = (m.sender_auth_uid === authUid);
-    return `
-      <div class="bubble ${me?'me':''}">
-        <div class="who">${escapeHtml(m.sender_pi_username||'')}</div>
-        ${m.body ? `<div>${escapeHtml(m.body)}</div>` : ``}
-        ${m.image_url ? `<img src="${escapeHtml(m.image_url)}" alt="image" />` : ``}
-        <div class="mut small" style="margin-top:6px">${new Date(m.created_at).toLocaleString('ar-EG')}</div>
-      </div>
-    `;
-  }).join('');
-  wrap.scrollTop = wrap.scrollHeight + 9999;
-}
-function startProjectRealtime(){
-  stopProjectRealtime();
-  activeProjectSub = sb.channel('project_messages_'+activeProject.id)
-    .on('postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'project_messages', filter: `project_id=eq.${activeProject.id}` },
-      (payload) => {
-        const wrap = document.getElementById('chatMsgs');
-        if(!wrap) return;
-        const m = payload.new;
-        const me = (m.sender_auth_uid === authUid);
-        const html = `
-          <div class="bubble ${me?'me':''}">
-            <div class="who">${escapeHtml(m.sender_pi_username||'')}</div>
-            ${m.body ? `<div>${escapeHtml(m.body)}</div>` : ``}
-            ${m.image_url ? `<img src="${escapeHtml(m.image_url)}" alt="image" />` : ``}
-            <div class="mut small" style="margin-top:6px">${new Date(m.created_at).toLocaleString('ar-EG')}</div>
-          </div>
-        `;
-        wrap.insertAdjacentHTML('beforeend', html);
-        wrap.scrollTop = wrap.scrollHeight + 9999;
-      }
-    )
-    .subscribe();
-}
-function stopProjectRealtime(){
-  if(activeProjectSub){
-    sb.removeChannel(activeProjectSub);
-    activeProjectSub = null;
-  }
-}
-
-async function uploadImageToStorage(file){
-  const safeName = (file.name || 'image').replace(/[^\w.\-]+/g,'_');
-  const path = `${authUid}/${activeProject.id}/${Date.now()}_${safeName}`;
-
-  const { error } = await sb.storage.from('project_uploads').upload(path, file, {
-    cacheControl: '3600',
-    upsert: false
-  });
-  if(error) throw error;
-
-  const { data } = sb.storage.from('project_uploads').getPublicUrl(path);
-  return data.publicUrl;
-}
-
-document.getElementById('imgInput')?.addEventListener('change', async (e)=>{
-  const f = e.target.files?.[0];
-  if(!f) return;
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-  if(!activeProject?.id) return toast('افتح جروب مشروع الأول', false);
-
-  try{
-    if(!authUid) await refreshAuthUid();
-    toast('جاري رفع الصورة...');
-    const url = await uploadImageToStorage(f);
-    await insertProjectMessage('', url);
-    toast('تم إرسال الصورة ✅');
-    e.target.value = '';
-  }catch(err){
-    console.error(err);
-    toast(err?.message || 'فشل رفع الصورة', false);
-  }
-});
-
-async function insertProjectMessage(text, imageUrl){
-  const payload = {
-    project_id: activeProject.id,
-    sender_auth_uid: authUid,
-    sender_pi_username: piUser?.username || '',
-    body: text || null,
-    image_url: imageUrl || null
-  };
-  const { error } = await sb.from('project_messages').insert(payload);
-  if(error) throw error;
-}
-async function sendMessage(){
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-  if(!activeProject?.id) return toast('افتح جروب مشروع الأول', false);
-
-  try{
-    if(!authUid) await refreshAuthUid();
-    const input = document.getElementById('msgText');
-    const text = (input?.value||'').trim();
-    if(!text) return;
-    input.value = '';
-    await insertProjectMessage(text, null);
-    // الريلتيم هيظهرها للجميع فورًا
-  }catch(e){
-    console.error('sendMessage', e);
-    toast(e?.message || 'فشل إرسال الرسالة (RLS?)', false);
-  }
-}
-
-// ====== Create Post / Project ======
-function openCreatePost(){
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-
-  openModal('إضافة بوست', `
-    <div class="field">
-      <label>العنوان</label>
-      <input id="p_title" placeholder="مثال: مشكلة في Pi SDK" />
-    </div>
-    <div class="field">
-      <label>المحتوى</label>
-      <textarea id="p_content" placeholder="اكتب تفاصيل البوست..."></textarea>
-    </div>
-    <div class="field">
-      <label>Tags (افصل بينهم بفاصلة)</label>
-      <input id="p_tags" placeholder="pi-sdk, supabase, nextjs" />
-    </div>
-    <div class="footerBtns">
-      <button class="primaryBtn" onclick="createPost()">نشر</button>
-      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
-    </div>
-  `);
-}
-async function createPost(){
-  try{
-    const title = (document.getElementById('p_title')?.value||'').trim();
-    const content = (document.getElementById('p_content')?.value||'').trim();
-    const tags = (document.getElementById('p_tags')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-    if(!title || !content) return toast('اكتب العنوان والمحتوى', false);
-    if(!authUid) await refreshAuthUid();
-
-    const payload = {
-      owner_auth_uid: authUid,
-      pi_uid: piUser.uid,
-      pi_username: piUser.username,
-      title, content, tags
-    };
-
-    const { data, error } = await sb.from('posts').insert(payload).select().single();
-    if(error) throw error;
-
-    closeModal();
-    toast('تم نشر البوست ✅');
-    // الريلتيم هيظهره عند الكل فورًا (وعندك كمان تحديث محلي سريع)
-    unshiftUnique(state.posts, data);
-    renderPosts();
-
-  }catch(e){
-    console.error('createPost', e);
-    toast(e?.message || 'فشل نشر البوست (RLS?)', false);
-  }
-}
-
-function openCreateProject(){
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-
-  openModal('إضافة مشروع (ينشئ جروب)', `
-    <div class="field">
-      <label>اسم المشروع</label>
-      <input id="pr_name" placeholder="مثال: Pi Shop" />
-    </div>
-    <div class="field">
-      <label>وصف مختصر</label>
-      <textarea id="pr_desc" placeholder="اكتب وصف سريع..."></textarea>
-    </div>
-    <div class="field">
-      <label>Tech Stack (افصل بينهم بفاصلة)</label>
-      <input id="pr_stack" placeholder="nextjs, supabase, pi-sdk" />
-    </div>
-    <div class="field">
-      <label>أدوار مطلوبة (اختياري)</label>
-      <input id="pr_roles" placeholder="frontend, backend, uiux" />
-    </div>
-    <div class="footerBtns">
-      <button class="primaryBtn" onclick="createProject()">نشر المشروع</button>
-      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
-    </div>
-  `);
-}
-async function createProject(){
-  try{
-    const name = (document.getElementById('pr_name')?.value||'').trim();
-    const description = (document.getElementById('pr_desc')?.value||'').trim();
-    const stack = (document.getElementById('pr_stack')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-    const needed_roles = (document.getElementById('pr_roles')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-
-    if(!name || !description) return toast('اكتب اسم المشروع والوصف', false);
-    if(!authUid) await refreshAuthUid();
-
-    const payload = {
-      owner_auth_uid: authUid,
-      pi_uid: piUser.uid,
-      pi_username: piUser.username,
-      name, description, stack, needed_roles
-    };
-
-    const { data, error } = await sb.from('projects').insert(payload).select().single();
-    if(error) throw error;
-
-    const { error: meErr } = await sb.from('project_members').insert({
-      project_id: data.id,
-      member_auth_uid: authUid,
-      pi_username: piUser.username,
-      role: 'owner'
-    });
-    if(meErr) throw meErr;
-
-    closeModal();
-    toast('تم نشر المشروع ✅ وتم إنشاء الجروب');
-    unshiftUnique(state.projects, data);
-    renderProjects();
-    await openGroup(data.id, data.name);
-
-  }catch(e){
-    console.error('createProject', e);
-    toast(e?.message || 'فشل نشر المشروع (RLS?)', false);
-  }
-}
-
-// ====== Codes ======
-function codeCardHtml(x) {
-  // ✅ الحذف للأدمن أو لصاحب الكود
-  const canDelete = isVerified && authUid && (isAdmin() || x.owner_auth_uid === authUid);
-  const official = (x.created_by_pi_username === ADMIN_PI_USERNAME);
-  
-  return `
-    <div class="codeCard">
-      <div class="codeHead">
-        <div>
-          <div class="codeTitle">${escapeHtml(x.title || '')}</div>
-          <div class="mut small">
-            ${escapeHtml(x.created_by_pi_username||'')}
-            ${official ? ` <span class="badge">⭐ رسمي</span>` : ``}
-          </div>
-        </div>
-        <div class="actions">
-          <button class="iconBtn copyBtn" data-code="${encodeURIComponent(x.code || '')}" onclick="copyFromBtn(this)">نسخ</button>
-          ${
-            canDelete
-              ? `<button class="iconBtn" onclick="deleteCode('${x.id}','${x.owner_auth_uid || ''}')">حذف</button>`
-              : ``
-          }
-        </div>
-      </div>
-      <div class="codeBox">${escapeHtml(x.code||'')}</div>
-    </div>
+function makeTypingBubble(){
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble ai';
+
+  const content = document.createElement('div');
+  content.innerHTML = `
+    <span class="dotTyping" title="AI يكتب...">
+      <span></span><span></span><span></span>
+    </span>
   `;
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.textContent = '🤖 AI يكتب...';
+
+  wrap.appendChild(content);
+  wrap.appendChild(meta);
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+  return { wrap, content, meta };
 }
-function renderCodes() {
-  const adminGrid = document.getElementById('codesAdminGrid');
-  const otherGrid = document.getElementById('codesOtherGrid');
-  if (!adminGrid || !otherGrid) return;
 
-  const q = (state.q || '').toLowerCase().trim();
-
-  const all = (state.codes || []).filter(x => {
-    return !q ||
-      (x.title || '').toLowerCase().includes(q) ||
-      (x.code || '').toLowerCase().includes(q) ||
-      (x.created_by_pi_username || '').toLowerCase().includes(q);
+function typewriter(el, text, speed=14){
+  el.textContent = '';
+  let i = 0;
+  return new Promise(resolve=>{
+    const t = setInterval(()=>{
+      el.textContent += text[i] ?? '';
+      i++;
+      chat.scrollTop = chat.scrollHeight;
+      if(i >= text.length){
+        clearInterval(t);
+        resolve();
+      }
+    }, speed);
   });
-
-  const adminList = all.filter(x => x.created_by_pi_username === ADMIN_PI_USERNAME);
-  const otherList = all.filter(x => x.created_by_pi_username !== ADMIN_PI_USERNAME);
-
-  adminGrid.innerHTML = adminList.length
-    ? adminList.map(codeCardHtml).join('')
-    : `<div class="card"><h3>لا يوجد أكواد أدمن</h3><div class="mut">لسه مفيش أكواد رسمية.</div></div>`;
-
-  otherGrid.innerHTML = otherList.length
-    ? otherList.map(codeCardHtml).join('')
-    : `<div class="card"><h3>لا يوجد أكواد أخرى</h3><div class="mut">شجّع الناس تضيف أكواد.</div></div>`;
 }
 
-function copyFromBtn(btn) {
-  const code = decodeURIComponent(btn.dataset.code || '');
-  copyText(code);
+function autosize(){
+  msgEl.style.height = 'auto';
+  msgEl.style.height = Math.min(msgEl.scrollHeight, 140) + 'px';
 }
-function copyText(t){
-  const text = String(t ?? '');
-  if(navigator.clipboard?.writeText){
-    navigator.clipboard.writeText(text).then(()=>toast('تم النسخ ✅')).catch(()=>fallbackCopy(text));
-  }else{
-    fallbackCopy(text);
+msgEl.addEventListener('input', autosize);
+autosize();
+
+msgEl.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMsg();
   }
-}
-function fallbackCopy(text){
-  const ta=document.createElement('textarea');
-  ta.value=text; document.body.appendChild(ta);
-  ta.select(); document.execCommand('copy');
-  ta.remove();
-  toast('تم النسخ ✅');
-}
-
-function openCreateCode(){
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-
-  openModal('إضافة كود', `
-    <div class="field">
-      <label>اسم الكود</label>
-      <input id="cd_title" placeholder="مثال: Pi Login snippet" />
-    </div>
-    <div class="field">
-      <label>الكود</label>
-      <textarea id="cd_code" placeholder="الصق الكود هنا..."></textarea>
-      <div class="help">هيظهر للناس زر نسخ.</div>
-    </div>
-    <div class="footerBtns">
-      <button class="primaryBtn" onclick="createCode()">حفظ</button>
-      <button class="iconBtn" onclick="closeModal()">إلغاء</button>
-    </div>
-  `);
-}
-
-async function createCode(){
-  if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
-  try{
-    if(!authUid) await refreshAuthUid();
-    const title = (document.getElementById('cd_title')?.value||'').trim();
-    const code  = (document.getElementById('cd_code')?.value||'').trim();
-    if(!title || !code) return toast('اكتب اسم الكود والكود', false);
-
-    const payload = {
-      owner_auth_uid: authUid,
-      created_by_pi_username: piUser?.username || '',
-      title,
-      code
-    };
-
-    const { data, error } = await sb.from('pi_codes').insert(payload).select().single();
-    if(error) throw error;
-
-    closeModal();
-    toast('تم حفظ الكود ✅');
-    unshiftUnique(state.codes, data);
-    renderCodes();
-
-  }catch(e){
-    console.error('createCode', e);
-    toast(e?.message || 'فشل حفظ الكود (RLS?)', false);
-  }
-}
-
-async function deleteCode(id, ownerAuthUid) {
-  // ✅ السماح للأدمن أو لصاحب الكود فقط
-  const allowed = isAdmin() || (isVerified && authUid && ownerAuthUid && ownerAuthUid === authUid);
-  if (!allowed) return toast('الحذف لصاحب الكود أو الأدمن فقط', false);
-  
-  try {
-    const { error } = await sb.from('pi_codes').delete().eq('id', id);
-    if (error) throw error;
-    
-    toast('تم حذف الكود');
-    state.codes = state.codes.filter(x => x.id !== id);
-    renderCodes();
-  } catch (e) {
-    console.error('deleteCode', e);
-    toast(e?.message || 'فشل الحذف', false);
-  }
-}
-
-// ====== Pi Login + verify ======
-async function verifyAndSetAuth(pi_uid, pi_username){
-  const sess = await ensureSession();
-  const access = sess?.access_token;
-  if(!access) throw new Error('no_session');
-
-  const r = await fetch('/api/pi/verify', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      pi_uid,
-      pi_username,
-      supabase_access_token: access
-    })
-  });
-
-  const j = await r.json().catch(()=> ({}));
-  if(!r.ok) throw new Error(j?.error || 'verify_failed');
-}
-
-async function login(){
-  try{
-    await ensureSession();
-    await refreshAuthUid();
-
-    Pi.init({version:"2.0", sandbox:false});
-    const auth = await Pi.authenticate(['username'], ()=>{});
-    piUser = auth.user;
-
-    await verifyAndSetAuth(piUser.uid, piUser.username);
-
-    isVerified = true;
-    localStorage.setItem('piUser', JSON.stringify(piUser));
-    localStorage.setItem('isVerified', '1');
-
-    setUIAuthed();
-    toast('تم تسجيل الدخول ✅');
-
-    // ✅ بعد تسجيل الدخول شغل ريلتايم لو مش شغال
-    startRealtime();
-
-  }catch(e){
-    console.error('login', e);
-    toast('فشل تسجيل الدخول/التحقق: ' + (e?.message || e), false);
-  }
-}
-
-// ====== Restore + init ======
-function restoreLogin(){
-  try{
-    const saved = localStorage.getItem('piUser');
-    const v = localStorage.getItem('isVerified');
-    if(saved && v === '1'){
-      piUser = JSON.parse(saved);
-      isVerified = true;
-    }
-  }catch{}
-}
-
-document.getElementById('loginBtn')?.addEventListener('click', login);
-
-document.getElementById('search')?.addEventListener('input', (e)=>{
-  state.q = e.target.value || '';
-  renderPosts();
-  renderProjects();
-  renderCodes();
 });
 
-async function init(){
+async function sendMsg(){
+  const text = (msgEl.value || '').trim();
+  if(!text) return;
+
+  makeBubble('user', text);
+  convo.push({ role:'user', text });
+
+  msgEl.value = '';
+  autosize();
+  sendBtn.disabled = true;
+  msgEl.disabled = true;
+  setStatus("Thinking...", true);
+
+  const typing = makeTypingBubble();
+
   try{
-    restoreLogin();
-    await ensureSession();
-    await refreshAuthUid();
-    setUIAuthed();
+    const res = await fetch('/api/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        message: text,
+        history: convo.slice(0, -1) // قبل آخر رسالة المستخدم (اختياري)
+      })
+    });
 
-    await loadAll();
+    const data = await res.json();
+    if(!res.ok) throw new Error(data?.error || 'Request failed');
 
-    // ✅ شغل الريلتيم مرة واحدة (الناس كلها هتشوف الإضافات فورًا)
-    startRealtime();
+    const reply = data.reply || '...';
 
-    if(isVerified && piUser?.uid && piUser?.username){
-      try{ await verifyAndSetAuth(piUser.uid, piUser.username); }catch(_){}
-    }
-  }catch(e){
-    console.error('init', e);
-    toast('مشكلة في تهيئة الجلسة: ' + (e?.message || e), false);
+    typing.meta.textContent = '🤖 AI';
+    // استبدل الـ typing بنص بيتكتب تدريجي
+    await typewriter(typing.wrap.querySelector('.content'), reply, 12);
+
+    convo.push({ role:'model', text: reply });
+    setStatus("Ready", false);
+  }catch(err){
+    typing.meta.textContent = '🤖 AI (خطأ)';
+    typing.wrap.querySelector('.content').textContent =
+      'حصل خطأ في الاتصال بالباك اند أو Gemini. تأكد من API Key وتشغيل السيرفر.';
+    setStatus("Error", false);
+    console.error(err);
+  }finally{
+    sendBtn.disabled = false;
+    msgEl.disabled = false;
+    msgEl.focus();
   }
 }
-init();
+
+// رسالة ترحيب
+makeBubble('ai', 'أهلاً 👋 ابعت سؤالك وأنا هرد عليك.');
 </script>
 </body>
 </html>
