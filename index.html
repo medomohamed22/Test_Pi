@@ -4,21 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AI Studio | Image Gen</title>
-  <!-- خط 'Cairo' لعصري أكثر -->
+  <!-- خط 'Cairo' لتصميم عصري -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      /* لوحة الألوان الجديدة - Purple & White Theme */
-      --primary: #6366f1;       /* أرجواني أساسي */
-      --primary-dark: #4f46e5;  /* أرجواني غامق */
-      --accent: #d946ef;        /* فوشيا للتدرجات */
-      --bg-body: #f8fafc;       /* خلفية الموقع (رمادي مائل للأزرق فاتح جداً) */
-      --surface: #ffffff;       /* لون الكروت */
-      --text-main: #1e293b;     /* لون النص الأساسي */
-      --text-sub: #64748b;      /* لون النص الثانوي */
-      --border: #e2e8f0;        /* لون الحدود */
-      --input-bg: #f1f5f9;      /* خلفية حقل الإدخال */
+      /* لوحة الألوان - Purple & White Theme */
+      --primary: #6366f1;       
+      --primary-dark: #4f46e5;  
+      --accent: #d946ef;        
+      --bg-body: #f8fafc;       
+      --surface: #ffffff;       
+      --text-main: #1e293b;     
+      --text-sub: #64748b;      
+      --border: #e2e8f0;        
+      --input-bg: #f1f5f9;      
       
       --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       --shadow-lg: 0 20px 25px -5px rgba(99, 102, 241, 0.15), 0 8px 10px -6px rgba(99, 102, 241, 0.1);
@@ -33,7 +33,6 @@
       margin: 0;
       min-height: 100vh;
       background-color: var(--bg-body);
-      /* زخرفة خلفية بسيطة */
       background-image: 
         radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
         radial-gradient(circle at 90% 80%, rgba(217, 70, 239, 0.08) 0%, transparent 40%);
@@ -58,283 +57,169 @@
 
     /* === Header === */
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
     }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
+    .brand { display: flex; align-items: center; gap: 12px; }
     .logo-icon {
-      width: 42px;
-      height: 42px;
+      width: 42px; height: 42px;
       background: linear-gradient(135deg, var(--primary), var(--accent));
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 20px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
-
     .brand h1 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 800;
+      margin: 0; font-size: 22px; font-weight: 800;
       background: linear-gradient(to right, var(--text-main), var(--primary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
     .badge {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--primary);
-      background: rgba(99, 102, 241, 0.1);
-      padding: 6px 12px;
-      border-radius: 20px;
+      font-size: 12px; font-weight: 700; color: var(--primary);
+      background: rgba(99, 102, 241, 0.1); padding: 6px 12px; border-radius: 20px;
     }
 
     /* === Input Section === */
-    .input-group {
-      position: relative;
-      margin-bottom: 16px;
-    }
-
+    .input-group { position: relative; margin-bottom: 16px; }
     textarea {
-      width: 100%;
-      height: 120px;
-      background: var(--input-bg);
-      border: 2px solid transparent;
-      border-radius: var(--radius-md);
-      padding: 16px;
-      font-size: 16px;
-      color: var(--text-main);
-      resize: none;
-      outline: none;
-      transition: all 0.3s ease;
+      width: 100%; height: 120px; background: var(--input-bg);
+      border: 2px solid transparent; border-radius: var(--radius-md);
+      padding: 16px; font-size: 16px; color: var(--text-main);
+      resize: none; outline: none; transition: all 0.3s ease;
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
-
     textarea:focus {
-      background: #fff;
-      border-color: var(--primary);
+      background: #fff; border-color: var(--primary);
       box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
     }
-
     textarea::placeholder { color: #94a3b8; }
 
     /* === Quick Styles Chips === */
     .chips-scroller {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      scrollbar-width: none; /* Hide scrollbar Firefox */
+      display: flex; gap: 8px; margin-bottom: 20px;
+      overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;
     }
     .chips-scroller::-webkit-scrollbar { display: none; }
-
     .chip {
-      background: #fff;
-      border: 1px solid var(--border);
-      padding: 8px 14px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-sub);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      background: #fff; border: 1px solid var(--border);
+      padding: 8px 14px; border-radius: 30px; font-size: 13px; font-weight: 600;
+      color: var(--text-sub); cursor: pointer; white-space: nowrap;
+      transition: 0.2s; display: flex; align-items: center; gap: 6px;
     }
     .chip:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: rgba(99, 102, 241, 0.05);
-      transform: translateY(-2px);
+      border-color: var(--primary); color: var(--primary);
+      background: rgba(99, 102, 241, 0.05); transform: translateY(-2px);
     }
 
     /* === Action Buttons === */
-    .actions {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
+    .actions { display: flex; gap: 12px; margin-bottom: 24px; }
     .btn-main {
-      flex: 2;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: var(--radius-md);
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: 0.3s;
+      flex: 2; background: linear-gradient(90deg, var(--primary), var(--accent));
+      color: white; border: none; padding: 14px; border-radius: var(--radius-md);
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s;
       box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-
     .btn-main:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5);
+      transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5);
     }
     .btn-main:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-
     .btn-sec {
-      flex: 1;
-      background: white;
-      border: 1px solid var(--border);
-      color: var(--text-sub);
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
+      flex: 1; background: white; border: 1px solid var(--border);
+      color: var(--text-sub); border-radius: var(--radius-md); font-weight: 600;
+      cursor: pointer; transition: 0.2s;
     }
     .btn-sec:hover { background: var(--input-bg); color: var(--text-main); }
 
-    /* === Image Viewer & Scanner === */
+    /* === Image Viewer & Aurora Effect === */
     .display-area {
-      position: relative;
-      width: 100%;
-      min-height: 380px;
-      background: #0f172a; /* Dark Slate BG for contrast */
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 4px solid #fff;
-      box-shadow: 0 0 0 1px var(--border);
+      position: relative; width: 100%; min-height: 380px;
+      background: #f1f5f9; /* تغيير الخلفية لفاتح لتتناسب مع ألوان ChatGPT */
+      border-radius: var(--radius-xl); overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      border: 4px solid #fff; box-shadow: 0 0 0 1px var(--border);
     }
 
     .display-area img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      display: none;
-      animation: zoomIn 0.5s ease;
-      z-index: 2;
+      max-width: 100%; max-height: 100%; object-fit: contain;
+      display: none; animation: zoomIn 0.5s ease; z-index: 10;
     }
 
     /* The Placeholder */
     .empty-state {
-      color: rgba(255,255,255,0.4);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
+      color: #94a3b8; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
     }
     .empty-state svg { width: 60px; height: 60px; opacity: 0.5; }
 
-    /* === SCANNER EFFECT === */
-    .scan-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 5;
-      pointer-events: none;
+    /* === NEW: ChatGPT Aurora Effect === */
+    .aurora-loader {
+      position: absolute; inset: 0;
+      background: #ffffff; /* خلفية بيضاء لضمان دمج الألوان */
       display: none; /* مخفي افتراضياً */
-      background: rgba(15, 23, 42, 0.6); /* تعتيم الخلفية قليلاً */
+      z-index: 5;
+      overflow: hidden;
     }
 
-    .scan-beam {
+    /* كرات الألوان العائمة */
+    .blob {
       position: absolute;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: #a855f7; /* Purple Beam */
-      box-shadow: 
-        0 0 10px #a855f7, 
-        0 0 20px #d946ef;
-      animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      top: -10%;
+      border-radius: 50%;
+      filter: blur(60px); /* سر النعومة */
+      opacity: 0.8;
+      animation: float 8s infinite alternate ease-in-out;
     }
-    
-    .scan-grid {
-      position: absolute;
-      inset: 0;
-      background-size: 50px 50px;
-      background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-      mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
-      -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
-      animation: gridMove 20s linear infinite;
+
+    /* ألوان الباستيل الناعمة (مثل صورة ChatGPT) */
+    .blob-1 {
+      width: 120%; height: 120%; top: -20%; left: -20%;
+      background: #ffe3e0; /* وردي فاتح */
+    }
+    .blob-2 {
+      width: 90%; height: 90%; bottom: -10%; right: -20%;
+      background: #eedbff; /* بنفسجي فاتح */
+      animation-delay: -2s;
+    }
+    .blob-3 {
+      width: 80%; height: 80%; top: 30%; right: 20%;
+      background: #fff5db; /* كريمي/أصفر فاتح */
+      animation-delay: -4s;
     }
 
     .loading-status {
-      position: absolute;
-      bottom: 30px;
-      left: 0; right: 0;
-      text-align: center;
-      color: #e2e8f0;
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 6; font-size: 15px; font-weight: 700;
+      color: #475569; letter-spacing: 0.5px;
+      animation: pulseText 2s infinite ease-in-out;
     }
 
     /* === Footer / Download === */
     .download-bar {
-      margin-top: 16px;
-      display: none;
-      animation: slideUp 0.3s ease;
+      margin-top: 16px; display: none; animation: slideUp 0.3s ease;
     }
     .btn-download {
-      width: 100%;
-      padding: 12px;
-      background: var(--text-main);
-      color: white;
-      border: none;
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      transition: 0.2s;
+      width: 100%; padding: 12px; background: var(--text-main);
+      color: white; border: none; border-radius: var(--radius-md);
+      font-weight: 700; cursor: pointer; display: flex; justify-content: center;
+      gap: 10px; transition: 0.2s;
     }
     .btn-download:hover { background: #000; }
 
     /* === Animations === */
-    @keyframes scan {
-      0% { top: 0%; opacity: 0; }
-      15% { opacity: 1; }
-      85% { opacity: 1; }
-      100% { top: 100%; opacity: 0; }
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0, 0) scale(1); }
     }
-    @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 500px; } }
+    @keyframes pulseText { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
     @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
     /* === Toast === */
     .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--text-main);
-      color: white;
-      padding: 10px 24px;
-      border-radius: 50px;
-      font-size: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      display: none;
-      z-index: 999;
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--text-main); color: white; padding: 10px 24px;
+      border-radius: 50px; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: none; z-index: 999;
     }
 
     /* Responsive */
@@ -385,14 +270,15 @@
     <button class="btn-sec" onclick="fillRandom()">🎲 مثال</button>
   </div>
 
-  <!-- Image Display & Scanner -->
+  <!-- Image Display & Aurora Effect -->
   <div class="display-area" id="displayArea">
     
-    <!-- Scanner Animation -->
-    <div class="scan-overlay" id="scanOverlay">
-      <div class="scan-grid"></div>
-      <div class="scan-beam"></div>
-      <div class="loading-status" id="loadingText">جاري تهيئة النظام...</div>
+    <!-- ✅ تأثير الـ Aurora الجديد (ChatGPT Style) -->
+    <div class="aurora-loader" id="auroraLoader">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <div class="loading-status" id="loadingText">جاري تهيئة الإبداع...</div>
     </div>
 
     <!-- Empty State -->
@@ -422,9 +308,9 @@
   const loadingMessages = [
     "🚀 الاتصال بالسيرفر...",
     "🧠 الذكاء الاصطناعي يفكر...",
-    "🎨 يتم الآن رسم التفاصيل...",
-    "💡 ضبط الإضاءة والألوان...",
-    "✨ وضع اللمسات الأخيرة..."
+    "🎨 يتم الآن دمج الألوان...",
+    "💡 ضبط الإضاءة والظلال...",
+    "✨ وضع اللمسات السحرية..."
   ];
   let msgInterval;
 
@@ -454,19 +340,20 @@
     showToast("تم اختيار مثال عشوائي 🎲");
   }
 
-  // --- تشغيل الأنيميشن ---
+  // --- تشغيل الأنيميشن (تعديل ليدعم الـ Aurora) ---
   function startLoading() {
-    const overlay = document.getElementById('scanOverlay');
+    const loader = document.getElementById('auroraLoader'); // الجديد
     const txt = document.getElementById('loadingText');
     const btn = document.getElementById('generateBtn');
     const empty = document.getElementById('emptyState');
     const img = document.getElementById('resultImage');
     const dl = document.getElementById('downloadBar');
 
-    overlay.style.display = 'block';
+    loader.style.display = 'block'; // إظهار أنيميشن الـ Aurora
     empty.style.display = 'none';
     img.style.display = 'none';
     dl.style.display = 'none';
+    
     btn.disabled = true;
     btn.style.opacity = '0.7';
     document.getElementById('btnText').textContent = "جاري التوليد...";
@@ -481,10 +368,10 @@
 
   function stopLoading(success) {
     clearInterval(msgInterval);
-    const overlay = document.getElementById('scanOverlay');
+    const loader = document.getElementById('auroraLoader');
     const btn = document.getElementById('generateBtn');
     
-    overlay.style.display = 'none';
+    loader.style.display = 'none'; // إخفاء الأنيميشن
     btn.disabled = false;
     btn.style.opacity = '1';
     document.getElementById('btnText').textContent = "توليد مرة أخرى";
@@ -505,7 +392,7 @@
     startLoading();
 
     try {
-      // محاكاة الاتصال بالسيرفر (استبدل هذا بالرابط الفعلي الخاص بك)
+      // محاكاة الاتصال بالسيرفر
       const response = await fetch('/.netlify/functions/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
