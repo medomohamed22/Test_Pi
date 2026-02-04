@@ -230,25 +230,29 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 </head>
 
 <body>
-<div class="toast" id="toast"><span id="toastText"></span><button class="x" onclick="hideToast()">×</button></div>
+<div class="toast" id="toast">
+  <span id="toastText"></span>
+  <button class="x" onclick="hideToast()">×</button>
+</div>
 
 <header>
   <h1>Pi Dev Hub</h1>
   <div class="headerRow">
     <input id="search" placeholder="بحث..." />
-    <div class="headerActions">
-      <span class="chip" id="userChip"><span class="dot"></span><span id="userChipText">ضيف</span></span>
-      <button id="loginBtn">تسجيل دخول Pi</button>
+  
+      <button id="loginBtn">تسجيل دخول </button>
       <!-- ✅ logout removed -->
     </div>
   </div>
 </header>
 
 <main>
-  <section id="home" class="grid"></section>
-  <section id="projects" class="grid hidden"></section>
+  <!-- صفحات -->
+  <section id="home" class="grid page"></section>
+  <section id="projects" class="grid hidden page"></section>
 
-  <section id="group" class="hidden">
+  <!-- ✅ Group page -->
+  <section id="group" class="hidden page">
     <div class="card">
       <div class="row" style="margin-top:0">
         <div>
@@ -257,47 +261,53 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
         </div>
         <div class="actions">
           <button class="iconBtn" onclick="leaveGroup()">مغادرة</button>
-          <button class="btnGhost btnSmall" onclick="show('projects', document.querySelector('[data-tab=projects]'))">رجوع</button>
+          <button class="iconBtn" onclick="show('projects', document.querySelector('[data-tab=projects]'))">رجوع</button>
         </div>
       </div>
+
       <hr />
+
       <div class="chatWrap">
         <div class="chatBox">
           <div class="chatMsgs" id="chatMsgs"></div>
+
           <div class="chatSend">
             <label class="fileBtn" title="إرسال صورة">
               📎
               <input id="imgInput" type="file" accept="image/*" />
             </label>
+
             <input id="msgText" type="text" placeholder="اكتب رسالة..." />
             <button class="primaryBtn" onclick="sendMessage()">إرسال</button>
           </div>
-          <div class="help">✅ رفع الصور يتم على Supabase Storage Bucket: <b>project_uploads</b></div>
+
+          <div class="help">
+            ✅ رفع الصور يتم على Supabase Storage Bucket: <b>project_uploads</b>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ✅ Codes page -->
-<!-- ✅ Codes page -->
-<section id="codes" class="hidden">
-  <div class="card" style="margin-bottom:14px">
-    <h3 style="margin:0 0 6px">أكواد Pi</h3>
-    <div class="mut">قسم الأكواد + زر نسخ. (الأدمن: <b>medomohamed22</b>)</div>
-  </div>
-  
-  <div class="card" style="margin-bottom:14px">
-    <h3 style="margin:0 0 6px;color:#7B2FF7">أكواد الأدمن ⭐</h3>
-    <div class="mut">الأكواد الرسمية من: <b>medomohamed22</b></div>
-  </div>
-  <section id="codesAdminGrid" class="grid"></section>
-  
-  <div class="card" style="margin:14px 0">
-    <h3 style="margin:0 0 6px;color:#7B2FF7">أكواد أخرى 🌍</h3>
-    <div class="mut">مساهمات المجتمع</div>
-  </div>
-  <section id="codesOtherGrid" class="grid"></section>
-</section>
+  <section id="codes" class="hidden page">
+    <div class="card" style="margin-bottom:14px">
+      <h3 style="margin:0 0 6px">أكواد Pi</h3>
+      <div class="mut">قسم الأكواد + زر نسخ. (الأدمن: <b>medomohamed22</b>)</div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <h3 style="margin:0 0 6px;color:#7B2FF7">أكواد الأدمن ⭐</h3>
+      <div class="mut">الأكواد الرسمية من: <b>medomohamed22</b></div>
+    </div>
+    <section id="codesAdminGrid" class="grid"></section>
+
+    <div class="card" style="margin:14px 0">
+      <h3 style="margin:0 0 6px;color:#7B2FF7">أكواد أخرى 🌍</h3>
+      <div class="mut">مساهمات المجتمع</div>
+    </div>
+    <section id="codesOtherGrid" class="grid"></section>
+  </section>
 </main>
 
 <nav>
@@ -309,15 +319,21 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 <!-- Floating + -->
 <div class="fabBackdrop" id="fabBackdrop" onclick="toggleFab(false)"></div>
 <button class="fab" id="fabBtn" title="إضافة" onclick="toggleFab()">+</button>
+
 <div class="fabMenu" id="fabMenu">
   <div class="fabItem" onclick="toggleFab(false); openCreatePost()">
-    <span>📝</span><div><b>إضافة بوست</b><div class="mut small">نقاش + لايك + كومنت</div></div>
+    <span>📝</span>
+    <div><b>إضافة بوست</b><div class="mut small">نقاش + لايك + كومنت</div></div>
   </div>
+
   <div class="fabItem" onclick="toggleFab(false); openCreateProject()">
-    <span>👥</span><div><b>إضافة مشروع</b><div class="mut small">جروب شات للمشاركة</div></div>
+    <span>👥</span>
+    <div><b>إضافة مشروع</b><div class="mut small">جروب شات للمشاركة</div></div>
   </div>
+
   <div class="fabItem" id="addCodeItem" onclick="toggleFab(false); openCreateCode()" style="display:none">
-    <span>💾</span><div><b>إضافة كود</b><div class="mut small">للأدمن فقط</div></div>
+    <span>💾</span>
+    <div><b>إضافة كود</b><div class="mut small">للأدمن فقط</div></div>
   </div>
 </div>
 
@@ -358,6 +374,9 @@ let state = {
 };
 
 /* UI */
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
 function toast(msg, ok=true){
   const el=document.getElementById('toast');
   if(!el) return;
@@ -373,13 +392,16 @@ function hideToast(){
   const el=document.getElementById('toast');
   if(el) el.classList.remove('show');
 }
-function escapeHtml(s){
-  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
 function openModal(title, innerHtml){
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalBody').innerHTML = innerHtml;
-  document.getElementById('modalWrap').classList.add('show');
+  const t = document.getElementById('modalTitle');
+  const b = document.getElementById('modalBody');
+  const w = document.getElementById('modalWrap');
+  if(!t || !b || !w) return;
+
+  t.textContent = title;
+  b.innerHTML = innerHtml;
+  w.classList.add('show');
+
   setTimeout(()=>{
     const first = document.querySelector('#modalBody input, #modalBody textarea');
     if(first) first.focus();
@@ -439,8 +461,7 @@ function setUIAuthed(){
     if(chipText) chipText.textContent = piUser.username;
     loginBtn?.classList.add('hidden');
     if(fabBtn) fabBtn.style.display = 'block';
-
-    // ✅ أي حد يقدر يضيف كود (مش الأدمن بس)
+    // ✅ أي حد يقدر يضيف كود
     if(addCodeItem) addCodeItem.style.display = 'flex';
   }else{
     chip?.classList.remove('ok');
@@ -452,17 +473,17 @@ function setUIAuthed(){
   }
 }
 
+/* ✅ FIX: hide pages فقط مش كل sections */
 function show(id, btn){
   if(id !== 'group') stopProjectRealtime();
 
-  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('main .page').forEach(s=>s.classList.add('hidden'));
   const sec = document.getElementById(id);
   if(sec) sec.classList.remove('hidden');
 
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
 
-  // ✅ لما تفتح تبويب الأكواد ارسم الأكواد فوراً
   if(id === 'codes') renderCodes();
 }
 
@@ -624,7 +645,6 @@ async function openComments(postId){
       <div class="field">
         <label>إضافة تعليق</label>
         <textarea id="c_body" placeholder="اكتب تعليق..."></textarea>
-        <div class="help">ملاحظة: لازم تكون عامل Pi Login علشان تضيف تعليق.</div>
       </div>
       <div class="footerBtns">
         <button class="primaryBtn" onclick="addComment('${postId}')">نشر التعليق</button>
@@ -642,7 +662,7 @@ async function addComment(postId){
   if(!isVerified) return toast('لازم تسجل دخول Pi الأول', false);
   try{
     if(!authUid) await refreshAuthUid();
-    const body = (document.getElementById('c_body').value||'').trim();
+    const body = (document.getElementById('c_body')?.value||'').trim();
     if(!body) return toast('اكتب تعليق', false);
 
     const payload = {
@@ -984,7 +1004,7 @@ function openCreateProject(){
       <input id="pr_name" placeholder="مثال: Pi Shop" />
     </div>
     <div class="field">
-      <label>وصف مختصر (المشكلة/المطلوب)</label>
+      <label>وصف مختصر</label>
       <textarea id="pr_desc" placeholder="اكتب وصف سريع..."></textarea>
     </div>
     <div class="field">
@@ -1048,7 +1068,7 @@ function codeCardHtml(x){
     <div class="codeCard">
       <div class="codeHead">
         <div>
-          <div class="codeTitle">${escapeHtml(x.title)}</div>
+          <div class="codeTitle">${escapeHtml(x.title || '')}</div>
           <div class="mut small">
             ${escapeHtml(x.created_by_pi_username||'')}
             ${official ? ` <span class="badge">⭐ رسمي</span>` : ``}
@@ -1067,8 +1087,6 @@ function codeCardHtml(x){
 function renderCodes() {
   const adminGrid = document.getElementById('codesAdminGrid');
   const otherGrid = document.getElementById('codesOtherGrid');
-
-  // ✅ حماية من null
   if (!adminGrid || !otherGrid) return;
 
   const q = (state.q || '').toLowerCase().trim();
