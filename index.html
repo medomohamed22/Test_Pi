@@ -1,420 +1,253 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Purple Gemini Chat</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
-<!-- مكتبة تحويل النص إلى تنسيق (Markdown) -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Art Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7B2FF7;
+            --secondary: #9B6DFF;
+            --bg: #0f0c29;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
 
-<style>
-/* === إعدادات الألوان === */
-:root{
-  --p:#7B2FF7; --p2:#9B6DFF;
-  --bg:#F6F3FF; --card:#FFFFFF;
-  --stroke:#E6E0FF;
-  --text:#1F1F2E; --mut:#6B6B85;
-  --userBg:#EDE7FF; --aiBg:#FFFFFF;
-  --r:16px;
-  --shadow: 0 4px 15px rgba(123,47,247,.06);
-}
-*{box-sizing:border-box;font-family:Tajawal,system-ui}
+        * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
 
-/* === تخطيط الصفحة الثابت === */
-html, body {
-  height: 100%; margin: 0; padding: 0;
-  overflow: hidden; background: var(--bg); color: var(--text);
-}
-body {
-  display: flex; flex-direction: column;
-  height: 100dvh;
-}
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-/* الهيدر */
-header {
-  flex: 0 0 auto;
-  background: linear-gradient(135deg,var(--p),var(--p2));
-  color: #fff; padding: 14px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10;
-}
-header .title { font-weight: 900; font-size: 16px; }
-header .badge {
-  background: rgba(255,255,255,.18);
-  border: 1px solid rgba(255,255,255,.25);
-  padding: 6px 10px; border-radius: 999px; font-size: 12px;
-}
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+        }
 
-/* الحاوية */
-.wrap {
-  flex: 1; display: flex; flex-direction: column;
-  overflow: hidden; width: min(920px, 100%);
-  margin: 0 auto; position: relative;
-}
+        h1 {
+            margin: 0 0 10px;
+            background: linear-gradient(to right, #fff, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+            font-weight: 900;
+        }
 
-/* منطقة الشات */
-.chat {
-  flex: 1; overflow-y: auto;
-  padding: 16px; display: flex; flex-direction: column; gap: 16px;
-  scroll-behavior: smooth; padding-bottom: 30px;
-}
+        p.subtitle {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
 
-/* === تصميم الفقاعات === */
-.bubble {
-  width: fit-content;
-  max-width: 90%;
-  border-radius: var(--r);
-  padding: 12px 16px;
-  line-height: 1.6;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--stroke);
-  position: relative;
-  font-size: 15px;
-  display: flex; flex-direction: column; gap: 6px;
-}
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
 
-.bubble.user {
-  align-self: flex-start; 
-  background: var(--userBg); 
-  border-bottom-right-radius: 4px;
-}
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 15px;
+            color: #fff;
+            font-size: 16px;
+            resize: none;
+            height: 100px;
+            outline: none;
+            transition: 0.3s;
+        }
 
-.bubble.ai {
-  align-self: flex-end; 
-  background: var(--aiBg); 
-  border-bottom-left-radius: 4px;
-  width: 95%; /* رسالة الـ AI عريضة */
-}
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(123, 47, 247, 0.3);
+        }
 
-/* === تنسيق محتوى Markdown داخل الرد === */
-/* هذا الجزء هو المسؤول عن شكل القوائم والخط العريض */
-.markdown-content {
-  overflow-wrap: break-word;
-}
-.markdown-content p { margin: 0 0 8px 0; }
-.markdown-content p:last-child { margin-bottom: 0; }
-.markdown-content strong { color: var(--p); font-weight: 900; }
-.markdown-content ul, .markdown-content ol { margin: 8px 0; padding-right: 20px; }
-.markdown-content li { margin-bottom: 4px; }
-.markdown-content h1, .markdown-content h2, .markdown-content h3 { 
-  margin: 10px 0 6px; font-size: 1.1em; color: var(--p); 
-}
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
 
-/* تنسيق الكود داخل الرسالة */
-.markdown-content pre {
-  background: #282c34;
-  color: #abb2bf;
-  padding: 12px;
-  border-radius: 8px;
-  overflow-x: auto;
-  direction: ltr;
-  text-align: left;
-  margin: 10px 0;
-  font-family: 'Consolas', monospace;
-}
-.markdown-content code {
-  font-family: 'Consolas', monospace;
-  background: rgba(0,0,0,0.05);
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-.markdown-content pre code {
-  background: transparent;
-  padding: 0;
-  color: inherit;
-}
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(123, 47, 247, 0.4);
+        }
 
-/* شريط الأدوات أسفل الرد */
-.ai-actions {
-  display: flex; justify-content: space-between; align-items: center;
-  border-top: 1px solid var(--stroke);
-  padding-top: 8px; margin-top: 4px;
-}
-.ai-label { font-size: 11px; color: var(--mut); font-weight: bold; }
+        button:disabled {
+            opacity: 0.7;
+            cursor: wait;
+            transform: none;
+        }
 
-.copy-btn {
-  background: transparent; border: 1px solid var(--stroke);
-  color: var(--p); padding: 4px 12px; border-radius: 6px;
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  transition: .2s;
-}
-.copy-btn:active { transform: scale(0.95); }
+        /* منطقة عرض الصورة */
+        .image-area {
+            margin-top: 25px;
+            min-height: 300px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px dashed var(--border);
+            position: relative;
+        }
 
-/* === الفوتر === */
-footer {
-  flex: 0 0 auto; background: var(--card);
-  border-top: 1px solid var(--stroke); padding: 12px; z-index: 10;
-}
-.composer {
-  width: min(920px, 100%); margin: 0 auto;
-  display: flex; gap: 10px; align-items: flex-end;
-}
-textarea {
-  flex: 1; resize: none; min-height: 46px; max-height: 140px;
-  padding: 12px; border-radius: 16px; border: 1px solid var(--stroke);
-  outline: none; font-size: 15px; background: #faf9ff;
-}
-textarea:focus { border-color: var(--p); background: #fff; }
-button#sendBtn {
-  border: none; background: var(--p); color: #fff;
-  padding: 0 20px; height: 46px; border-radius: 14px;
-  font-weight: 800; cursor: pointer; white-space: nowrap;
-}
-button:disabled { opacity: .6; cursor: not-allowed; }
-.smallHint { width: min(920px, 100%); margin: 6px auto 0; color: var(--mut); font-size: 11px; text-align: center; }
+        .image-area img {
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            display: none;
+            animation: fadeIn 1s ease;
+        }
 
-/* أنيميشن التحميل */
-.dotTyping { display: inline-flex; gap: 4px; align-items: center; }
-.dotTyping span {
-  width: 6px; height: 6px; border-radius: 50%; background: var(--p);
-  animation: bounce 1s infinite ease-in-out; opacity: .75;
-}
-.dotTyping span:nth-child(2) { animation-delay: .12s; }
-.dotTyping span:nth-child(3) { animation-delay: .24s; }
-@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.55}40%{transform:translateY(-5px);opacity:1}}
+        .placeholder-text {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
 
-</style>
+        /* Loading Spinner */
+        .loader {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+
+        /* Download Button */
+        .download-btn {
+            margin-top: 15px;
+            background: transparent;
+            border: 1px solid var(--border);
+            display: none; /* مخفي حتى يتم توليد الصورة */
+        }
+        .download-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
 </head>
-
 <body>
 
-<header>
-  <div class="title">💜 Purple Chat</div>
-  <div class="badge" id="status">● Ready</div>
-</header>
+<div class="container">
+    <h1>✨ Gemini Image Gen</h1>
+    <p class="subtitle">حول خيالك إلى صور باستخدام الذكاء الاصطناعي</p>
 
-<div class="wrap">
-  <div class="chat" id="chat"></div>
+    <div class="input-group">
+        <textarea id="prompt" placeholder="صف الصورة التي تريد تخيلها... (مثلاً: نانو بنانا في مطعم فضائي)"></textarea>
+    </div>
+
+    <button id="generateBtn" onclick="generateImage()">
+        <span>🎨 توليد الصورة</span>
+    </button>
+
+    <div class="image-area" id="imageContainer">
+        <div class="placeholder-text" id="placeholder">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <span>الصورة ستظهر هنا</span>
+        </div>
+        <div class="loader" id="loader"></div>
+        <img id="resultImage" src="" alt="AI Generated Image">
+    </div>
+
+    <button id="downloadBtn" class="download-btn" onclick="downloadImage()">
+        ⬇️ تحميل الصورة
+    </button>
 </div>
 
-<footer>
-  <div class="composer">
-    <textarea id="msg" placeholder="اكتب رسالتك..." rows="1"></textarea>
-    <button id="sendBtn" type="button">إرسال</button>
-  </div>
-  <div class="smallHint">Enter للإرسال — Shift+Enter لسطر جديد</div>
-</footer>
-
+<!-- استخدم نفس كود HTML السابق مع تغيير بسيط في دالة الجافاسكريبت -->
 <script>
-/* =======================================
-   ✅ إعدادات النظام
-   ======================================= */
-const API_ENDPOINT = "/api/chat";
-
-// إعدادات مكتبة marked لفتح الروابط في نافذة جديدة
-marked.use({
-  renderer: {
-    link(href, title, text) {
-      return `<a href="${href}" target="_blank" style="color:#7B2FF7;text-decoration:underline;">${text}</a>`;
+  async function generateImage() {
+    const promptInput = document.getElementById('prompt');
+    const generateBtn = document.getElementById('generateBtn');
+    const resultImage = document.getElementById('resultImage');
+    const loader = document.getElementById('loader');
+    const placeholder = document.getElementById('placeholder');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    const text = promptInput.value.trim();
+    if (!text) return alert("من فضلك اكتب وصفاً للصورة!");
+    
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = "⏳ جاري الرسم...";
+    resultImage.style.display = "none";
+    placeholder.style.display = "none";
+    loader.style.display = "block";
+    downloadBtn.style.display = "none";
+    
+    try {
+      // الرابط الجديد ليناسب Netlify Functions
+      const response = await fetch('/.netlify/functions/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: text })
+      });
+      
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      
+      resultImage.src = `data:image/png;base64,${data.image}`;
+      resultImage.style.display = "block";
+      loader.style.display = "none";
+      downloadBtn.style.display = "block";
+      
+    } catch (err) {
+      alert("حدث خطأ: " + err.message);
+      placeholder.style.display = "flex";
+      loader.style.display = "none";
+    } finally {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = "🎨 توليد صورة جديدة";
     }
   }
-});
-
-const chat = document.getElementById('chat');
-const msgEl = document.getElementById('msg');
-const sendBtn = document.getElementById('sendBtn');
-const statusEl = document.getElementById('status');
-
-let convo = [];
-
-/* =======================================
-   ✅ دوال المساعدة
-   ======================================= */
-
-function setStatus(text, busy=false){
-  statusEl.textContent = "● " + text;
-  statusEl.style.opacity = busy ? 0.9 : 1;
-}
-
-function scrollToBottom(){
-  chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
-}
-
-function escapeHtml(text) {
-  if(!text) return text;
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-async function copyText(text, btn){
-  try{
-    await navigator.clipboard.writeText(text);
-    const oldText = btn.textContent;
-    btn.textContent = "✅ تم النسخ";
-    btn.style.borderColor = "#2ecc71";
-    btn.style.color = "#2ecc71";
-    setTimeout(()=>{
-      btn.textContent = oldText;
-      btn.style = "";
-    }, 1500);
-  }catch(err){
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
-    btn.textContent = "✅ تم";
-  }
-}
-
-/* =======================================
-   ✅ إدارة الرسائل والعرض
-   ======================================= */
-
-// إضافة رسالة المستخدم
-function addUserBubble(text){
-  const b = document.createElement('div');
-  b.className = 'bubble user';
-  b.innerHTML = `
-    <div class="markdown-content">${escapeHtml(text)}</div>
-    <div class="ai-actions" style="border:none; margin:0; padding:0; justify-content:flex-start;">
-        <span class="ai-label">👤 أنت</span>
-    </div>`;
-  chat.appendChild(b);
-  scrollToBottom();
-}
-
-// إضافة فقاعة الـ AI (فارغة في البداية)
-function addAiBubble(){
-  const b = document.createElement('div');
-  b.className = 'bubble ai';
-  
-  // الهيكل الداخلي
-  b.innerHTML = `
-    <div class="markdown-content" id="streamContent">
-       <div class="dotTyping"><span></span><span></span><span></span></div>
-    </div>
-    <div class="ai-actions">
-      <span class="ai-label">🤖 AI Gemini</span>
-      <button class="copy-btn">📄 نسخ الرد</button>
-    </div>
-  `;
-  
-  chat.appendChild(b);
-  scrollToBottom();
-  return b;
-}
-
-/* =======================================
-   ✅ دالة الكتابة المتطورة (Gemini Style)
-   ======================================= */
-async function streamText(bubble, fullText){
-  const contentDiv = bubble.querySelector('#streamContent');
-  const copyBtn = bubble.querySelector('.copy-btn');
-  
-  // تفعيل زر النسخ للنص النهائي
-  copyBtn.onclick = () => copyText(fullText, copyBtn);
-
-  // إزالة نقاط التحميل
-  contentDiv.innerHTML = "";
-  
-  // سرعة الكتابة (كلما قل الرقم زادت السرعة)
-  const delay = 10; 
-  
-  // تقسيم النص لقطع صغيرة لمحاكاة التدفق
-  let currentText = "";
-  
-  return new Promise(resolve => {
-    let i = 0;
-    const interval = setInterval(() => {
-      // نأخذ حرفين أو ثلاثة لتسريع العملية قليلاً إذا كان النص طويلاً
-      const chunk = fullText.slice(i, i + 3); 
-      currentText += chunk;
-      i += 3;
-
-      // 🔥 السحر هنا: في كل مرة نقوم بتحويل النص المتراكم إلى HTML
-      // هذا يجعل التنسيق (القوائم/الخط العريض) يظهر بمجرد اكتمال علاماته
-      contentDiv.innerHTML = marked.parse(currentText);
-      
-      scrollToBottom();
-
-      if(i >= fullText.length){
-        clearInterval(interval);
-        // تأكد من عرض النص كاملاً في النهاية
-        contentDiv.innerHTML = marked.parse(fullText);
-        resolve();
-      }
-    }, delay);
-  });
-}
-
-/* =======================================
-   ✅ الإرسال
-   ======================================= */
-async function send(){
-  const text = (msgEl.value || '').trim();
-  if(!text) return;
-
-  addUserBubble(text);
-  convo.push({ role:'user', text });
-
-  msgEl.value = '';
-  msgEl.style.height = '46px';
-  sendBtn.disabled = true;
-  msgEl.disabled = true;
-  setStatus("Thinking...", true);
-
-  // إنشاء فقاعة الـ AI
-  const aiBubble = addAiBubble();
-
-  try{
-    const res = await fetch(API_ENDPOINT, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        message: text,
-        history: convo.slice(0, -1)
-      })
-    });
-
-    const textData = await res.text();
-    let data;
-    try { data = JSON.parse(textData); }
-    catch { throw new Error("Server Error"); }
-
-    if(!res.ok) throw new Error(data.error || "Error");
-
-    const reply = data.reply || "";
-
-    // تشغيل تأثير الكتابة Gemini
-    await streamText(aiBubble, reply);
-
-    convo.push({ role:'model', text: reply });
-    setStatus("Ready", false);
-
-  }catch(err){
-    aiBubble.querySelector('#streamContent').innerHTML = `<span style="color:red">❌ حدث خطأ: ${err.message}</span>`;
-    setStatus("Error", false);
-  }finally{
-    sendBtn.disabled = false;
-    msgEl.disabled = false;
-    msgEl.focus();
-    scrollToBottom();
-  }
-}
-
-// Autosize textarea
-function autosize(){
-  msgEl.style.height = 'auto';
-  msgEl.style.height = Math.min(msgEl.scrollHeight, 140) + 'px';
-}
-msgEl.addEventListener('input', autosize);
-msgEl.addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter' && !e.shiftKey){
-    e.preventDefault();
-    send();
-  }
-});
-sendBtn.addEventListener('click', send);
-
-// رسالة ترحيبية
-window.onload = () => {
-  const b = addAiBubble();
-  streamText(b, "**أهلاً بك!** 👋\nأنا هنا للمساعدة. سأقوم بتنسيق ردودي بشكل **جميل** (نقاط، قوائم، أكواد) وسأكتبها لك مباشرة مثل Gemini.\n\nجرب أن تطلب مني *طريقة عمل البيتزا* أو *كود HTML*.");
-};
+  // دالة التحميل تبقى كما هي...
 </script>
 </body>
 </html>
