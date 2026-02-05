@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,11 +6,11 @@
   <title>AI Studio | Pi Network</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   
-  <!-- مكتبة Pi SDK فقط، لا حاجة لـ supabase-js هنا للكتابة -->
+  <!-- مكتبة Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
   <style>
-    /* نفس التنسيقات السابقة تماماً */
+    /* التنسيقات كما هي */
     :root {
       --primary: #6366f1; --primary-dark: #4f46e5; --accent: #d946ef;
       --bg-body: #f8fafc; --surface: #ffffff; --text-main: #1e293b;
@@ -134,7 +133,7 @@
 
 <script>
   // تهيئة Pi
-  Pi.init({ version: "2.0", sandbox: false }); // 🔴 تأكد من هذا الإعداد
+  Pi.init({ version: "2.0", sandbox: false });
 
   let currentUser = null;
 
@@ -143,7 +142,6 @@
     try {
       const auth = await Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
       
-      // إرسال البيانات للباك اند للتحقق والتخزين
       const response = await fetch('/.netlify/functions/user-auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,7 +153,6 @@
       const userData = await response.json();
       currentUser = userData;
 
-      // تحديث الواجهة
       document.getElementById('piLoginBtn').innerHTML = `👤 ${auth.user.username}`;
       document.getElementById('piLoginBtn').classList.add('logged-in');
       document.getElementById('piLoginBtn').onclick = null;
@@ -169,7 +166,6 @@
   }
 
   function onIncompletePaymentFound(payment) {
-    // يمكن هنا إرسال الدفعة المعلقة للباك اند للتحقق منها
     console.log("دفعة غير مكتملة:", payment);
   }
 
@@ -188,7 +184,7 @@
     }
   }
 
-  // --- 2. الدفع الحقيقي (Server-Side Logic) ---
+  // --- 2. الدفع الحقيقي (Server-Side) ---
   function buyTokens() {
     const paymentData = {
       amount: 1, 
@@ -198,7 +194,6 @@
 
     const callbacks = {
       onReadyForServerApproval: async (paymentId) => {
-        // استدعاء الباك اند للموافقة
         try {
           await fetch('/.netlify/functions/pi-approve', {
             method: 'POST', body: JSON.stringify({ paymentId })
@@ -206,14 +201,13 @@
         } catch(e) { console.error(e); }
       },
       onReadyForServerCompletion: async (paymentId, txid) => {
-        // استدعاء الباك اند للإنهاء وإضافة الرصيد
         try {
           const res = await fetch('/.netlify/functions/pi-complete', {
             method: 'POST', body: JSON.stringify({ paymentId, txid })
           });
           const data = await res.json();
           if(data.success) {
-            currentUser.tokens = data.newBalance; // تحديث الواجهة
+            currentUser.tokens = data.newBalance;
             updateUIState();
             showToast("✅ تم الشحن بنجاح!");
           }
@@ -228,21 +222,21 @@
     Pi.createPayment(paymentData, callbacks);
   }
 
-  // --- 3. توليد الصورة وخصم الرصيد (Server-Side) ---
+  // --- 3. توليد الصورة (ربط بالباك اند الجديد) ---
   async function generateImage() {
     if (!currentUser || currentUser.tokens < 1) return showToast("رصيدك غير كافٍ");
     
     const promptVal = document.getElementById('prompt').value.trim();
     if (!promptVal) return showToast("أدخل وصف للصورة");
 
-    // بدء التحميل
+    // بدء واجهة التحميل
     document.getElementById('auroraLoader').style.display = 'block';
     document.getElementById('generateBtn').disabled = true;
     document.getElementById('resultImage').style.display = 'none';
     document.getElementById('emptyState').style.display = 'none';
 
     try {
-      // 1. طلب خصم الرصيد من السيرفر
+      // أ: خصم الرصيد
       const deductRes = await fetch('/.netlify/functions/deduct-credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -251,22 +245,33 @@
       
       if (!deductRes.ok) throw new Error("فشل خصم الرصيد");
       
+      // تحديث الرصيد فوراً
       const deductData = await deductRes.json();
       currentUser.tokens = deductData.remaining;
       updateUIState();
 
-      // 2. توليد الصورة (يفضل أن يكون هذا الرابط أيضاً عبر الـ Backend لإخفاء الـ API Key)
-      // لكن حالياً سنستخدم الطريقة المباشرة للتوضيح
-      await new Promise(r => setTimeout(r, 2000)); // محاكاة وقت المعالجة
-      const fakeImage = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptVal)}?width=1024&height=1024&nologo=true`;
-      
+      // ب: إرسال الطلب إلى Hugging Face عبر الباك اند
+      const genRes = await fetch('/.netlify/functions/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: promptVal })
+      });
+
+      const genData = await genRes.json();
+
+      if (!genRes.ok) {
+        throw new Error(genData.error || "فشل التوليد، حاول مرة أخرى");
+      }
+
+      // ج: عرض الصورة
       const img = document.getElementById('resultImage');
       img.onload = () => {
         document.getElementById('auroraLoader').style.display = 'none';
         img.style.display = 'block';
         document.getElementById('generateBtn').disabled = false;
       };
-      img.src = fakeImage;
+      // الباك اند يعيد dataUrl جاهزة للعرض
+      img.src = genData.dataUrl;
 
     } catch (err) {
       console.error(err);
