@@ -1,4 +1,5 @@
 
+
 const { createClient } = require('@supabase/supabase-js');
 
 // استخدم مفتاح SERVICE_ROLE لكي يمتلك الباك اند صلاحية التعديل
