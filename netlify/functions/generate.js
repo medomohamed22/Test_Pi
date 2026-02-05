@@ -36,9 +36,10 @@ export async function handler(event) {
       };
     }
 
-    // --- التغيير الأساسي هنا ---
-    // استخدمنا موديل SD 2.1 لأنه أكثر استقراراً حالياً على الـ API المجاني
-    const modelUrl = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1";
+    // --- الحل النهائي للمشكلة ---
+    // 1. استخدمنا الرابط الجديد (router)
+    // 2. استخدمنا موديل SDXL الأساسي لأنه الموديل المدعوم رسمياً الآن على الروتر الجديد
+    const modelUrl = "https://router.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0";
     
     let payload = {
       inputs: prompt,
@@ -48,8 +49,9 @@ export async function handler(event) {
       }
     };
     
+    // وضع التعديل (Pix2Pix) سنحوله ليعتمد على قوة وصف SDXL حالياً
     if (modelId === 'pix2pix' && image) {
-      console.log("Image-to-Image request received");
+      console.log("Image-to-Image mode requested via SDXL");
       payload.inputs = prompt;
     }
     
@@ -59,8 +61,7 @@ export async function handler(event) {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0" // إضافة User-Agent لتجنب حظر الطلبات البرمجية
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
     });
@@ -69,19 +70,19 @@ export async function handler(event) {
       const errText = await resp.text();
       console.error("HF Error Details:", errText);
       
-      // إذا استمرت مشكلة "التحويل للراوتر"، سنحاول توجيه الطلب يدوياً
-      if (errText.includes("router.huggingface.co")) {
-         return {
-          statusCode: 502,
+      // إذا كان الموديل لا يزال يحمل (Loading)
+      if (errText.includes("loading") || resp.status === 503) {
+        return {
+          statusCode: 503,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: JSON.stringify({ error: "السيرفر يطلب تحديث الرابط، جاري الصيانة.." })
+          body: JSON.stringify({ error: "الموديل يستيقظ من النوم.. حاول مجدداً خلال 10 ثوانٍ" })
         };
       }
-
+      
       return {
         statusCode: resp.status,
         headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ error: `خطأ من الموديل: ${resp.status}` })
+        body: JSON.stringify({ error: `حدث خطأ في الاتصال: ${resp.status}` })
       };
     }
     
@@ -104,7 +105,7 @@ export async function handler(event) {
     return {
       statusCode: 500,
       headers: { "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({ error: err.message || "خطأ في السيرفر الداخلي" })
+      body: JSON.stringify({ error: "فشل السيرفر في معالجة الطلب" })
     };
   }
 }
