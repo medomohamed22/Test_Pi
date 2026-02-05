@@ -1,4 +1,3 @@
-
 const axios = require('axios');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -17,26 +16,49 @@ exports.handler = async (event) => {
       { headers: { 'Authorization': `Key ${PI_API_KEY}` } }
     );
     
+    // استخراج بيانات المستخدم والكمية من استجابة Pi API
     const uid = piRes.data.user_uid;
+    // استخراج عدد التوكينات من الـ metadata التي أرسلتها من الفرونت إند
+    const tokensToIncrease = piRes.data.metadata.quantity || 10; 
 
-    // 2. تحديث حالة الدفع إلى COMPLETED
-    const { error: dbError } = await supabase
+    // 2. تحديث حالة الدفع في قاعدة البيانات
+    await supabase
       .from('payments')
       .update({ status: 'COMPLETED', txid: txid })
       .eq('payment_id', paymentId);
+
+    // 3. إضافة الرصيد للمستخدم بشكل ديناميكي
+    // ملاحظة: يفضل استخدام rpc (Database Function) لتفادي مشاكل التزامن، 
+    // ولكن سنستخدم الطريقة البسيطة حالياً بناءً على كودك:
+    
+    const { data: user, error: fetchError } = await supabase
+      .from('users')
+      .select('tokens')
+      .eq('pi_id', uid)
+      .single();
+
+    if (fetchError) throw new Error("User not found");
+
+    const newBalance = (user.tokens || 0) + tokensToIncrease;
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ tokens: newBalance })
+      .eq('pi_id', uid);
       
-    if(dbError) throw new Error("DB Error");
+    if (updateError) throw new Error("Failed to update balance");
 
-    // 3. إضافة الرصيد للمستخدم (هنا يتم التعديل الآمن)
-    // سنجلب الرصيد الحالي ونضيف عليه
-    const { data: user } = await supabase.from('users').select('tokens').eq('pi_id', uid).single();
-    const newBalance = (user.tokens || 0) + 10; // 10 توكين لكل عملية
-
-    await supabase.from('users').update({ tokens: newBalance }).eq('pi_id', uid);
-
-    return { statusCode: 200, body: JSON.stringify({ success: true, newBalance }) };
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify({ 
+        success: true, 
+        newBalance, 
+        added: tokensToIncrease 
+      }) 
+    };
 
   } catch (error) {
+    console.error("Payment Error:", error.message);
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 };
