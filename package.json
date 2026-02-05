@@ -1,14 +1,8 @@
 {
   "name": "ai-studio-pi",
+  "private": true,
   "version": "1.0.0",
-  "description": "AI Studio with Pi Network Payment",
-  "main": "index.html",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "axios": "^1.6.0"
-  }
-}
-{
+  "type": "module",
   "dependencies": {
     "@huggingface/inference": "^3.0.0"
   }
