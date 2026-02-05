@@ -1,8 +1,8 @@
 {
-  "name": "ai-studio-netlify",
+  "name": "ai-studio",
   "private": true,
-  "type": "module",
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.1"
+    "@supabase/supabase-js": "^2.49.0",
+    "axios": "^1.6.0"
   }
 }
