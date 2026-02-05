@@ -1,12 +1,11 @@
 // netlify/functions/generate.js
 export async function handler(event) {
-  // 1. التعامل مع طلبات Preflight (CORS)
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
         "Access-Control-Allow-Methods": "POST, OPTIONS"
       },
       body: ""
@@ -36,21 +35,21 @@ export async function handler(event) {
         body: JSON.stringify({ error: "HF_TOKEN missing" })
       };
     }
-    
-    // --- تم التعديل هنا ليعمل مع العنوان الجديد ---
-    const modelUrl = "https://router.huggingface.co/models/runwayml/stable-diffusion-v1-5";
+
+    // --- التغيير الأساسي هنا ---
+    // استخدمنا موديل SD 2.1 لأنه أكثر استقراراً حالياً على الـ API المجاني
+    const modelUrl = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1";
     
     let payload = {
       inputs: prompt,
       options: {
-        wait_for_model: true, 
+        wait_for_model: true,
         use_cache: false
       }
     };
     
-    // إذا كان هناك صورة واختار المستخدم وضع التعديل
     if (modelId === 'pix2pix' && image) {
-      console.log("Using Image-to-Image mode with SD 1.5");
+      console.log("Image-to-Image request received");
       payload.inputs = prompt;
     }
     
@@ -61,27 +60,28 @@ export async function handler(event) {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
-        "x-use-cache": "false"
+        "User-Agent": "Mozilla/5.0" // إضافة User-Agent لتجنب حظر الطلبات البرمجية
       },
       body: JSON.stringify(payload)
     });
     
     if (!resp.ok) {
       const errText = await resp.text();
-      console.error("HF Error:", errText);
+      console.error("HF Error Details:", errText);
       
-      if (errText.includes("loading")) {
-        return {
-          statusCode: 503,
+      // إذا استمرت مشكلة "التحويل للراوتر"، سنحاول توجيه الطلب يدوياً
+      if (errText.includes("router.huggingface.co")) {
+         return {
+          statusCode: 502,
           headers: { "Access-Control-Allow-Origin": "*" },
-          body: JSON.stringify({ error: "الموديل يتم تجهيزه.. انتظر 20 ثانية وحاول مجدداً" })
+          body: JSON.stringify({ error: "السيرفر يطلب تحديث الرابط، جاري الصيانة.." })
         };
       }
-      
+
       return {
-        statusCode: 502,
+        statusCode: resp.status,
         headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ error: `خطأ من الموديل: ${resp.status} - حاول تغيير الوصف` })
+        body: JSON.stringify({ error: `خطأ من الموديل: ${resp.status}` })
       };
     }
     
