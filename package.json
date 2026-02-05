@@ -8,3 +8,8 @@
     "axios": "^1.6.0"
   }
 }
+{
+  "dependencies": {
+    "@huggingface/inference": "^3.0.0"
+  }
+}
