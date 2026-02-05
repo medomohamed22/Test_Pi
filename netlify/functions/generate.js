@@ -1,5 +1,4 @@
 // netlify/functions/generate.js
-import { Buffer } from 'buffer';
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -19,25 +18,29 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
+/**
+ * ✅ HF Router (بديل api-inference القديم)
+ * endpoint الصحيح:
+ * https://router.huggingface.co/hf-inference/models/<model_id>
+ */
 function hfUrl(model) {
-  return `https://api-inference.huggingface.co/models/${model}`;
+  return `https://router.huggingface.co/hf-inference/models/${model}`;
 }
 
-// دالة تحويل النص إلى صورة (Text to Image)
 async function hfTextToImage({ token, model, prompt, width, height, steps }) {
   const resp = await fetch(hfUrl(model), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      "x-use-cache": "false"
+      Accept: "image/png",
     },
     body: JSON.stringify({
       inputs: prompt,
       parameters: {
         width,
         height,
-        num_inference_steps: steps, // بعض الموديلات قد تتجاهل هذا وتستخدم الافتراضي
+        num_inference_steps: steps,
       },
       options: { wait_for_model: true, use_cache: false },
     }),
@@ -45,60 +48,40 @@ async function hfTextToImage({ token, model, prompt, width, height, steps }) {
   
   if (!resp.ok) {
     const t = await resp.text();
-    throw new Error(`HF ${model} error: ${resp.status} - ${t}`);
+    throw new Error(`HF ${model} ${resp.status}: ${t}`);
   }
   
   const buf = Buffer.from(await resp.arrayBuffer());
   return buf.toString("base64");
 }
 
-// ✅ دالة تعديل الصورة (Image to Image) محسنة
+/**
+ * img2img/edit: هنستخدم multipart/form-data
+ * (ده الأكثر توافقًا لموديلات التعديل)
+ */
 async function hfImageToImage({ token, model, prompt, imageDataUrl, steps }) {
-  // استخراج البيانات الخام من Base64
-  const base64Data = imageDataUrl.replace(/^data:image\/\w+;base64,/, "");
-  const imageBuf = Buffer.from(base64Data, "base64");
+  const base64 = String(imageDataUrl || "").split(",")[1] || "";
+  if (!base64) throw new Error("No image base64 provided");
   
-  // بالنسبة لـ SD 1.5 Img2Img، الأفضل إرسال الصورة كـ Binary Body مباشرة
-  // أو إرسال Inputs كـ JSON حسب الموديل، ولكن الطريقة الأكثر استقراراً مع SD 1.5 هي:
-  // استخدام API Inference القياسي الذي يقبل JSON مع parameters
-  // ولكن هنا سنستخدم Fetch مباشر للـ Blob لأن SD 1.5 يدعم ذلك جيداً
+  const imageBuf = Buffer.from(base64, "base64");
+  
+  const form = new FormData();
+  form.append("inputs", prompt);
+  form.append("parameters", JSON.stringify({ num_inference_steps: steps }));
+  form.append("image", new Blob([imageBuf]), "image.png");
   
   const resp = await fetch(hfUrl(model), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      "x-use-cache": "false"
+      Accept: "image/png",
     },
-    // في HuggingFace Inference API لموديلات SD، النمط الشائع لـ Img2Img هو ارسال الصورة والبرومبت
-    // ولكن الطريقة الأضمن هي تحميل الصورة كـ base64 داخل الـ inputs أحياناً،
-    // أو استخدام مكتبة @huggingface/inference.
-    // هنا سنستخدم نهج الـ "Wait for model" مع JSON بسيط يقبل الصورة كمدخل إن أمكن،
-    // لكن SD v1.5 API الأساسي قد يتطلب بايلود مختلف. لنجرب الطريقة الأضمن حالياً (Buffer):
-    
-    // ملاحظة: Stable Diffusion Inference API عبر HTTP يتطلب الحيلة التالية لـ Img2Img:
-    // لا يوجد endpoint موحد سهل، لذا سنستخدم "runwayml/stable-diffusion-v1-5" 
-    // الذي يتصرف بذكاء إذا أرسلنا له صورة.
-    
-    // سنعود لاستخدام JSON inputs لأنها الأكثر توافقاً مع Free Tier حالياً
-    body: JSON.stringify({
-      inputs: prompt,
-      parameters: {
-        num_inference_steps: steps,
-        strength: 0.75, // قوة التغيير (0.75 يعني تغيير ملحوظ مع الحفاظ على الهيكل)
-        image: base64Data // بعض الـ endpoints تقبل الصورة هكذا
-      },
-      options: { wait_for_model: true }
-    }),
+    body: form,
   });
   
-  // إذا فشلت الطريقة أعلاه، سنستخدم Fallback (خطة ب) في الموديلات
   if (!resp.ok) {
-    // محاولة ثانية بطريقة أخرى (FormData) إذا فشل الـ JSON
-    // ملاحظة: هذا يتطلب بيئة Node تدعم FormData (Netlify Functions تدعمها)
-    // ولكن للتبسيط سنعتمد على الخطأ ليقوم الـ Handler بتجربة الموديل التالي
     const t = await resp.text();
-    throw new Error(`HF Img2Img ${model} error: ${resp.status} - ${t}`);
+    throw new Error(`HF ${model} ${resp.status}: ${t}`);
   }
   
   const buf = Buffer.from(await resp.arrayBuffer());
@@ -109,24 +92,33 @@ const MODELS = {
   // Text → Image
   sdxl: [
     "stabilityai/stable-diffusion-xl-base-1.0",
-    "runwayml/stable-diffusion-v1-5",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
   ],
   sd15: [
-    "runwayml/stable-diffusion-v1-5",
-    "CompVis/stable-diffusion-v1-4",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
+    "stabilityai/stable-diffusion-xl-base-1.0",
   ],
   auto: [
     "stabilityai/stable-diffusion-xl-base-1.0",
-    "runwayml/stable-diffusion-v1-5",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
   ],
   
-  // ✅ Image → Image / Edit
-  // تم تغيير الموديل هنا. بدلاً من pix2pix (الذي يفشل غالباً)، نستخدم SD 1.5
-  // SD 1.5 قوي جداً في تحويل صورة لصورة بناءً على الوصف
+  // Image → Image / Edit
   pix2pix: [
-    "runwayml/stable-diffusion-v1-5",
-    "CompVis/stable-diffusion-v1-4"
-  ]
+    "timbrooks/instruct-pix2pix",
+    // fallback (مش “edit” صريح، لكنه ينفع img2img في حالات)
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
+  ],
+  
+  // توافق مع IDs قديمة عندك
+  lightning: [
+    "stabilityai/stable-diffusion-xl-base-1.0",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
+  ],
+  hypersd: [
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
+    "stabilityai/stable-diffusion-xl-base-1.0",
+  ],
 };
 
 export async function handler(event) {
@@ -139,64 +131,54 @@ export async function handler(event) {
   
   try {
     const token = process.env.HF_TOKEN;
-    if (!token) return json(500, { error: "HF_TOKEN missing in server" });
+    if (!token) return json(500, { error: "HF_TOKEN missing" });
     
     const body = JSON.parse(event.body || "{}");
     const prompt = String(body.prompt || "").trim();
-    const image = body.image || null; // Base64 image for editing
+    const image = body.image || null;
     
+    // خليك متسامح مع أسماء modelId المختلفة اللي عندك في الواجهة
     const rawModelId = String(body.modelId || "auto").toLowerCase();
-    // التأكد من أن الموديل موجود في القائمة
-    const modelId = Object.keys(MODELS).includes(rawModelId) ? rawModelId : "auto";
+    const modelId = ["sdxl", "sd15", "pix2pix", "auto", "lightning", "hypersd"].includes(rawModelId) ?
+      rawModelId :
+      "auto";
     
     if (!prompt) return json(400, { error: "الرجاء كتابة وصف للصورة" });
     
-    // تحديد الأبعاد (يتم تجاهلها أحياناً في img2img للحفاظ على أبعاد الأصل)
-    const width = clamp(Number(body.width || 1024), 256, 1024);
-    const height = clamp(Number(body.height || 1024), 256, 1024);
+    const width = clamp(Number(body.width || 1024), 256, 1536);
+    const height = clamp(Number(body.height || 1024), 256, 1536);
     
-    // عدد الخطوات (20-30 جيد للسرعة والجودة)
-    const steps = clamp(Number(body.steps || 25), 10, 50);
+    // خطوات أقل أسرع ومناسبة للتير المجاني
+    const steps = clamp(Number(body.steps || (modelId === "sd15" ? 18 : 22)), 8, 35);
     
-    const isImg2Img = (modelId === "pix2pix");
-    if (isImg2Img && !image) return json(400, { error: "وضع التعديل يحتاج إلى صورة مرجعية" });
+    const isImg2Img = modelId === "pix2pix";
+    if (isImg2Img && !image) return json(400, { error: "نموذج التعديل يحتاج صورة" });
     
-    // اختيار قائمة الموديلات المناسبة
-    const tryModels = MODELS[modelId];
+    const tryModels = MODELS[modelId] || MODELS.auto;
     
     let lastErr = null;
     
-    // تجربة الموديلات بالترتيب (إذا فشل الأول يجرب الثاني)
     for (const m of tryModels) {
       try {
-        console.log(`[HF] Generating... Mode=${isImg2Img ? "Img2Img" : "Txt2Img"}, Model=${m}`);
+        console.log(`[HF] mode=${isImg2Img ? "img2img" : "txt2img"} rawModelId=${rawModelId} modelId=${modelId} model=${m}`);
         
-        let base64;
-        if (isImg2Img) {
-          // استخدام دالة Image to Image
-          // ملاحظة: SD 1.5 عبر API أحياناً يفضل استخدام endpoint Text-to-Image 
-          // ولكن مع تمرير الصورة كـ parameter، وهذا ما نحاول فعله
-          base64 = await hfImageToImage({ token, model: m, prompt, imageDataUrl: image, steps });
-        } else {
-          base64 = await hfTextToImage({ token, model: m, prompt, width, height, steps });
-        }
+        const base64 = !isImg2Img ?
+          await hfTextToImage({ token, model: m, prompt, width, height, steps }) :
+          await hfImageToImage({ token, model: m, prompt, imageDataUrl: image, steps });
         
         return json(200, { dataUrl: `data:image/png;base64,${base64}` });
       } catch (e) {
         lastErr = e;
-        console.error(`[HF] Model ${m} Failed:`, e.message);
-        // استمرار للحلقة التالية لتجربة الموديل البديل
+        console.error(`[HF] failed model=${m} =>`, e?.message || e);
       }
     }
     
-    // إذا فشلت كل المحاولات
     return json(502, {
-      error: "السيرفرات مشغولة حالياً أو الموديل لا يستجيب. حاول مرة أخرى أو غيّر الموديل.",
-      detail: String(lastErr?.message || "Unknown error"),
+      error: "الموديلات مجانية لكنها مش متاحة/مزدحمة أو مش مدعومة على حسابك حاليًا. جرّب بعد دقيقة أو بدّل الموديل.",
+      detail: String(lastErr?.message || lastErr || "unknown"),
     });
-    
   } catch (err) {
-    console.error("Global Server Error:", err);
-    return json(500, { error: "خطأ داخلي في المعالجة" });
+    console.error("Server Error:", err);
+    return json(500, { error: "فشل في معالجة الطلب" });
   }
 }
