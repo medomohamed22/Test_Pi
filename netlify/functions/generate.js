@@ -51,7 +51,8 @@ async function hfTextToImage({ token, model, prompt, width, height, steps }) {
 }
 
 /**
- * img2img في HF Inference API: أفضل صيغة “آمنة” هي إرسال multipart/form-data
+ * img2img في HF Inference API:
+ * أفضل صيغة “آمنة” هي multipart/form-data
  * لأن بعض موديلات img2img بتتوقع صورة ملف + prompt.
  */
 async function hfImageToImage({ token, model, prompt, imageDataUrl, steps }) {
@@ -71,7 +72,6 @@ async function hfImageToImage({ token, model, prompt, imageDataUrl, steps }) {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      // لا تضيف Content-Type هنا، fetch هيحطه تلقائيًا مع boundary
       Accept: "image/png",
     },
     body: form,
@@ -90,7 +90,6 @@ const MODELS = {
   // Text→Image
   sdxl: [
     "stabilityai/stable-diffusion-xl-base-1.0",
-    "stabilityai/stable-diffusion-xl-refiner-1.0",
     "runwayml/stable-diffusion-v1-5",
     "stable-diffusion-v1-5/stable-diffusion-v1-5",
   ],
@@ -108,11 +107,11 @@ const MODELS = {
   // Image→Image / Edit
   pix2pix: [
     "timbrooks/instruct-pix2pix",
-    // fallback عام: img2img شائع (لو احتجته)
+    // fallback (ممكن يشتغل كـ img2img عند بعض السيرفرات)
     "runwayml/stable-diffusion-v1-5",
   ],
 
-  // mapping IDs القديمة اللي كنت حاططها
+  // IDs قديمة (لو حد لسه بيبعتها)
   lightning: [
     "stabilityai/stable-diffusion-xl-base-1.0",
     "runwayml/stable-diffusion-v1-5",
@@ -121,6 +120,23 @@ const MODELS = {
     "runwayml/stable-diffusion-v1-5",
     "stabilityai/stable-diffusion-xl-base-1.0",
   ],
+};
+
+// ✅ Alias mapping عشان تقدر تعتمد على الـ select القديم بدون تعديل
+const MODEL_ALIAS = {
+  // القيم اللي كانت في الواجهة بتاعتك الجديدة/القديمة
+  "txt2img_flux": "sdxl",
+  "txt2img_lightning": "sd15",
+  "img2img_qwen_edit": "pix2pix",
+  "img2img_flux_kontext": "pix2pix",
+
+  // قيم قديمة شفتها في اللوجز عندك
+  "sdxl": "sdxl",
+  "sd15": "sd15",
+  "auto": "auto",
+  "pix2pix": "pix2pix",
+  "lightning": "sd15",
+  "hypersd": "sd15",
 };
 
 export async function handler(event) {
@@ -138,7 +154,10 @@ export async function handler(event) {
     const body = JSON.parse(event.body || "{}");
     const prompt = String(body.prompt || "").trim();
     const image = body.image || null;
-    const modelId = String(body.modelId || "auto").toLowerCase();
+
+    // ✅ هنا التعديل الأساسي
+    const rawModelId = String(body.modelId || "auto").toLowerCase();
+    const modelId = MODEL_ALIAS[rawModelId] || "auto";
 
     if (!prompt) return json(400, { error: "الرجاء كتابة وصف للصورة" });
 
@@ -148,6 +167,7 @@ export async function handler(event) {
     // خطوات أقل = أسرع (ومناسب للـ free tier)
     const steps = clamp(Number(body.steps || (modelId === "sd15" ? 18 : 22)), 8, 35);
 
+    // ✅ لازم isImg2Img يبقى بعد ما عرفنا modelId النهائي
     const isImg2Img = modelId === "pix2pix";
     if (isImg2Img && !image) return json(400, { error: "نموذج التعديل يحتاج صورة" });
 
@@ -157,7 +177,7 @@ export async function handler(event) {
 
     for (const m of tryModels) {
       try {
-        console.log(`[HF] mode=${isImg2Img ? "img2img" : "txt2img"} modelId=${modelId} model=${m}`);
+        console.log(`[HF] mode=${isImg2Img ? "img2img" : "txt2img"} rawModelId=${rawModelId} modelId=${modelId} model=${m}`);
 
         const base64 = !isImg2Img
           ? await hfTextToImage({ token, model: m, prompt, width, height, steps })
