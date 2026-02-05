@@ -6,6 +6,7 @@
   <title>AI Studio | Pi Network</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 
+  <!-- Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
   <style>
@@ -211,12 +212,12 @@
     <textarea id="prompt" placeholder="اطلق العنان لخيالك.. قطة في الفضاء، سايبر بانك.."></textarea>
   </div>
 
-  <!-- ✅ أسماء موديلات جديدة (متوافقة مع backend) -->
+  <!-- القائمة المحدثة (لاحظ: pix2pix في الباك اند سيتم التعامل معه كموديل تعديل قوي) -->
   <select id="modelSelect" class="model-selector">
-    <option value="auto">⚡ Auto (أفضل اختيار تلقائي)</option>
-    <option value="sdxl">✨ SDXL (جودة أعلى)</option>
-    <option value="sd15">🧩 SD 1.5 (أخف وأسرع)</option>
-    <option value="pix2pix">✏️ تعديل صورة (Image → Image)</option>
+    <option value="auto">⚡ Auto (تلقائي ذكي)</option>
+    <option value="sdxl">✨ SDXL (جودة فائقة)</option>
+    <option value="sd15">🧩 SD 1.5 (سريع ومستقر)</option>
+    <option value="pix2pix">✏️ تعديل صورة (Image to Image)</option>
   </select>
 
   <div class="settings-panel">
@@ -282,15 +283,16 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // تهيئة Pi SDK
   Pi.init({ version: "2.0", sandbox: false });
 
   let currentUser = null;
   let timerInterval = null;
-
   let currentRatio = "1:1";
   let currentStylePrompt = "";
   let uploadedImageBase64 = null;
 
+  // تسجيل الدخول
   async function loginPi() {
     try {
       const auth = await Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
@@ -335,6 +337,7 @@
     document.getElementById('buyMenu').classList.toggle('open');
   }
 
+  // شراء التوكينات
   function buyTokens(amountPi) {
     document.getElementById('buyMenu').classList.remove('open');
     let tokensQuantity = amountPi * 10;
@@ -385,11 +388,9 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         uploadedImageBase64 = e.target.result;
-
         const preview = document.getElementById('uploadPreview');
         preview.src = uploadedImageBase64;
         preview.style.display = 'block';
-
         document.getElementById('uploadBtn').classList.add('has-file');
         showToast("🖼️ تم إرفاق الصورة المرجعية");
       };
@@ -416,6 +417,7 @@
     return modelId === "pix2pix";
   }
 
+  // دالة التوليد الرئيسية
   async function generateImage() {
     if (!currentUser || currentUser.tokens < 1) return showToast("رصيدك غير كافٍ");
 
@@ -423,9 +425,8 @@
     const modelId = document.getElementById('modelSelect').value;
     const editMode = isEditMode(modelId);
 
-    // ✅ متطلبات كل وضع
     if (editMode && !uploadedImageBase64) return showToast("⚠️ وضع التعديل يحتاج صورة");
-    if (editMode && !promptVal) return showToast("⚠️ اكتب وصف للتعديل (مثال: خلّيها سايبر بانك)");
+    if (editMode && !promptVal) return showToast("⚠️ اكتب وصف للتعديل (مثال: حولها لكرتون)");
     if (!editMode && !promptVal) return showToast("أدخل وصف للصورة");
 
     if (currentStylePrompt && !editMode) {
@@ -446,6 +447,7 @@
     startTimer();
 
     try {
+      // 1. خصم الرصيد أولاً
       const deductRes = await fetch('/.netlify/functions/deduct-credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -455,6 +457,7 @@
       const deductData = await deductRes.json();
       currentUser.tokens = deductData.remaining;
 
+      // 2. إعداد الأبعاد
       let width = 1024, height = 1024;
       if (currentRatio === '16:9') { width = 1024; height = 576; }
       else if (currentRatio === '3:4') { width = 768; height = 1024; }
@@ -468,6 +471,7 @@
         image: editMode ? uploadedImageBase64 : null
       };
 
+      // 3. استدعاء دالة التوليد
       const genRes = await fetch('/.netlify/functions/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -492,7 +496,7 @@
     } catch (err) {
       console.error(err);
       stopTimer();
-      showToast("حدث خطأ: " + (err.message || "حاول مجدداً"));
+      showToast("خطأ: " + (err.message || "حاول مجدداً"));
       document.getElementById('auroraLoader').style.display = 'none';
       genBtn.removeAttribute('data-loading');
       updateUIState();
@@ -500,80 +504,51 @@
     }
   }
 
-  // ✅ زر تحميل/مشاركة “أقوى” داخل Pi Browser / WebView
-  function dataUrlToBlob(dataUrl) {
-    const parts = (dataUrl || "").split(",");
-    if (parts.length < 2) return null;
-    const mime = (parts[0].match(/:(.*?);/) || [])[1] || "image/png";
-    const bstr = atob(parts[1]);
-    let n = bstr.length;
-    const u8 = new Uint8Array(n);
-    while (n--) u8[n] = bstr.charCodeAt(n);
-    return new Blob([u8], { type: mime });
-  }
-
+  // ✅ دالة التحميل المحسنة (المعدلة)
   async function downloadImage() {
     const img = document.getElementById('resultImage');
     const src = img.src;
-    if (!src) return;
+    
+    // التحقق من وجود صورة
+    if (!src || src === "" || src.length < 100) return showToast("⚠️ لا توجد صورة للتحميل");
 
-    showToast("⏳ لحظة واحدة...");
+    showToast("⏳ جاري تحضير الصورة...");
 
-    // 1) Native Share (أفضل تجربة على الموبايل)
     try {
-      const blob = dataUrlToBlob(src);
-      if (blob) {
-        const file = new File([blob], "imagine_ai.png", { type: blob.type || "image/png" });
+      // 1. محاولة استخدام Web Share API (الأفضل للموبايل و Pi Browser)
+      const base64Response = await fetch(src);
+      const blob = await base64Response.blob();
+      const file = new File([blob], "imagine_ai_art.png", { type: "image/png" });
 
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'Imagine AI',
-            text: 'صورة تم توليدها بالذكاء الاصطناعي'
-          });
-          showToast("✅ تم فتح المشاركة");
-          return;
-        }
-      }
-    } catch (e) {
-      console.log("Share failed:", e);
-    }
-
-    // 2) WebView trick: افتح صفحة فيها الصورة لوحدها
-    try {
-      const w = window.open("", "_blank");
-      if (w) {
-        w.document.write(`
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>اضغط مطولاً للحفظ</title>
-          <style>
-            body{margin:0;background:#0b0b12;display:flex;align-items:center;justify-content:center;min-height:100vh}
-            img{max-width:100%;height:auto}
-            .tip{position:fixed;top:12px;left:50%;transform:translateX(-50%);
-                 background:rgba(255,255,255,.12);color:#fff;padding:10px 14px;border-radius:999px;
-                 font-family:Cairo,sans-serif;font-weight:900}
-          </style>
-          <div class="tip">اضغط مطولاً على الصورة للحفظ</div>
-          <img src="${src}" alt="AI Image">
-        `);
-        showToast("⚠️ اضغط مطولاً على الصورة لحفظها");
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Imagine AI Art',
+          text: 'صورة تم إنشاؤها بالذكاء الاصطناعي في Pi Network'
+        });
+        showToast("✅ تم فتح المشاركة");
         return;
       }
     } catch (e) {
-      console.log("Window open failed:", e);
+      console.log("Share API failed:", e);
     }
 
-    // 3) fallback تنزيل (مش دايمًا بيشتغل في Pi Browser)
+    // 2. محاولة التنزيل التقليدي (لأجهزة الكمبيوتر)
     try {
       const link = document.createElement('a');
       link.href = src;
-      link.download = `AI_Gen_${Date.now()}.png`;
+      link.download = `Imagine_AI_${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       showToast("⬇️ جاري التنزيل...");
     } catch (e) {
-      showToast("❌ مش قادر أحفظ على الجهاز من المتصفح ده");
+      // 3. الحل الأخير: فتح الصورة في النافذة ليقوم المستخدم بحفظها يدوياً
+      showToast("⚠️ اضغط مطولاً على الصورة لحفظها");
+      // تأخير بسيط للتأكد من قراءة التوست
+      setTimeout(() => {
+        window.location.href = src;
+      }, 1500);
     }
   }
 
@@ -586,10 +561,10 @@
 
   function fillRandom() {
     const prompts = [
-      "Futuristic city, neon lights",
-      "Astronaut cat on Mars",
-      "Ancient temple, jungle",
-      "Robot portrait, emotional"
+      "Futuristic city, neon lights, cyberpunk",
+      "Cute astronaut cat on Mars, digital art",
+      "Ancient temple in a jungle, realistic",
+      "Robot portrait, emotional, cinematic lighting"
     ];
     document.getElementById('prompt').value = prompts[Math.floor(Math.random() * prompts.length)];
   }
