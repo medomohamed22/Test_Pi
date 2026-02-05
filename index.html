@@ -13,8 +13,9 @@
       --primary: #6366f1; --primary-dark: #4f46e5; --accent: #d946ef;
       --bg-body: #f8fafc; --surface: #ffffff; --text-main: #1e293b;
       --text-sub: #64748b; --border: #e2e8f0; --input-bg: #f1f5f9;
-      --pi-color: #F8A01A; --radius-xl: 24px; --radius-md: 12px;
+      --pi-color: #F8A01A; --radius-xl: 24px; --radius-md: 12px; --radius-sm: 8px;
       --success-bg: #ecfdf5; --success-text: #059669; --success-border: #a7f3d0;
+      --selected-bg: #e0e7ff; --selected-border: #6366f1;
     }
     * { box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
     
@@ -46,7 +47,7 @@
     }
     .btn-login.logged-in { background: rgba(99, 102, 241, 0.1); color: var(--primary); cursor: default; }
 
-    /* Stats Area & Dropdown */
+    /* Stats Area */
     .user-stats { 
         display: none; flex-direction: column; gap: 10px; 
         margin-bottom: 20px; background: #fff; border: 1px solid var(--border); 
@@ -61,139 +62,98 @@
         border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; 
         transition: 0.2s; width: 100%; display: flex; justify-content: space-between; align-items: center;
     }
-    .btn-toggle-buy:active { transform: scale(0.98); }
     
     .buy-options {
         max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out;
         background: #fff; border-radius: 0 0 12px 12px;
     }
     .buy-options.open { max-height: 200px; margin-top: 8px; border: 1px solid var(--border); }
-    
     .buy-option {
         width: 100%; padding: 12px; border: none; background: transparent;
-        border-bottom: 1px solid var(--border); cursor: pointer;
-        display: flex; justify-content: space-between; font-weight: 600; color: var(--text-sub);
-        transition: 0.2s;
+        border-bottom: 1px solid var(--border); cursor: pointer; display: flex; justify-content: space-between; font-weight: 600; color: var(--text-sub); transition: 0.2s;
     }
-    .buy-option:last-child { border-bottom: none; }
     .buy-option:hover { background: #fff9f0; color: var(--pi-color); }
-    .buy-option span:last-child { font-weight: bold; color: var(--pi-color); }
 
-    /* Input & Tags */
-    .input-group { position: relative; margin-bottom: 16px; }
+    /* Input Area */
+    .input-group { position: relative; margin-bottom: 12px; }
     textarea { 
-        width: 100%; height: 100px; background: var(--input-bg); 
+        width: 100%; height: 90px; background: var(--input-bg); 
         border: 2px solid transparent; border-radius: var(--radius-md); 
         padding: 14px; font-size: 15px; resize: none; outline: none; transition: 0.3s; 
     }
     textarea:focus { background: #fff; border-color: var(--primary); box-shadow: 0 4px 12px rgba(99,102,241,0.1); }
 
-    .chips-scroller { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; padding-bottom: 5px; }
-    .chip { background: #fff; border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-sub); cursor: pointer; white-space: nowrap; transition: 0.2s; }
-    .chip:hover { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,0.05); }
+    /* --- NEW: Settings Panel (Features 1, 2, 4) --- */
+    .settings-panel { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    
+    /* Upload & Ratio Row */
+    .controls-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    
+    /* Feature 4: Upload Box */
+    .upload-btn {
+        flex: 0 0 auto; min-width: 60px; height: 60px;
+        border: 2px dashed var(--border); border-radius: var(--radius-md);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        cursor: pointer; color: var(--text-sub); font-size: 10px; gap: 4px;
+        background: #fff; transition: 0.2s; position: relative; overflow: hidden;
+    }
+    .upload-btn:hover, .upload-btn.has-file { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,0.05); border-style: solid; }
+    .upload-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; display: none; }
+    
+    /* Feature 1: Aspect Ratio Selector */
+    .ratio-group { display: flex; background: var(--input-bg); padding: 4px; border-radius: var(--radius-md); gap: 4px; flex: 1; min-width: max-content; }
+    .ratio-btn {
+        flex: 1; border: none; background: transparent; border-radius: var(--radius-sm);
+        padding: 8px; font-size: 12px; font-weight: 600; color: var(--text-sub);
+        cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s;
+    }
+    .ratio-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .ratio-icon { border: 1.5px solid currentColor; border-radius: 2px; }
+
+    /* Feature 2: Style Selector */
+    .styles-scroller { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 4px 2px; }
+    .style-card {
+        flex: 0 0 auto; width: 80px; height: 50px; border-radius: var(--radius-md);
+        background: var(--input-bg); border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 700; color: var(--text-sub);
+        cursor: pointer; transition: 0.2s; text-align: center; padding: 4px;
+        position: relative; overflow: hidden;
+    }
+    .style-card.active { border-color: var(--primary); background: var(--selected-bg); color: var(--primary); }
+    .style-card::before { content:''; position: absolute; inset: 0; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.4)); }
 
     /* Actions */
     .actions { display: flex; gap: 10px; margin-bottom: 24px; }
     .btn-main { flex: 2; background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; border: none; padding: 12px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
-    
-    /* تنسيق زر التوليد عند التعطيل */
-    .btn-main:disabled { 
-        opacity: 0.7; 
-        cursor: not-allowed; 
-        background: #94a3b8; /* لون رمادي عند التعطيل */
-        box-shadow: none; 
-        transform: none;
-    }
+    .btn-main:disabled { opacity: 0.7; cursor: not-allowed; background: #94a3b8; box-shadow: none; }
+    .btn-sec { flex: 1; background: white; border: 1px solid var(--border); color: var(--text-sub); border-radius: var(--radius-md); font-weight: 600; cursor: pointer; padding: 12px; }
 
-    .btn-sec { flex: 1; background: white; border: 1px solid var(--border); color: var(--text-sub); border-radius: var(--radius-md); font-weight: 600; cursor: pointer; padding: 12px; transition: 0.3s; }
-    .btn-sec:hover { border-color: var(--primary); color: var(--primary); }
-
-    /* Display Area & Animation */
+    /* Display Area */
     .display-area { 
-        position: relative; width: 100%; aspect-ratio: 1/1; 
+        position: relative; width: 100%; aspect-ratio: 1/1; /* Will change dynamically via JS */
         background: #f1f5f9; border-radius: var(--radius-xl); 
         display: flex; align-items: center; justify-content: center; 
         border: 4px solid #fff; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
-        margin-bottom: 12px; /* مسافة لزر التحميل */
+        margin-bottom: 12px; transition: aspect-ratio 0.3s ease;
     }
     .display-area img { width: 100%; height: 100%; object-fit: cover; display: none; z-index: 10; animation: fadeIn 0.5s; }
     
-    /* زر التحميل الجديد */
-    .btn-download {
-        width: 100%;
-        background: var(--success-bg);
-        color: var(--success-text);
-        border: 1px solid var(--success-border);
-        padding: 12px;
-        border-radius: var(--radius-md);
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        display: none; /* مخفي افتراضياً */
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: 0.3s;
-        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
-        animation: fadeIn 0.5s;
-    }
-    .btn-download:hover { background: #d1fae5; transform: translateY(-2px); }
-    .btn-download:active { transform: translateY(0); }
-
-    /* Aurora Loader Container */
-    .aurora-loader { 
-        position: absolute; inset: 0; display: none; z-index: 5; 
-        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-        background-size: 400% 400%;
-        animation: aurora-bg 3s ease infinite;
-    }
-    
-    /* Blurring Overlay & Timer */
-    .loader-overlay {
-        position: absolute; inset: 0; 
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        background: rgba(255, 255, 255, 0.2);
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-    }
-
-    /* Timer Style */
-    .timer-capsule {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 8px 24px;
-        border-radius: 50px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    .timer-icon {
-        width: 18px; height: 18px;
-        border: 2px solid rgba(255, 255, 255, 0.5);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    .timer-count {
-        font-size: 24px; font-weight: 700; color: white;
-        font-variant-numeric: tabular-nums;
-        font-family: 'Segoe UI', sans-serif;
-        letter-spacing: 1px;
-    }
+    /* Loader & Timer */
+    .aurora-loader { position: absolute; inset: 0; display: none; z-index: 5; background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); background-size: 400% 400%; animation: aurora-bg 3s ease infinite; }
+    .loader-overlay { position: absolute; inset: 0; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(255, 255, 255, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .timer-capsule { background: rgba(0, 0, 0, 0.2); padding: 8px 24px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .timer-icon { width: 18px; height: 18px; border: 2px solid rgba(255, 255, 255, 0.5); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+    .timer-count { font-size: 24px; font-weight: 700; color: white; font-variant-numeric: tabular-nums; font-family: 'Segoe UI', sans-serif; letter-spacing: 1px; }
     .timer-label { color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600; margin-left: 5px; }
 
-    .empty-state { color: #94a3b8; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    /* Download Btn */
+    .btn-download { width: 100%; background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); padding: 12px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; animation: fadeIn 0.5s; }
+    .btn-download:hover { background: #d1fae5; transform: translateY(-2px); }
 
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: white; padding: 10px 24px; border-radius: 50px; font-size: 14px; display: none; z-index: 999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: max-content; }
-
-    /* Animations */
-    @keyframes aurora-bg { 
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: white; padding: 10px 24px; border-radius: 50px; font-size: 14px; display: none; z-index: 999; width: max-content; }
+    
+    @keyframes aurora-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
@@ -215,44 +175,70 @@
 
   <div class="user-stats" id="userStats">
     <div class="stats-row">
-        <div class="token-balance">
-            <span>⚡</span> <span id="tokenCount">--</span>
-        </div>
+        <div class="token-balance"><span>⚡</span> <span id="tokenCount">--</span></div>
         <div style="font-size:12px; color:#94a3b8;">رصيدك الحالي</div>
     </div>
-    
     <div class="purchase-container">
         <button class="btn-toggle-buy" onclick="toggleBuyMenu()">
             <span>شراء المزيد من التوكين</span>
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
         </button>
         <div class="buy-options" id="buyMenu">
-            <button class="buy-option" onclick="buyTokens(1)">
-                <span>1 Pi</span>
-                <span>10 توكين</span>
-            </button>
-            <button class="buy-option" onclick="buyTokens(2)">
-                <span>2 Pi</span>
-                <span>20 توكين</span>
-            </button>
-            <button class="buy-option" onclick="buyTokens(3)">
-                <span>3 Pi</span>
-                <span>30 توكين</span>
-            </button>
+            <button class="buy-option" onclick="buyTokens(1)"><span>1 Pi</span><span>10 توكين</span></button>
+            <button class="buy-option" onclick="buyTokens(2)"><span>2 Pi</span><span>20 توكين</span></button>
+            <button class="buy-option" onclick="buyTokens(3)"><span>3 Pi</span><span>30 توكين</span></button>
         </div>
     </div>
   </div>
 
+  <!-- Input Area -->
   <div class="input-group">
     <textarea id="prompt" placeholder="اطلق العنان لخيالك.. قطة في الفضاء، سايبر بانك.."></textarea>
   </div>
 
-  <div class="chips-scroller">
-    <div class="chip" onclick="addTag('Realistic, 8k')">📸 واقعي</div>
-    <div class="chip" onclick="addTag('Cyberpunk')">🤖 سايبر بانك</div>
-    <div class="chip" onclick="addTag('Anime')">🌸 أنيمي</div>
-    <div class="chip" onclick="addTag('Cinematic')">🎬 سينمائي</div>
-    <div class="chip" onclick="addTag('Oil Painting')">🎨 رسم زيتي</div>
+  <!-- New Features: Settings Panel -->
+  <div class="settings-panel">
+      
+      <div class="controls-row">
+          <!-- Feature 4: Upload Image -->
+          <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
+          <label for="imageUpload" class="upload-btn" id="uploadBtn">
+              <img id="uploadPreview" class="upload-preview">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+              <span>صورة</span>
+          </label>
+
+          <!-- Feature 1: Aspect Ratio -->
+          <div class="ratio-group">
+              <button class="ratio-btn active" onclick="setRatio(this, '1:1')">
+                  <div class="ratio-icon" style="width:14px; height:14px;"></div>
+                  1:1
+              </button>
+              <button class="ratio-btn" onclick="setRatio(this, '3:4')">
+                  <div class="ratio-icon" style="width:12px; height:16px;"></div>
+                  3:4
+              </button>
+              <button class="ratio-btn" onclick="setRatio(this, '4:3')">
+                  <div class="ratio-icon" style="width:16px; height:12px;"></div>
+                  4:3
+              </button>
+              <button class="ratio-btn" onclick="setRatio(this, '16:9')">
+                  <div class="ratio-icon" style="width:18px; height:10px;"></div>
+                  16:9
+              </button>
+          </div>
+      </div>
+
+      <!-- Feature 2: Style Selector -->
+      <div class="styles-scroller">
+          <div class="style-card active" onclick="setStyle(this, '')">بدون نمط</div>
+          <div class="style-card" onclick="setStyle(this, 'Cinematic, 8k, highly detailed, dramatic lighting')">🎬 سينمائي</div>
+          <div class="style-card" onclick="setStyle(this, 'Anime style, studio ghibli, vibrant colors')">🌸 أنيمي</div>
+          <div class="style-card" onclick="setStyle(this, 'Cyberpunk, neon lights, futuristic, sci-fi')">🤖 سايبر</div>
+          <div class="style-card" onclick="setStyle(this, '3D render, unreal engine 5, octane render')">🧊 3D</div>
+          <div class="style-card" onclick="setStyle(this, 'Oil painting, van gogh style, textured')">🎨 زيت</div>
+          <div class="style-card" onclick="setStyle(this, 'Realistic photography, 8k, canon r5')">📸 واقعي</div>
+      </div>
   </div>
 
   <div class="actions">
@@ -281,7 +267,6 @@
     <img id="resultImage" src="" alt="AI Art">
   </div>
 
-  <!-- زر التنزيل الجديد -->
   <button id="downloadBtn" class="btn-download" onclick="downloadImage()">
       <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
       تحميل الصورة
@@ -294,8 +279,13 @@
   Pi.init({ version: "2.0", sandbox: false });
   let currentUser = null;
   let timerInterval = null;
+  
+  // State for new features
+  let currentRatio = "1:1";
+  let currentStylePrompt = "";
+  let uploadedImageBase64 = null;
 
-  // --- 1. تسجيل الدخول ---
+  // --- 1. Pi Login ---
   async function loginPi() {
     try {
       const auth = await Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
@@ -321,7 +311,6 @@
     if (currentUser) {
       document.getElementById('tokenCount').innerText = currentUser.tokens;
       const genBtn = document.getElementById('generateBtn');
-      // نفعل الزر فقط إذا كان هناك رصيد ولم يكن في حالة تحميل حالياً
       if (currentUser.tokens > 0 && !genBtn.hasAttribute('data-loading')) {
         genBtn.disabled = false;
         document.getElementById('btnText').innerText = "توليد (1 توكين)";
@@ -332,94 +321,127 @@
     }
   }
 
-  // --- 2. منطق قائمة الشراء والستارة ---
-  function toggleBuyMenu() {
-    const menu = document.getElementById('buyMenu');
-    menu.classList.toggle('open');
-  }
-
-  // --- 3. الدفع الحقيقي المتعدد ---
+  // --- 2. Buy Logic ---
+  function toggleBuyMenu() { document.getElementById('buyMenu').classList.toggle('open'); }
   function buyTokens(amountPi) {
     document.getElementById('buyMenu').classList.remove('open');
     let tokensQuantity = amountPi * 10;
-    
-    const paymentData = {
-      amount: amountPi, 
-      memo: `AI Studio - ${tokensQuantity} Tokens`, 
-      metadata: { type: 'credits', quantity: tokensQuantity } 
-    };
-
+    const paymentData = { amount: amountPi, memo: `AI Studio - ${tokensQuantity} Tokens`, metadata: { type: 'credits', quantity: tokensQuantity } };
     const callbacks = {
-      onReadyForServerApproval: async (paymentId) => {
-        try { await fetch('/.netlify/functions/pi-approve', { method: 'POST', body: JSON.stringify({ paymentId }) }); } catch(e){}
-      },
+      onReadyForServerApproval: async (paymentId) => { try { await fetch('/.netlify/functions/pi-approve', { method: 'POST', body: JSON.stringify({ paymentId }) }); } catch(e){} },
       onReadyForServerCompletion: async (paymentId, txid) => {
         try {
           const res = await fetch('/.netlify/functions/pi-complete', { method: 'POST', body: JSON.stringify({ paymentId, txid }) });
           const data = await res.json();
-          if(data.success) {
-            currentUser.tokens = data.newBalance;
-            updateUIState();
-            showToast(`✅ تم إضافة ${tokensQuantity} توكين`);
-          }
+          if(data.success) { currentUser.tokens = data.newBalance; updateUIState(); showToast(`✅ تم إضافة ${tokensQuantity} توكين`); }
         } catch(e) { showToast("خطأ في التحديث"); }
       },
-      onCancel: () => showToast("تم الإلغاء"),
-      onError: (err) => showToast("خطأ: " + err)
+      onCancel: () => showToast("تم الإلغاء"), onError: (err) => showToast("خطأ: " + err)
     };
     Pi.createPayment(paymentData, callbacks);
   }
 
-  // --- 4. التوليد والعداد المحسن ---
+  // --- 3. New Feature Functions ---
+
+  // Handle Aspect Ratio Selection
+  function setRatio(btn, ratio) {
+      document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentRatio = ratio;
+      
+      // Update Preview Container Aspect Ratio
+      const display = document.getElementById('displayArea');
+      display.style.aspectRatio = ratio.replace(':', '/');
+  }
+
+  // Handle Style Selection
+  function setStyle(card, stylePrompt) {
+      document.querySelectorAll('.style-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      currentStylePrompt = stylePrompt;
+  }
+
+  // Handle Image Upload (Feature 4)
+  function handleImageUpload(input) {
+      if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+              uploadedImageBase64 = e.target.result;
+              const preview = document.getElementById('uploadPreview');
+              preview.src = uploadedImageBase64;
+              preview.style.display = 'block';
+              document.getElementById('uploadBtn').classList.add('has-file');
+              showToast("🖼️ تم إرفاق الصورة المرجعية");
+          };
+          reader.readAsDataURL(input.files[0]);
+      }
+  }
+
+  // --- 4. Generation Logic (Updated) ---
   function startTimer() {
     let startTime = Date.now();
     const timerDisplay = document.getElementById('timerDisplay');
     timerDisplay.innerText = "0.0";
-    
     timerInterval = setInterval(() => {
         let elapsedTime = (Date.now() - startTime) / 1000;
         timerDisplay.innerText = elapsedTime.toFixed(1);
     }, 100);
   }
 
-  function stopTimer() {
-    clearInterval(timerInterval);
-    document.getElementById('timerDisplay').innerText = "0.0";
-  }
+  function stopTimer() { clearInterval(timerInterval); document.getElementById('timerDisplay').innerText = "0.0"; }
 
   async function generateImage() {
     if (!currentUser || currentUser.tokens < 1) return showToast("رصيدك غير كافٍ");
-    const promptVal = document.getElementById('prompt').value.trim();
-    if (!promptVal) return showToast("أدخل وصف للصورة");
+    let promptVal = document.getElementById('prompt').value.trim();
+    if (!promptVal && !uploadedImageBase64) return showToast("أدخل وصف أو ارفع صورة");
+
+    // Append Style Prompt
+    if (currentStylePrompt) {
+        promptVal = `${promptVal}, ${currentStylePrompt}`;
+    }
 
     const genBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    // UI Updates: Disable & Loading State
+    // UI Updates
     document.getElementById('auroraLoader').style.display = 'block';
-    genBtn.disabled = true; // تعطيل الزر
-    genBtn.setAttribute('data-loading', 'true'); // علامة لتمييز حالة التحميل
+    genBtn.disabled = true; 
+    genBtn.setAttribute('data-loading', 'true');
     document.getElementById('btnText').innerText = "جاري التوليد...";
-    
     document.getElementById('resultImage').style.display = 'none';
     document.getElementById('emptyState').style.display = 'none';
-    downloadBtn.style.display = 'none'; // إخفاء زر التنزيل أثناء التوليد الجديد
+    downloadBtn.style.display = 'none';
     
     startTimer();
 
     try {
+      // 1. Deduct Credits
       const deductRes = await fetch('/.netlify/functions/deduct-credits', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid: currentUser.pi_id })
       });
       if (!deductRes.ok) throw new Error("فشل الخصم");
-      
       const deductData = await deductRes.json();
       currentUser.tokens = deductData.remaining;
-      
+
+      // 2. Determine Dimensions
+      let width = 1024, height = 1024;
+      if(currentRatio === '16:9') { width = 1024; height = 576; }
+      else if(currentRatio === '9:16') { width = 576; height = 1024; }
+      else if(currentRatio === '3:4') { width = 768; height = 1024; }
+      else if(currentRatio === '4:3') { width = 1024; height = 768; }
+
+      // 3. Call Generation API (Pass all new parameters)
+      const payload = { 
+          prompt: promptVal,
+          width: width,
+          height: height,
+          image: uploadedImageBase64 // Will be null if no image uploaded
+      };
+
       const genRes = await fetch('/.netlify/functions/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptVal })
+        body: JSON.stringify(payload)
       });
       const genData = await genRes.json();
       if (!genRes.ok) throw new Error(genData.error || "فشل التوليد");
@@ -429,12 +451,9 @@
         stopTimer();
         document.getElementById('auroraLoader').style.display = 'none';
         img.style.display = 'block';
-        
-        // إعادة تفعيل الزر وإظهار زر التنزيل
         genBtn.removeAttribute('data-loading');
-        updateUIState(); // سيعيد النص إلى "توليد (1 توكين)" أو "اشحن"
-        
-        downloadBtn.style.display = 'flex'; // إظهار زر التنزيل
+        updateUIState();
+        downloadBtn.style.display = 'flex';
         showToast("✨ تم إنشاء الصورة بنجاح");
       };
       img.src = genData.dataUrl;
@@ -443,63 +462,34 @@
       console.error(err);
       stopTimer();
       showToast("حدث خطأ، حاول مجدداً");
-      
-      // إعادة ضبط الواجهة عند الخطأ
       document.getElementById('auroraLoader').style.display = 'none';
       genBtn.removeAttribute('data-loading');
       updateUIState();
-      
       document.getElementById('emptyState').style.display = 'flex';
     }
   }
 
-  // --- دالة تنزيل الصورة ---
   function downloadImage() {
       const img = document.getElementById('resultImage');
       if (img.src) {
           const link = document.createElement('a');
           link.href = img.src;
-          const timestamp = new Date().getTime();
-          link.download = `Imagine_AI_${timestamp}.png`;
+          link.download = `AI_Art_${Date.now()}.png`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          showToast("⬇️ جاري التنزيل...");
       }
   }
 
-  // --- Helpers & Random Suggestions ---
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.style.display = 'block';
     setTimeout(() => { t.style.display = 'none'; }, 3000);
   }
-  function addTag(tag) { 
-      const input = document.getElementById('prompt');
-      input.value += (input.value ? ", " : "") + tag; 
-  }
 
-  const randomPrompts = [
-      "Futuristic cyberpunk city with neon lights and flying cars, 8k resolution, cinematic lighting",
-      "A cute astronaut cat exploring Mars, highly detailed, digital art",
-      "Ancient Egyptian temple in a lush jungle, mysterious atmosphere, realistic style",
-      "Portrait of a robot with human emotions, soft lighting, intricate details",
-      "A magical library floating in the clouds, fantasy art, dreamlike",
-      "Underwater city with glowing sea creatures, bioluminescence, 4k",
-      "Samurai warrior standing in a field of cherry blossoms, sunset, epic composition",
-      "Steampunk airship flying over a victorian city, smoke and gears, detailed",
-      "A cozy cabin in a snowy forest, warm light coming from windows, peaceful",
-      "Abstract explosion of colors and shapes, modern art, 3d render",
-      "Dragon resting on a pile of gold coins, dark cave, dramatic lighting",
-      "Cybernetic girl with glowing eyes, rain in the background, blade runner style"
-  ];
-
-  function fillRandom() { 
-      const randomIndex = Math.floor(Math.random() * randomPrompts.length);
-      document.getElementById('prompt').value = randomPrompts[randomIndex];
-      const btn = document.querySelector('.btn-sec');
-      btn.style.transform = "scale(0.95)";
-      setTimeout(() => btn.style.transform = "scale(1)", 150);
+  function fillRandom() {
+      const prompts = ["Futuristic city, neon lights", "Astronaut cat on Mars", "Ancient temple, jungle", "Robot portrait, emotional"];
+      document.getElementById('prompt').value = prompts[Math.floor(Math.random() * prompts.length)];
   }
 </script>
 
