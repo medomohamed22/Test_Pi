@@ -95,7 +95,8 @@
     .actions { display: flex; gap: 10px; margin-bottom: 24px; }
     .btn-main { flex: 2; background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; border: none; padding: 12px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
     .btn-main:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); box-shadow: none; }
-    .btn-sec { flex: 1; background: white; border: 1px solid var(--border); color: var(--text-sub); border-radius: var(--radius-md); font-weight: 600; cursor: pointer; padding: 12px; }
+    .btn-sec { flex: 1; background: white; border: 1px solid var(--border); color: var(--text-sub); border-radius: var(--radius-md); font-weight: 600; cursor: pointer; padding: 12px; transition: 0.3s; }
+    .btn-sec:hover { border-color: var(--primary); color: var(--primary); }
 
     /* Display Area & Animation */
     .display-area { 
@@ -114,7 +115,7 @@
         animation: aurora-bg 3s ease infinite;
     }
     
-    /* Blurring Overlay */
+    /* Blurring Overlay & New Timer Style */
     .loader-overlay {
         position: absolute; inset: 0; 
         backdrop-filter: blur(20px);
@@ -124,12 +125,40 @@
         align-items: center; justify-content: center;
     }
 
-    /* Timer Style */
+    /* تصميم العداد الجديد (كبسولة زجاجية) */
+    .timer-capsule {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 8px 24px;
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .timer-icon {
+        width: 18px; height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
     .timer-count {
-        font-size: 64px; font-weight: 900; color: white;
-        text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        font-size: 24px; 
+        font-weight: 700; 
+        color: white;
         font-variant-numeric: tabular-nums;
-        animation: pulseNum 1s infinite alternate;
+        font-family: 'Segoe UI', sans-serif; /* خط نظيف للأرقام */
+        letter-spacing: 1px;
+    }
+
+    .timer-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        font-weight: 600;
+        margin-left: 5px;
     }
 
     .empty-state { color: #94a3b8; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -142,7 +171,7 @@
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
-    @keyframes pulseNum { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
@@ -200,6 +229,7 @@
     <div class="chip" onclick="addTag('Cyberpunk')">🤖 سايبر بانك</div>
     <div class="chip" onclick="addTag('Anime')">🌸 أنيمي</div>
     <div class="chip" onclick="addTag('Cinematic')">🎬 سينمائي</div>
+    <div class="chip" onclick="addTag('Oil Painting')">🎨 رسم زيتي</div>
   </div>
 
   <div class="actions">
@@ -213,7 +243,12 @@
   <div class="display-area" id="displayArea">
     <div class="aurora-loader" id="auroraLoader">
       <div class="loader-overlay">
-        <div class="timer-count" id="timerDisplay">0</div>
+        <!-- New Timer Structure -->
+        <div class="timer-capsule">
+            <div class="timer-icon"></div>
+            <div class="timer-count" id="timerDisplay">0.0</div>
+            <div class="timer-label">ثانية</div>
+        </div>
       </div>
     </div>
 
@@ -276,9 +311,7 @@
 
   // --- 3. الدفع الحقيقي المتعدد ---
   function buyTokens(amountPi) {
-    // إغلاق القائمة
     document.getElementById('buyMenu').classList.remove('open');
-
     let tokensQuantity = amountPi * 10;
     
     const paymentData = {
@@ -308,20 +341,21 @@
     Pi.createPayment(paymentData, callbacks);
   }
 
-  // --- 4. التوليد والعداد ---
+  // --- 4. التوليد والعداد المحسن ---
   function startTimer() {
-    let seconds = 0;
+    let startTime = Date.now();
     const timerDisplay = document.getElementById('timerDisplay');
-    timerDisplay.innerText = "0";
+    timerDisplay.innerText = "0.0";
+    
     timerInterval = setInterval(() => {
-        seconds++;
-        timerDisplay.innerText = seconds;
-    }, 1000);
+        let elapsedTime = (Date.now() - startTime) / 1000;
+        timerDisplay.innerText = elapsedTime.toFixed(1);
+    }, 100);
   }
 
   function stopTimer() {
     clearInterval(timerInterval);
-    document.getElementById('timerDisplay').innerText = "0";
+    document.getElementById('timerDisplay').innerText = "0.0";
   }
 
   async function generateImage() {
@@ -329,13 +363,12 @@
     const promptVal = document.getElementById('prompt').value.trim();
     if (!promptVal) return showToast("أدخل وصف للصورة");
 
-    // UI Updates
     document.getElementById('auroraLoader').style.display = 'block';
     document.getElementById('generateBtn').disabled = true;
     document.getElementById('resultImage').style.display = 'none';
     document.getElementById('emptyState').style.display = 'none';
     
-    startTimer(); // بدء العداد
+    startTimer();
 
     try {
       const deductRes = await fetch('/.netlify/functions/deduct-credits', {
@@ -374,7 +407,7 @@
     }
   }
 
-  // Helpers
+  // --- Helpers & Random Suggestions ---
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.style.display = 'block';
@@ -384,7 +417,32 @@
       const input = document.getElementById('prompt');
       input.value += (input.value ? ", " : "") + tag; 
   }
-  function fillRandom() { document.getElementById('prompt').value = "Futuristic city with neon lights, 8k, realistic, night time"; }
+
+  // القائمة الموسعة للاقتراحات
+  const randomPrompts = [
+      "Futuristic cyberpunk city with neon lights and flying cars, 8k resolution, cinematic lighting",
+      "A cute astronaut cat exploring Mars, highly detailed, digital art",
+      "Ancient Egyptian temple in a lush jungle, mysterious atmosphere, realistic style",
+      "Portrait of a robot with human emotions, soft lighting, intricate details",
+      "A magical library floating in the clouds, fantasy art, dreamlike",
+      "Underwater city with glowing sea creatures, bioluminescence, 4k",
+      "Samurai warrior standing in a field of cherry blossoms, sunset, epic composition",
+      "Steampunk airship flying over a victorian city, smoke and gears, detailed",
+      "A cozy cabin in a snowy forest, warm light coming from windows, peaceful",
+      "Abstract explosion of colors and shapes, modern art, 3d render",
+      "Dragon resting on a pile of gold coins, dark cave, dramatic lighting",
+      "Cybernetic girl with glowing eyes, rain in the background, blade runner style"
+  ];
+
+  function fillRandom() { 
+      const randomIndex = Math.floor(Math.random() * randomPrompts.length);
+      document.getElementById('prompt').value = randomPrompts[randomIndex];
+      
+      // تأثير بصري بسيط عند الضغط
+      const btn = document.querySelector('.btn-sec');
+      btn.style.transform = "scale(0.95)";
+      setTimeout(() => btn.style.transform = "scale(1)", 150);
+  }
 </script>
 
 </body>
