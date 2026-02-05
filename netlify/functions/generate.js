@@ -1,3 +1,4 @@
+
 // netlify/functions/generate.js
 
 export async function handler(event) {
