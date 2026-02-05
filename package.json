@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@huggingface/inference": "^3.0.0",
-    "@supabase/supabase-js": "^2.49.1"
+    "@supabase/supabase-js": "^2.49.1",
+    "axios": "^1.6.8"
   }
 }
