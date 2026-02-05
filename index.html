@@ -83,6 +83,14 @@
     }
     textarea:focus { background: #fff; border-color: var(--primary); box-shadow: 0 4px 12px rgba(99,102,241,0.1); }
 
+    /* Model Selector (New) */
+    .model-selector {
+        width: 100%; padding: 10px; margin-bottom: 12px;
+        background: var(--input-bg); border: 1px solid var(--border);
+        border-radius: var(--radius-md); color: var(--text-main);
+        font-weight: 600; outline: none; cursor: pointer;
+    }
+
     /* Settings Panel */
     .settings-panel { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
     .controls-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
@@ -188,6 +196,12 @@
   <div class="input-group">
     <textarea id="prompt" placeholder="اطلق العنان لخيالك.. قطة في الفضاء، سايبر بانك.."></textarea>
   </div>
+
+  <!-- New: Model Selector -->
+  <select id="modelSelect" class="model-selector">
+      <option value="sdxl">✨ SDXL 1.0 (توليد قوي من النص)</option>
+      <option value="pix2pix">✏️ Instruct Pix2Pix (تعديل الصور)</option>
+  </select>
 
   <div class="settings-panel">
       <div class="controls-row">
@@ -358,6 +372,12 @@
   async function generateImage() {
     if (!currentUser || currentUser.tokens < 1) return showToast("رصيدك غير كافٍ");
     let promptVal = document.getElementById('prompt').value.trim();
+    const modelId = document.getElementById('modelSelect').value;
+
+    // التحقق من متطلبات كل موديل
+    if (modelId === 'pix2pix' && !uploadedImageBase64) {
+        return showToast("⚠️ نموذج التعديل يحتاج صورة");
+    }
     if (!promptVal && !uploadedImageBase64) return showToast("أدخل وصف أو ارفع صورة");
 
     if (currentStylePrompt) {
@@ -396,7 +416,8 @@
           prompt: promptVal,
           width: width,
           height: height,
-          image: uploadedImageBase64 
+          image: uploadedImageBase64,
+          modelId: modelId // نرسل الموديل المختار
       };
 
       const genRes = await fetch('/.netlify/functions/generate', {
@@ -421,7 +442,7 @@
     } catch (err) {
       console.error(err);
       stopTimer();
-      showToast("حدث خطأ، حاول مجدداً");
+      showToast("حدث خطأ: " + (err.message || "حاول مجدداً"));
       document.getElementById('auroraLoader').style.display = 'none';
       genBtn.removeAttribute('data-loading');
       updateUIState();
@@ -429,15 +450,16 @@
     }
   }
 
-  // --- دالة تحميل محسنة لدعم Pi Browser ---
+  // --- دالة التحميل النهائية (حل مشكلة Pi Browser) ---
   async function downloadImage() {
       const img = document.getElementById('resultImage');
       const src = img.src;
       if (!src) return;
 
-      // محاولة استخدام ميزة المشاركة الأصلية للهاتف (Best for Pi Browser)
+      showToast("⏳ لحظة واحدة...");
+
+      // 1. المحاولة الأولى: المشاركة الأصلية (Native Share)
       try {
-          showToast("⏳ جاري تحضير الصورة...");
           const response = await fetch(src);
           const blob = await response.blob();
           const file = new File([blob], "imagine_ai.png", { type: "image/png" });
@@ -445,29 +467,36 @@
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share({
                   files: [file],
-                  title: 'صورة ذكاء اصطناعي',
-                  text: 'تم توليد الصورة بواسطة AI Studio'
+                  title: 'Imagine AI',
+                  text: 'صورة تم توليدها بالذكاء الاصطناعي'
               });
               showToast("✅ تم فتح المشاركة");
-          } else {
-              throw new Error("Sharing not supported");
+              return;
           }
       } catch (err) {
-          console.log("Share failed, trying legacy download", err);
-          
-          // الطريقة التقليدية كخيار بديل
-          try {
-              const link = document.createElement('a');
-              link.href = src;
-              link.download = `AI_Studio_${Date.now()}.png`;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-          } catch (e) {
-              // الحل الأخير: توجيه المستخدم للحفظ اليدوي
-              showToast("⚠️ اضغط مطولاً على الصورة لحفظها");
-          }
+          console.log("Share failed:", err);
       }
+
+      // 2. المحاولة الثانية: فتح في نافذة جديدة (الحل السحري لـ WebView)
+      // هذا يسمح للمستخدم بالضغط المطول (Long Press) للحفظ
+      try {
+          const newWindow = window.open();
+          if (newWindow) {
+              newWindow.document.write(`<img src="${src}" style="width:100%; height:auto;">`);
+              newWindow.document.title = "اضغط مطولاً للحفظ";
+              showToast("⚠️ اضغط مطولاً على الصورة لحفظها");
+              return;
+          }
+      } catch (e) { console.log("Window open failed"); }
+
+      // 3. المحاولة الثالثة: رابط التحميل التقليدي
+      const link = document.createElement('a');
+      link.href = src;
+      link.download = `AI_Gen_${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("⬇️ جاري التنزيل...");
   }
 
   function showToast(msg) {
