@@ -1,268 +1,158 @@
-
 // netlify/functions/generate.js
+import { InferenceClient } from "@huggingface/inference";
+
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+function json(statusCode, obj) {
+  return {
+    statusCode,
+    headers: { ...CORS, "Content-Type": "application/json" },
+    body: JSON.stringify(obj),
+  };
+}
+
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function dataUrlToBuffer(dataUrl) {
+  const b64 = String(dataUrl || "").split(",")[1] || "";
+  return Buffer.from(b64, "base64");
+}
+
+async function blobToBase64(blob) {
+  const ab = await blob.arrayBuffer();
+  return Buffer.from(ab).toString("base64");
+}
+
+/**
+ * ملاحظة مهمة:
+ * - الموديلات هنا بتتطلب Provider عبر HF Inference Providers
+ * - اخترت fal-ai لأنه غالبًا الأكثر استقرارًا في الصور عبر HF Providers
+ */
+const PROVIDER = "fal-ai";
+
+// mapping من IDs القديمة اللي عندك في الفرونت
+// إلى قوائم موديلات (fallback)
+const PRESETS = {
+  auto: [
+    { model: "black-forest-labs/FLUX.1-schnell", provider: PROVIDER },
+    { model: "ByteDance/SDXL-Lightning", provider: PROVIDER },
+  ],
+  sdxl: [
+    { model: "black-forest-labs/FLUX.1-dev", provider: PROVIDER },
+    { model: "black-forest-labs/FLUX.1-schnell", provider: PROVIDER },
+  ],
+  lightning: [
+    { model: "ByteDance/SDXL-Lightning", provider: PROVIDER },
+    { model: "black-forest-labs/FLUX.1-schnell", provider: PROVIDER },
+  ],
+  hypersd: [
+    { model: "ByteDance/Hyper-SD", provider: PROVIDER },
+    { model: "ByteDance/SDXL-Lightning", provider: PROVIDER },
+  ],
+  sd15: [
+    // لو provider مش موفّر SD1.5 عندك، هيفشل ويروح للفولباك
+    { model: "stable-diffusion-v1-5/stable-diffusion-v1-5", provider: PROVIDER },
+    { model: "ByteDance/SDXL-Lightning", provider: PROVIDER },
+  ],
+  // تعديل الصور (img2img)
+  pix2pix: [
+    { model: "black-forest-labs/FLUX.1-Kontext-dev", provider: PROVIDER },
+    // fallback تاني للتعديل
+    { model: "fal/Qwen-Image-Edit-2511-Multiple-Angles-LoRA", provider: PROVIDER },
+  ],
+};
 
 export async function handler(event) {
-  // ===== CORS =====
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-  
   if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers: corsHeaders, body: "" };
+    return { statusCode: 200, headers: CORS, body: "" };
   }
-  
   if (event.httpMethod !== "POST") {
-    return { statusCode: 405, headers: corsHeaders, body: "Method Not Allowed" };
+    return { statusCode: 405, headers: CORS, body: "Method Not Allowed" };
   }
-  
+
   try {
-    const body = JSON.parse(event.body || "{}");
-    const {
-      prompt,
-      image, // dataUrl or base64
-      modelId, // optional: "sdxl" | "lightning" | "hypersd" | "sd15" | "pix2pix" | "auto"
-      width,
-      height,
-      steps,
-    } = body;
-    
-    if (!prompt || !String(prompt).trim()) {
-      return {
-        statusCode: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ error: "الرجاء كتابة وصف للصورة" }),
-      };
-    }
-    
     const token = process.env.HF_TOKEN;
-    if (!token) {
-      return {
-        statusCode: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ error: "HF_TOKEN missing" }),
-      };
+    if (!token) return json(500, { error: "HF_TOKEN missing" });
+
+    const body = JSON.parse(event.body || "{}");
+    const prompt = String(body.prompt || "").trim();
+    const image = body.image || null;
+    const modelId = String(body.modelId || "auto").toLowerCase();
+
+    if (!prompt) {
+      return json(400, { error: "الرجاء كتابة وصف للصورة" });
     }
-    
-    // ===== Recommended free-ish models (best practical picks) =====
-    // Text-to-Image (quality / speed)
-    const TEXT_MODELS = {
-      sdxl: "stabilityai/stable-diffusion-xl-base-1.0", // جودة عالية 1024
-      lightning: "ByteDance/SDXL-Lightning", // سريع جدًا
-      hypersd: "ByteDance/Hyper-SD", // سريع + جيد
-      sd15: "stable-diffusion-v1-5/stable-diffusion-v1-5", // أخف
-    };
-    
-    // Image-to-Image (prompt-based edit/variation)
-    const IMG2IMG_MODELS = {
-      pix2pix: "timbrooks/instruct-pix2pix",
-    };
-    
-    // ===== Model selection + fallback order =====
-    const hasImage = !!image && String(image).includes("base64");
-    const mode = hasImage ? "img2img" : "txt2img";
-    
-    // لو المستخدم مختار موديل معيّن
-    const requestedId = (modelId || "auto").toLowerCase();
-    
-    // ترتيب fallback عملي
-    const fallbackOrderTxt = ["sdxl", "lightning", "hypersd", "sd15"];
-    const fallbackOrderImg = ["pix2pix"]; // تقدر تزود لاحقًا لو ضفت موديلات img2img تانية
-    
-    const candidates =
-      mode === "txt2img" ?
-      (requestedId !== "auto" && TEXT_MODELS[requestedId] ?
-        [requestedId, ...fallbackOrderTxt.filter((x) => x !== requestedId)] :
-        fallbackOrderTxt) :
-      (requestedId !== "auto" && IMG2IMG_MODELS[requestedId] ?
-        [requestedId, ...fallbackOrderImg.filter((x) => x !== requestedId)] :
-        fallbackOrderImg);
-    
-    // ===== Helpers =====
-    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-    
-    const W = clamp(Number(width || 1024), 256, 1536);
-    const H = clamp(Number(height || 1024), 256, 1536);
-    
-    // خطوات أقل للموديلات السريعة
-    const defaultSteps =
-      mode === "txt2img" ?
-      (requestedId === "lightning" || requestedId === "hypersd" ? 8 : 30) :
-      20;
-    
-    const STEPS = clamp(Number(steps || defaultSteps), 1, 50);
-    
-    function extractBase64(dataUrlOrBase64) {
-      const s = String(dataUrlOrBase64 || "");
-      if (!s) return "";
-      if (s.startsWith("data:image")) {
-        return s.split(",")[1] || "";
-      }
-      // لو المستخدم بعت base64 فقط
-      return s;
+
+    const width = clamp(Number(body.width || 1024), 256, 1536);
+    const height = clamp(Number(body.height || 1024), 256, 1536);
+
+    const stepsDefault = (modelId === "lightning" || modelId === "hypersd") ? 10 : 20;
+    const steps = clamp(Number(body.steps || stepsDefault), 5, 40);
+    const guidance = clamp(Number(body.guidance || 6), 1, 12);
+
+    const isImg2Img = modelId === "pix2pix";
+    if (isImg2Img && !image) {
+      return json(400, { error: "نموذج التعديل يحتاج صورة" });
     }
-    
-    async function callHFModel(modelRepo) {
-      const modelUrl = `https://router.huggingface.co/models/${modelRepo}`;
-      
-      let payload;
-      
-      if (mode === "txt2img") {
-        payload = {
-          inputs: String(prompt),
-          parameters: {
-            width: W,
-            height: H,
-            num_inference_steps: STEPS,
-          },
-          options: {
-            wait_for_model: true,
-            use_cache: false,
-          },
-        };
-      } else {
-        // img2img spec: inputs = image base64, parameters.prompt = prompt
-        payload = {
-          inputs: extractBase64(image),
-          parameters: {
-            prompt: String(prompt),
-            num_inference_steps: STEPS,
-            guidance_scale: 7,
-            // target_size مش كل الموديلات لازم تدعمه، بس غالبًا مفيد
-            target_size: { width: W, height: H },
-          },
-          options: {
-            wait_for_model: true,
-            use_cache: false,
-          },
-        };
-      }
-      
-      const resp = await fetch(modelUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      
-      // بعض الردود بتكون JSON error
-      if (!resp.ok) {
-        const txt = await resp.text().catch(() => "");
-        return {
-          ok: false,
-          status: resp.status,
-          text: txt,
-          modelUrl,
-        };
-      }
-      
-      const contentType = resp.headers.get("content-type") || "";
-      // معظم الوقت بيرجع image bytes
-      if (contentType.includes("application/json")) {
-        const j = await resp.json().catch(() => null);
-        // لو رجع JSON بدل صورة (أحيانًا يحصل)
-        return {
-          ok: false,
-          status: 502,
-          text: JSON.stringify(j),
-          modelUrl,
-        };
-      }
-      
-      const buffer = await resp.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString("base64");
-      return {
-        ok: true,
-        status: 200,
-        modelUrl,
-        base64,
-      };
-    }
-    
-    function isRetryable(status, text) {
-      const t = String(text || "").toLowerCase();
-      // حالات زحمة/تحميل/مشكلة راوتر
-      return (
-        status === 429 ||
-        status === 500 ||
-        status === 502 ||
-        status === 503 ||
-        status === 504 ||
-        t.includes("loading") ||
-        t.includes("currently loading") ||
-        t.includes("model is loading") ||
-        t.includes("overloaded") ||
-        t.includes("rate limit") ||
-        t.includes("router.huggingface.co") ||
-        t.includes("not found")
-      );
-    }
-    
-    // ===== Try models with fallback =====
+
+    const client = new InferenceClient(token);
+    const tries = PRESETS[modelId] || PRESETS.auto;
+
     let lastErr = null;
-    
-    for (const id of candidates) {
-      const repo =
-        mode === "txt2img" ? TEXT_MODELS[id] : IMG2IMG_MODELS[id];
-      
-      if (!repo) continue;
-      
-      console.log(`[HF] mode=${mode} try=${id} repo=${repo}`);
-      
-      const r = await callHFModel(repo);
-      
-      if (r.ok) {
-        return {
-          statusCode: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ok: true,
-            mode,
-            usedModelId: id,
-            usedModelRepo: repo,
-            dataUrl: `data:image/png;base64,${r.base64}`,
-          }),
-        };
+
+    for (const t of tries) {
+      try {
+        console.log(`[HF] mode=${isImg2Img ? "img2img" : "txt2img"} modelId=${modelId} model=${t.model} provider=${t.provider}`);
+
+        let outBlob;
+
+        if (!isImg2Img) {
+          outBlob = await client.textToImage({
+            model: t.model,
+            provider: t.provider,
+            inputs: prompt,
+            parameters: {
+              width,
+              height,
+              num_inference_steps: steps,
+              guidance_scale: guidance,
+            },
+          });
+        } else {
+          const imgBuf = dataUrlToBuffer(image);
+          outBlob = await client.imageToImage({
+            model: t.model,
+            provider: t.provider,
+            inputs: imgBuf,
+            parameters: {
+              prompt,
+              num_inference_steps: steps,
+              guidance_scale: guidance,
+              target_size: { width, height },
+            },
+          });
+        }
+
+        const base64 = await blobToBase64(outBlob);
+        return json(200, { dataUrl: `data:image/png;base64,${base64}` });
+      } catch (e) {
+        lastErr = e;
+        console.error(`[HF] failed model=${t.model} =>`, e?.message || e);
       }
-      
-      console.error(`[HF] failed model=${id} status=${r.status} body=${r.text?.slice?.(0, 300)}`);
-      
-      lastErr = r;
-      
-      // لو خطأ مش قابل للتجربة، اقطع فورًا
-      if (!isRetryable(r.status, r.text)) break;
     }
-    
-    // ===== Final error =====
-    const userMsg =
-      mode === "img2img" ?
-      "حصلت مشكلة في تعديل الصورة (الضغط عالي/الموديل بيحمّل). جرّب تاني أو غيّر الموديل." :
-      "حصلت مشكلة في توليد الصورة (الضغط عالي/الموديل بيحمّل). جرّب تاني أو غيّر الموديل.";
-    
-    return {
-      statusCode: 502,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ok: false,
-        error: userMsg,
-        details: lastErr ?
-          {
-            status: lastErr.status,
-            modelUrl: lastErr.modelUrl,
-            raw: (lastErr.text || "").slice(0, 800),
-          } :
-          null,
-      }),
-    };
+
+    return json(502, {
+      error: "الخدمة مشغولة أو الموديلات غير متاحة حالياً. جرّب تاني.",
+      detail: String(lastErr?.message || lastErr || "unknown"),
+    });
   } catch (err) {
     console.error("Server Error:", err);
-    return {
-      statusCode: 500,
-      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
-      body: JSON.stringify({ ok: false, error: "فشل في معالجة الطلب" }),
-    };
+    return json(500, { error: "فشل في معالجة الطلب" });
   }
 }
