@@ -1,4 +1,5 @@
 // netlify/functions/generate.js
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
@@ -17,9 +18,13 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
-// Hugging Face Inference API endpoint (free tier w/ HF_TOKEN)
+/**
+ * ✅ HF Router (بديل api-inference القديم)
+ * endpoint الصحيح:
+ * https://router.huggingface.co/hf-inference/models/<model_id>
+ */
 function hfUrl(model) {
-  return `https://api-inference.huggingface.co/models/${model}`;
+  return `https://router.huggingface.co/hf-inference/models/${model}`;
 }
 
 async function hfTextToImage({ token, model, prompt, width, height, steps }) {
@@ -51,21 +56,18 @@ async function hfTextToImage({ token, model, prompt, width, height, steps }) {
 }
 
 /**
- * img2img في HF Inference API:
- * أفضل صيغة “آمنة” هي multipart/form-data
- * لأن بعض موديلات img2img بتتوقع صورة ملف + prompt.
+ * img2img/edit: هنستخدم multipart/form-data
+ * (ده الأكثر توافقًا لموديلات التعديل)
  */
 async function hfImageToImage({ token, model, prompt, imageDataUrl, steps }) {
   const base64 = String(imageDataUrl || "").split(",")[1] || "";
+  if (!base64) throw new Error("No image base64 provided");
+
   const imageBuf = Buffer.from(base64, "base64");
 
   const form = new FormData();
   form.append("inputs", prompt);
-
-  // بعض السيرفرات بتفهم parameters كـ JSON string داخل multipart
   form.append("parameters", JSON.stringify({ num_inference_steps: steps }));
-
-  // اسم الحقل الشائع للصورة: "image"
   form.append("image", new Blob([imageBuf]), "image.png");
 
   const resp = await fetch(hfUrl(model), {
@@ -87,56 +89,36 @@ async function hfImageToImage({ token, model, prompt, imageDataUrl, steps }) {
 }
 
 const MODELS = {
-  // Text→Image
+  // Text → Image
   sdxl: [
     "stabilityai/stable-diffusion-xl-base-1.0",
-    "runwayml/stable-diffusion-v1-5",
     "stable-diffusion-v1-5/stable-diffusion-v1-5",
   ],
   sd15: [
-    "runwayml/stable-diffusion-v1-5",
     "stable-diffusion-v1-5/stable-diffusion-v1-5",
     "stabilityai/stable-diffusion-xl-base-1.0",
   ],
   auto: [
     "stabilityai/stable-diffusion-xl-base-1.0",
-    "runwayml/stable-diffusion-v1-5",
     "stable-diffusion-v1-5/stable-diffusion-v1-5",
   ],
 
-  // Image→Image / Edit
+  // Image → Image / Edit
   pix2pix: [
     "timbrooks/instruct-pix2pix",
-    // fallback (ممكن يشتغل كـ img2img عند بعض السيرفرات)
-    "runwayml/stable-diffusion-v1-5",
+    // fallback (مش “edit” صريح، لكنه ينفع img2img في حالات)
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
   ],
 
-  // IDs قديمة (لو حد لسه بيبعتها)
+  // توافق مع IDs قديمة عندك
   lightning: [
     "stabilityai/stable-diffusion-xl-base-1.0",
-    "runwayml/stable-diffusion-v1-5",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
   ],
   hypersd: [
-    "runwayml/stable-diffusion-v1-5",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
     "stabilityai/stable-diffusion-xl-base-1.0",
   ],
-};
-
-// ✅ Alias mapping عشان تقدر تعتمد على الـ select القديم بدون تعديل
-const MODEL_ALIAS = {
-  // القيم اللي كانت في الواجهة بتاعتك الجديدة/القديمة
-  "txt2img_flux": "sdxl",
-  "txt2img_lightning": "sd15",
-  "img2img_qwen_edit": "pix2pix",
-  "img2img_flux_kontext": "pix2pix",
-
-  // قيم قديمة شفتها في اللوجز عندك
-  "sdxl": "sdxl",
-  "sd15": "sd15",
-  "auto": "auto",
-  "pix2pix": "pix2pix",
-  "lightning": "sd15",
-  "hypersd": "sd15",
 };
 
 export async function handler(event) {
@@ -155,19 +137,20 @@ export async function handler(event) {
     const prompt = String(body.prompt || "").trim();
     const image = body.image || null;
 
-    // ✅ هنا التعديل الأساسي
+    // خليك متسامح مع أسماء modelId المختلفة اللي عندك في الواجهة
     const rawModelId = String(body.modelId || "auto").toLowerCase();
-    const modelId = MODEL_ALIAS[rawModelId] || "auto";
+    const modelId = ["sdxl", "sd15", "pix2pix", "auto", "lightning", "hypersd"].includes(rawModelId)
+      ? rawModelId
+      : "auto";
 
     if (!prompt) return json(400, { error: "الرجاء كتابة وصف للصورة" });
 
     const width = clamp(Number(body.width || 1024), 256, 1536);
     const height = clamp(Number(body.height || 1024), 256, 1536);
 
-    // خطوات أقل = أسرع (ومناسب للـ free tier)
+    // خطوات أقل أسرع ومناسبة للتير المجاني
     const steps = clamp(Number(body.steps || (modelId === "sd15" ? 18 : 22)), 8, 35);
 
-    // ✅ لازم isImg2Img يبقى بعد ما عرفنا modelId النهائي
     const isImg2Img = modelId === "pix2pix";
     if (isImg2Img && !image) return json(400, { error: "نموذج التعديل يحتاج صورة" });
 
@@ -191,7 +174,7 @@ export async function handler(event) {
     }
 
     return json(502, {
-      error: "الموديلات مجانية لكنها مش متاحة/مزدحمة حاليًا. جرّب بعد دقيقة أو غيّر الموديل.",
+      error: "الموديلات مجانية لكنها مش متاحة/مزدحمة أو مش مدعومة على حسابك حاليًا. جرّب بعد دقيقة أو بدّل الموديل.",
       detail: String(lastErr?.message || lastErr || "unknown"),
     });
   } catch (err) {
