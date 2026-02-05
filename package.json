@@ -1,24 +1,10 @@
 {
-  "name": "gemini-image-generator",
+  "name": "ai-studio-pi",
   "version": "1.0.0",
-  "description": "توليد الصور باستخدام ذكاء اصطناعي جيميني",
+  "description": "AI Studio with Pi Network Payment",
   "main": "index.html",
-  "scripts": {
-    "build": "echo 'No build step required'",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "gemini",
-    "ai",
-    "image-generation",
-    "netlify"
-  ],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@google/generative-ai": "^0.21.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.0"
   }
 }
