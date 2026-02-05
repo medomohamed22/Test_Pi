@@ -1,65 +1,75 @@
-
 // netlify/functions/generate.js
 export async function handler(event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
-
+  
   try {
-    const { prompt } = JSON.parse(event.body || "{}");
+    const { prompt, image, modelId } = JSON.parse(event.body || "{}");
+    
     if (!prompt || !prompt.trim()) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing prompt" })
-      };
+      return { statusCode: 400, body: JSON.stringify({ error: "الرجاء كتابة وصف للصورة" }) };
     }
-
+    
     const token = process.env.HF_TOKEN;
     if (!token) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: "HF_TOKEN is missing" })
-      };
+      return { statusCode: 500, body: JSON.stringify({ error: "HF_TOKEN missing" }) };
     }
 
-    // ✅ ENDPOINT الجديد الرسمي
-    const model = "stabilityai/stable-diffusion-xl-base-1.0";
-    const apiUrl = `https://router.huggingface.co/hf-inference/models/${model}`;
+    // تحديد الموديل بناءً على اختيار المستخدم
+    let modelUrl = "";
+    let payload = {};
 
-    const resp = await fetch(apiUrl, {
+    if (modelId === 'pix2pix') {
+        // نموذج تعديل الصور (يحتاج صورة + نص)
+        if (!image) {
+            return { statusCode: 400, body: JSON.stringify({ error: "هذا النموذج يتطلب رفع صورة لتعديلها" }) };
+        }
+        modelUrl = "https://router.huggingface.co/hf-inference/models/timbrooks/instruct-pix2pix";
+        
+        // HuggingFace Inference API for Pix2Pix often requires specific handling.
+        // We send inputs as parameters. Note: Free API might be slow.
+        payload = {
+            inputs: prompt,
+            image: image.split(',')[1] // Remove 'data:image/png;base64,' prefix if present
+        };
+
+    } else {
+        // الافتراضي: SDXL (توليد من النص)
+        modelUrl = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0";
+        payload = {
+            inputs: prompt,
+            // SDXL doesn't take 'image' input directly in standard text-to-image mode
+        };
+    }
+    
+    // استدعاء Hugging Face API
+    const resp = await fetch(modelUrl, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "Accept": "image/png"
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          guidance_scale: 7.5
-        }
-      })
+      body: JSON.stringify(payload)
     });
-
-    const contentType = resp.headers.get("content-type") || "";
-
-    // أخطاء HuggingFace (زي 503 أثناء التسخين)
+    
+    // معالجة الأخطاء من المصدر
     if (!resp.ok) {
-      let msg = `HF Error ${resp.status}`;
-      if (contentType.includes("application/json")) {
-        const j = await resp.json().catch(() => null);
-        if (j?.error) msg = j.error;
-      }
-      return {
-        statusCode: 502,
-        body: JSON.stringify({ error: msg })
-      };
+        const errText = await resp.text();
+        console.error("HF Error:", errText);
+        
+        // إذا كان الموديل قيد التحميل (Loading)
+        if (errText.includes("loading")) {
+             return { statusCode: 503, body: JSON.stringify({ error: "الموديل قيد التشغيل، حاول مجدداً بعد 30 ثانية" }) };
+        }
+        
+        return { statusCode: 502, body: JSON.stringify({ error: "فشل الاتصال بموديل الذكاء الاصطناعي" }) };
     }
-
-    // الصورة بتيجي Binary
+    
+    // تحويل الاستجابة (Binary) إلى Base64
     const buffer = await resp.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
-
+    
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
@@ -67,11 +77,12 @@ export async function handler(event) {
         dataUrl: `data:image/png;base64,${base64}`
       })
     };
-
+    
   } catch (err) {
+    console.error("Server Error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message || "Server error" })
+      body: JSON.stringify({ error: err.message || "خطأ في السيرفر" })
     };
   }
 }
