@@ -1,6 +1,4 @@
 // netlify/functions/generate.js
-import { InferenceClient } from "@huggingface/inference";
-
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
@@ -19,52 +17,109 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
-function dataUrlToBuffer(dataUrl) {
-  const b64 = String(dataUrl || "").split(",")[1] || "";
-  return Buffer.from(b64, "base64");
+// Hugging Face Inference API endpoint (free tier w/ HF_TOKEN)
+function hfUrl(model) {
+  return `https://api-inference.huggingface.co/models/${model}`;
 }
 
-async function blobToBase64(blob) {
-  const ab = await blob.arrayBuffer();
-  return Buffer.from(ab).toString("base64");
+async function hfTextToImage({ token, model, prompt, width, height, steps }) {
+  const resp = await fetch(hfUrl(model), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "image/png",
+    },
+    body: JSON.stringify({
+      inputs: prompt,
+      parameters: {
+        width,
+        height,
+        num_inference_steps: steps,
+      },
+      options: { wait_for_model: true, use_cache: false },
+    }),
+  });
+
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`HF ${model} ${resp.status}: ${t}`);
+  }
+
+  const buf = Buffer.from(await resp.arrayBuffer());
+  return buf.toString("base64");
 }
 
 /**
- * ملاحظة مهمة:
- * - الموديلات هنا بتتطلب Provider عبر HF Inference Providers
- * - اخترت fal-ai لأنه غالبًا الأكثر استقرارًا في الصور عبر HF Providers
+ * img2img في HF Inference API: أفضل صيغة “آمنة” هي إرسال multipart/form-data
+ * لأن بعض موديلات img2img بتتوقع صورة ملف + prompt.
  */
-const PROVIDER = "fal-ai";
+async function hfImageToImage({ token, model, prompt, imageDataUrl, steps }) {
+  const base64 = String(imageDataUrl || "").split(",")[1] || "";
+  const imageBuf = Buffer.from(base64, "base64");
 
-// mapping من IDs القديمة اللي عندك في الفرونت
-// إلى قوائم موديلات (fallback)
-const PRESETS = {
-  auto: [
-    { model: "black-forest-labs/FLUX.1-schnell", provider: PROVIDER },
-    { model: "ByteDance/SDXL-Lightning", provider: PROVIDER },
-  ],
+  const form = new FormData();
+  form.append("inputs", prompt);
+
+  // بعض السيرفرات بتفهم parameters كـ JSON string داخل multipart
+  form.append("parameters", JSON.stringify({ num_inference_steps: steps }));
+
+  // اسم الحقل الشائع للصورة: "image"
+  form.append("image", new Blob([imageBuf]), "image.png");
+
+  const resp = await fetch(hfUrl(model), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // لا تضيف Content-Type هنا، fetch هيحطه تلقائيًا مع boundary
+      Accept: "image/png",
+    },
+    body: form,
+  });
+
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`HF ${model} ${resp.status}: ${t}`);
+  }
+
+  const buf = Buffer.from(await resp.arrayBuffer());
+  return buf.toString("base64");
+}
+
+const MODELS = {
+  // Text→Image
   sdxl: [
-    { model: "black-forest-labs/FLUX.1-dev", provider: PROVIDER },
-    { model: "black-forest-labs/FLUX.1-schnell", provider: PROVIDER },
-  ],
-  lightning: [
-    { model: "ByteDance/SDXL-Lightning", provider: PROVIDER },
-    { model: "black-forest-labs/FLUX.1-schnell", provider: PROVIDER },
-  ],
-  hypersd: [
-    { model: "ByteDance/Hyper-SD", provider: PROVIDER },
-    { model: "ByteDance/SDXL-Lightning", provider: PROVIDER },
+    "stabilityai/stable-diffusion-xl-base-1.0",
+    "stabilityai/stable-diffusion-xl-refiner-1.0",
+    "runwayml/stable-diffusion-v1-5",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
   ],
   sd15: [
-    // لو provider مش موفّر SD1.5 عندك، هيفشل ويروح للفولباك
-    { model: "stable-diffusion-v1-5/stable-diffusion-v1-5", provider: PROVIDER },
-    { model: "ByteDance/SDXL-Lightning", provider: PROVIDER },
+    "runwayml/stable-diffusion-v1-5",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
+    "stabilityai/stable-diffusion-xl-base-1.0",
   ],
-  // تعديل الصور (img2img)
+  auto: [
+    "stabilityai/stable-diffusion-xl-base-1.0",
+    "runwayml/stable-diffusion-v1-5",
+    "stable-diffusion-v1-5/stable-diffusion-v1-5",
+  ],
+
+  // Image→Image / Edit
   pix2pix: [
-    { model: "black-forest-labs/FLUX.1-Kontext-dev", provider: PROVIDER },
-    // fallback تاني للتعديل
-    { model: "fal/Qwen-Image-Edit-2511-Multiple-Angles-LoRA", provider: PROVIDER },
+    "timbrooks/instruct-pix2pix",
+    // fallback عام: img2img شائع (لو احتجته)
+    "runwayml/stable-diffusion-v1-5",
+  ],
+
+  // mapping IDs القديمة اللي كنت حاططها
+  lightning: [
+    "stabilityai/stable-diffusion-xl-base-1.0",
+    "runwayml/stable-diffusion-v1-5",
+  ],
+  hypersd: [
+    "runwayml/stable-diffusion-v1-5",
+    "stabilityai/stable-diffusion-xl-base-1.0",
   ],
 };
 
@@ -85,70 +140,38 @@ export async function handler(event) {
     const image = body.image || null;
     const modelId = String(body.modelId || "auto").toLowerCase();
 
-    if (!prompt) {
-      return json(400, { error: "الرجاء كتابة وصف للصورة" });
-    }
+    if (!prompt) return json(400, { error: "الرجاء كتابة وصف للصورة" });
 
     const width = clamp(Number(body.width || 1024), 256, 1536);
     const height = clamp(Number(body.height || 1024), 256, 1536);
 
-    const stepsDefault = (modelId === "lightning" || modelId === "hypersd") ? 10 : 20;
-    const steps = clamp(Number(body.steps || stepsDefault), 5, 40);
-    const guidance = clamp(Number(body.guidance || 6), 1, 12);
+    // خطوات أقل = أسرع (ومناسب للـ free tier)
+    const steps = clamp(Number(body.steps || (modelId === "sd15" ? 18 : 22)), 8, 35);
 
     const isImg2Img = modelId === "pix2pix";
-    if (isImg2Img && !image) {
-      return json(400, { error: "نموذج التعديل يحتاج صورة" });
-    }
+    if (isImg2Img && !image) return json(400, { error: "نموذج التعديل يحتاج صورة" });
 
-    const client = new InferenceClient(token);
-    const tries = PRESETS[modelId] || PRESETS.auto;
+    const tryModels = MODELS[modelId] || MODELS.auto;
 
     let lastErr = null;
 
-    for (const t of tries) {
+    for (const m of tryModels) {
       try {
-        console.log(`[HF] mode=${isImg2Img ? "img2img" : "txt2img"} modelId=${modelId} model=${t.model} provider=${t.provider}`);
+        console.log(`[HF] mode=${isImg2Img ? "img2img" : "txt2img"} modelId=${modelId} model=${m}`);
 
-        let outBlob;
+        const base64 = !isImg2Img
+          ? await hfTextToImage({ token, model: m, prompt, width, height, steps })
+          : await hfImageToImage({ token, model: m, prompt, imageDataUrl: image, steps });
 
-        if (!isImg2Img) {
-          outBlob = await client.textToImage({
-            model: t.model,
-            provider: t.provider,
-            inputs: prompt,
-            parameters: {
-              width,
-              height,
-              num_inference_steps: steps,
-              guidance_scale: guidance,
-            },
-          });
-        } else {
-          const imgBuf = dataUrlToBuffer(image);
-          outBlob = await client.imageToImage({
-            model: t.model,
-            provider: t.provider,
-            inputs: imgBuf,
-            parameters: {
-              prompt,
-              num_inference_steps: steps,
-              guidance_scale: guidance,
-              target_size: { width, height },
-            },
-          });
-        }
-
-        const base64 = await blobToBase64(outBlob);
         return json(200, { dataUrl: `data:image/png;base64,${base64}` });
       } catch (e) {
         lastErr = e;
-        console.error(`[HF] failed model=${t.model} =>`, e?.message || e);
+        console.error(`[HF] failed model=${m} =>`, e?.message || e);
       }
     }
 
     return json(502, {
-      error: "الخدمة مشغولة أو الموديلات غير متاحة حالياً. جرّب تاني.",
+      error: "الموديلات مجانية لكنها مش متاحة/مزدحمة حاليًا. جرّب بعد دقيقة أو غيّر الموديل.",
       detail: String(lastErr?.message || lastErr || "unknown"),
     });
   } catch (err) {
