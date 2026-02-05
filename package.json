@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@huggingface/inference": "^3.0.0"
+    "@huggingface/inference": "^3.0.0",
+    "@supabase/supabase-js": "^2.49.1"
   }
 }
