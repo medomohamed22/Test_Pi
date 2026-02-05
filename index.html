@@ -14,6 +14,7 @@
       --bg-body: #f8fafc; --surface: #ffffff; --text-main: #1e293b;
       --text-sub: #64748b; --border: #e2e8f0; --input-bg: #f1f5f9;
       --pi-color: #F8A01A; --radius-xl: 24px; --radius-md: 12px;
+      --success-bg: #ecfdf5; --success-text: #059669; --success-border: #a7f3d0;
     }
     * { box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
     
@@ -94,7 +95,16 @@
     /* Actions */
     .actions { display: flex; gap: 10px; margin-bottom: 24px; }
     .btn-main { flex: 2; background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; border: none; padding: 12px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
-    .btn-main:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); box-shadow: none; }
+    
+    /* تنسيق زر التوليد عند التعطيل */
+    .btn-main:disabled { 
+        opacity: 0.7; 
+        cursor: not-allowed; 
+        background: #94a3b8; /* لون رمادي عند التعطيل */
+        box-shadow: none; 
+        transform: none;
+    }
+
     .btn-sec { flex: 1; background: white; border: 1px solid var(--border); color: var(--text-sub); border-radius: var(--radius-md); font-weight: 600; cursor: pointer; padding: 12px; transition: 0.3s; }
     .btn-sec:hover { border-color: var(--primary); color: var(--primary); }
 
@@ -104,9 +114,32 @@
         background: #f1f5f9; border-radius: var(--radius-xl); 
         display: flex; align-items: center; justify-content: center; 
         border: 4px solid #fff; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        margin-bottom: 12px; /* مسافة لزر التحميل */
     }
     .display-area img { width: 100%; height: 100%; object-fit: cover; display: none; z-index: 10; animation: fadeIn 0.5s; }
     
+    /* زر التحميل الجديد */
+    .btn-download {
+        width: 100%;
+        background: var(--success-bg);
+        color: var(--success-text);
+        border: 1px solid var(--success-border);
+        padding: 12px;
+        border-radius: var(--radius-md);
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        display: none; /* مخفي افتراضياً */
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: 0.3s;
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
+        animation: fadeIn 0.5s;
+    }
+    .btn-download:hover { background: #d1fae5; transform: translateY(-2px); }
+    .btn-download:active { transform: translateY(0); }
+
     /* Aurora Loader Container */
     .aurora-loader { 
         position: absolute; inset: 0; display: none; z-index: 5; 
@@ -115,7 +148,7 @@
         animation: aurora-bg 3s ease infinite;
     }
     
-    /* Blurring Overlay & New Timer Style */
+    /* Blurring Overlay & Timer */
     .loader-overlay {
         position: absolute; inset: 0; 
         backdrop-filter: blur(20px);
@@ -125,7 +158,7 @@
         align-items: center; justify-content: center;
     }
 
-    /* تصميم العداد الجديد (كبسولة زجاجية) */
+    /* Timer Style */
     .timer-capsule {
         background: rgba(0, 0, 0, 0.2);
         padding: 8px 24px;
@@ -136,7 +169,6 @@
         gap: 12px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-
     .timer-icon {
         width: 18px; height: 18px;
         border: 2px solid rgba(255, 255, 255, 0.5);
@@ -144,22 +176,13 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
     }
-
     .timer-count {
-        font-size: 24px; 
-        font-weight: 700; 
-        color: white;
+        font-size: 24px; font-weight: 700; color: white;
         font-variant-numeric: tabular-nums;
-        font-family: 'Segoe UI', sans-serif; /* خط نظيف للأرقام */
+        font-family: 'Segoe UI', sans-serif;
         letter-spacing: 1px;
     }
-
-    .timer-label {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 14px;
-        font-weight: 600;
-        margin-left: 5px;
-    }
+    .timer-label { color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600; margin-left: 5px; }
 
     .empty-state { color: #94a3b8; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
@@ -243,7 +266,6 @@
   <div class="display-area" id="displayArea">
     <div class="aurora-loader" id="auroraLoader">
       <div class="loader-overlay">
-        <!-- New Timer Structure -->
         <div class="timer-capsule">
             <div class="timer-icon"></div>
             <div class="timer-count" id="timerDisplay">0.0</div>
@@ -258,6 +280,12 @@
     </div>
     <img id="resultImage" src="" alt="AI Art">
   </div>
+
+  <!-- زر التنزيل الجديد -->
+  <button id="downloadBtn" class="btn-download" onclick="downloadImage()">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+      تحميل الصورة
+  </button>
 
 </div>
 <div class="toast" id="toast"></div>
@@ -293,10 +321,11 @@
     if (currentUser) {
       document.getElementById('tokenCount').innerText = currentUser.tokens;
       const genBtn = document.getElementById('generateBtn');
-      if (currentUser.tokens > 0) {
+      // نفعل الزر فقط إذا كان هناك رصيد ولم يكن في حالة تحميل حالياً
+      if (currentUser.tokens > 0 && !genBtn.hasAttribute('data-loading')) {
         genBtn.disabled = false;
         document.getElementById('btnText').innerText = "توليد (1 توكين)";
-      } else {
+      } else if (!genBtn.hasAttribute('data-loading')) {
         genBtn.disabled = true;
         document.getElementById('btnText').innerText = "اشحن رصيدك";
       }
@@ -363,10 +392,18 @@
     const promptVal = document.getElementById('prompt').value.trim();
     if (!promptVal) return showToast("أدخل وصف للصورة");
 
+    const genBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // UI Updates: Disable & Loading State
     document.getElementById('auroraLoader').style.display = 'block';
-    document.getElementById('generateBtn').disabled = true;
+    genBtn.disabled = true; // تعطيل الزر
+    genBtn.setAttribute('data-loading', 'true'); // علامة لتمييز حالة التحميل
+    document.getElementById('btnText').innerText = "جاري التوليد...";
+    
     document.getElementById('resultImage').style.display = 'none';
     document.getElementById('emptyState').style.display = 'none';
+    downloadBtn.style.display = 'none'; // إخفاء زر التنزيل أثناء التوليد الجديد
     
     startTimer();
 
@@ -379,8 +416,7 @@
       
       const deductData = await deductRes.json();
       currentUser.tokens = deductData.remaining;
-      updateUIState();
-
+      
       const genRes = await fetch('/.netlify/functions/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: promptVal })
@@ -393,7 +429,13 @@
         stopTimer();
         document.getElementById('auroraLoader').style.display = 'none';
         img.style.display = 'block';
-        document.getElementById('generateBtn').disabled = false;
+        
+        // إعادة تفعيل الزر وإظهار زر التنزيل
+        genBtn.removeAttribute('data-loading');
+        updateUIState(); // سيعيد النص إلى "توليد (1 توكين)" أو "اشحن"
+        
+        downloadBtn.style.display = 'flex'; // إظهار زر التنزيل
+        showToast("✨ تم إنشاء الصورة بنجاح");
       };
       img.src = genData.dataUrl;
 
@@ -401,10 +443,29 @@
       console.error(err);
       stopTimer();
       showToast("حدث خطأ، حاول مجدداً");
+      
+      // إعادة ضبط الواجهة عند الخطأ
       document.getElementById('auroraLoader').style.display = 'none';
-      document.getElementById('generateBtn').disabled = false;
+      genBtn.removeAttribute('data-loading');
+      updateUIState();
+      
       document.getElementById('emptyState').style.display = 'flex';
     }
+  }
+
+  // --- دالة تنزيل الصورة ---
+  function downloadImage() {
+      const img = document.getElementById('resultImage');
+      if (img.src) {
+          const link = document.createElement('a');
+          link.href = img.src;
+          const timestamp = new Date().getTime();
+          link.download = `Imagine_AI_${timestamp}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast("⬇️ جاري التنزيل...");
+      }
   }
 
   // --- Helpers & Random Suggestions ---
@@ -418,7 +479,6 @@
       input.value += (input.value ? ", " : "") + tag; 
   }
 
-  // القائمة الموسعة للاقتراحات
   const randomPrompts = [
       "Futuristic cyberpunk city with neon lights and flying cars, 8k resolution, cinematic lighting",
       "A cute astronaut cat exploring Mars, highly detailed, digital art",
@@ -437,8 +497,6 @@
   function fillRandom() { 
       const randomIndex = Math.floor(Math.random() * randomPrompts.length);
       document.getElementById('prompt').value = randomPrompts[randomIndex];
-      
-      // تأثير بصري بسيط عند الضغط
       const btn = document.querySelector('.btn-sec');
       btn.style.transform = "scale(0.95)";
       setTimeout(() => btn.style.transform = "scale(1)", 150);
