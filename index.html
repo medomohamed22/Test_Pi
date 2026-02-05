@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -212,12 +211,12 @@
     <textarea id="prompt" placeholder="اطلق العنان لخيالك.. قطة في الفضاء، سايبر بانك.."></textarea>
   </div>
 
-  <!-- موديلات متوافقة مع backend الجديد -->
+  <!-- ✅ أسماء موديلات جديدة (متوافقة مع backend) -->
   <select id="modelSelect" class="model-selector">
-    <option value="txt2img_flux">✨ توليد (FLUX قوي)</option>
-    <option value="txt2img_lightning">⚡ توليد سريع (SDXL Lightning)</option>
-    <option value="img2img_qwen_edit">✏️ تعديل صورة (Qwen Image Edit)</option>
-    <option value="img2img_flux_kontext">🪄 تعديل واقعي (FLUX Kontext)</option>
+    <option value="auto">⚡ Auto (أفضل اختيار تلقائي)</option>
+    <option value="sdxl">✨ SDXL (جودة أعلى)</option>
+    <option value="sd15">🧩 SD 1.5 (أخف وأسرع)</option>
+    <option value="pix2pix">✏️ تعديل صورة (Image → Image)</option>
   </select>
 
   <div class="settings-panel">
@@ -413,20 +412,23 @@
     document.getElementById('timerDisplay').innerText = "0.0";
   }
 
+  function isEditMode(modelId) {
+    return modelId === "pix2pix";
+  }
+
   async function generateImage() {
     if (!currentUser || currentUser.tokens < 1) return showToast("رصيدك غير كافٍ");
 
     let promptVal = document.getElementById('prompt').value.trim();
     const modelId = document.getElementById('modelSelect').value;
-    const isImg2Img = modelId.startsWith("img2img_");
+    const editMode = isEditMode(modelId);
 
     // ✅ متطلبات كل وضع
-    if (isImg2Img && !uploadedImageBase64) return showToast("⚠️ وضع التعديل يحتاج صورة");
-    if (isImg2Img && !promptVal) return showToast("⚠️ اكتب وصف للتعديل (مثال: خلّيها سايبر بانك)");
-    if (!isImg2Img && !promptVal) return showToast("أدخل وصف للصورة");
+    if (editMode && !uploadedImageBase64) return showToast("⚠️ وضع التعديل يحتاج صورة");
+    if (editMode && !promptVal) return showToast("⚠️ اكتب وصف للتعديل (مثال: خلّيها سايبر بانك)");
+    if (!editMode && !promptVal) return showToast("أدخل وصف للصورة");
 
-    if (currentStylePrompt && !isImg2Img) {
-      // ستايل إضافي للتوليد من النص (مش لازم في التعديل)
+    if (currentStylePrompt && !editMode) {
       promptVal = `${promptVal}, ${currentStylePrompt}`;
     }
 
@@ -445,7 +447,8 @@
 
     try {
       const deductRes = await fetch('/.netlify/functions/deduct-credits', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid: currentUser.pi_id })
       });
       if (!deductRes.ok) throw new Error("فشل الخصم");
@@ -462,13 +465,15 @@
         width,
         height,
         modelId,
-        image: isImg2Img ? uploadedImageBase64 : null
+        image: editMode ? uploadedImageBase64 : null
       };
 
       const genRes = await fetch('/.netlify/functions/generate', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
       const genData = await genRes.json();
       if (!genRes.ok) throw new Error(genData.error || "فشل التوليد");
 
@@ -495,7 +500,18 @@
     }
   }
 
-  // ✅ زر تحميل/مشاركة “جامد” داخل Pi Browser / WebView
+  // ✅ زر تحميل/مشاركة “أقوى” داخل Pi Browser / WebView
+  function dataUrlToBlob(dataUrl) {
+    const parts = (dataUrl || "").split(",");
+    if (parts.length < 2) return null;
+    const mime = (parts[0].match(/:(.*?);/) || [])[1] || "image/png";
+    const bstr = atob(parts[1]);
+    let n = bstr.length;
+    const u8 = new Uint8Array(n);
+    while (n--) u8[n] = bstr.charCodeAt(n);
+    return new Blob([u8], { type: mime });
+  }
+
   async function downloadImage() {
     const img = document.getElementById('resultImage');
     const src = img.src;
@@ -503,26 +519,27 @@
 
     showToast("⏳ لحظة واحدة...");
 
-    // 1) Native Share لو متاح
+    // 1) Native Share (أفضل تجربة على الموبايل)
     try {
-      const r = await fetch(src);
-      const blob = await r.blob();
-      const file = new File([blob], "imagine_ai.png", { type: "image/png" });
+      const blob = dataUrlToBlob(src);
+      if (blob) {
+        const file = new File([blob], "imagine_ai.png", { type: blob.type || "image/png" });
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'Imagine AI',
-          text: 'صورة تم توليدها بالذكاء الاصطناعي'
-        });
-        showToast("✅ تم فتح المشاركة");
-        return;
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Imagine AI',
+            text: 'صورة تم توليدها بالذكاء الاصطناعي'
+          });
+          showToast("✅ تم فتح المشاركة");
+          return;
+        }
       }
     } catch (e) {
       console.log("Share failed:", e);
     }
 
-    // 2) أفضل حل للـ WebView: افتح الصورة لوحدها → user long-press save
+    // 2) WebView trick: افتح صفحة فيها الصورة لوحدها
     try {
       const w = window.open("", "_blank");
       if (w) {
@@ -534,7 +551,7 @@
             img{max-width:100%;height:auto}
             .tip{position:fixed;top:12px;left:50%;transform:translateX(-50%);
                  background:rgba(255,255,255,.12);color:#fff;padding:10px 14px;border-radius:999px;
-                 font-family:Cairo,sans-serif;font-weight:800}
+                 font-family:Cairo,sans-serif;font-weight:900}
           </style>
           <div class="tip">اضغط مطولاً على الصورة للحفظ</div>
           <img src="${src}" alt="AI Image">
@@ -546,7 +563,7 @@
       console.log("Window open failed:", e);
     }
 
-    // 3) fallback أخير: download link
+    // 3) fallback تنزيل (مش دايمًا بيشتغل في Pi Browser)
     try {
       const link = document.createElement('a');
       link.href = src;
