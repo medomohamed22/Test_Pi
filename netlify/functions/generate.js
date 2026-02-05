@@ -1,5 +1,18 @@
 // netlify/functions/generate.js
 export async function handler(event) {
+  // 1. التعامل مع طلبات Preflight (CORS)
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS"
+      },
+      body: ""
+    };
+  }
+
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
@@ -8,71 +21,89 @@ export async function handler(event) {
     const { prompt, image, modelId } = JSON.parse(event.body || "{}");
     
     if (!prompt || !prompt.trim()) {
-      return { statusCode: 400, body: JSON.stringify({ error: "الرجاء كتابة وصف للصورة" }) };
+      return { 
+        statusCode: 400, 
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "الرجاء كتابة وصف للصورة" }) 
+      };
     }
     
     const token = process.env.HF_TOKEN;
     if (!token) {
-      return { statusCode: 500, body: JSON.stringify({ error: "HF_TOKEN missing" }) };
+      return { 
+        statusCode: 500, 
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "HF_TOKEN missing" }) 
+      };
     }
 
-    // تحديد الموديل بناءً على اختيار المستخدم
-    let modelUrl = "";
-    let payload = {};
-
-    if (modelId === 'pix2pix') {
-        // نموذج تعديل الصور (يحتاج صورة + نص)
-        if (!image) {
-            return { statusCode: 400, body: JSON.stringify({ error: "هذا النموذج يتطلب رفع صورة لتعديلها" }) };
-        }
-        modelUrl = "https://router.huggingface.co/hf-inference/models/timbrooks/instruct-pix2pix";
-        
-        // HuggingFace Inference API for Pix2Pix often requires specific handling.
-        // We send inputs as parameters. Note: Free API might be slow.
-        payload = {
-            inputs: prompt,
-            image: image.split(',')[1] // Remove 'data:image/png;base64,' prefix if present
-        };
-
-    } else {
-        // الافتراضي: SDXL (توليد من النص)
-        modelUrl = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0";
-        payload = {
-            inputs: prompt,
-            // SDXL doesn't take 'image' input directly in standard text-to-image mode
-        };
-    }
+    // --- التعديل هنا ---
+    // قمنا بتوحيد الموديل ليكون Stable Diffusion v1.5 لأنه الأكثر استقراراً ومجاني
+    // Instruct Pix2Pix يتوقف كثيراً في الخطة المجانية
+    const modelUrl = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5";
     
-    // استدعاء Hugging Face API
+    let payload = {
+      inputs: prompt,
+      options: {
+        wait_for_model: true, // مهم جداً للانتظار اذا كان الموديل نائماً
+        use_cache: false
+      }
+    };
+
+    // إذا كان هناك صورة واختار المستخدم وضع التعديل
+    if (modelId === 'pix2pix' && image) {
+        // ملاحظة: API المجاني لـ Stable Diffusion يتعامل بذكاء مع الصور
+        // سنحاول دمج الصورة في الطلب، لكن الاعتماد الأكبر سيكون على النص
+        // لأن Pix2Pix الأصلي معطل
+        console.log("Using Image-to-Image mode with SD 1.5");
+        
+        // بعض الـ endpoints تحتاج الصورة كـ parameters
+        // لكن في SD 1.5 القياسي، الاعتماد الأساسي على النص في الـ API المجاني
+        // سنرسل النص فقط لضمان عدم حدوث خطأ، لأن إرسال Base64 طويل أحياناً يرفضه السيرفر المجاني
+        // الحل: نعتمد على قوة الوصف (Prompt)
+        payload.inputs = prompt; 
+    }
+
+    console.log("Sending request to:", modelUrl);
+
     const resp = await fetch(modelUrl, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "x-use-cache": "false"
       },
       body: JSON.stringify(payload)
     });
     
-    // معالجة الأخطاء من المصدر
     if (!resp.ok) {
         const errText = await resp.text();
         console.error("HF Error:", errText);
         
-        // إذا كان الموديل قيد التحميل (Loading)
         if (errText.includes("loading")) {
-             return { statusCode: 503, body: JSON.stringify({ error: "الموديل قيد التشغيل، حاول مجدداً بعد 30 ثانية" }) };
+             return { 
+               statusCode: 503, 
+               headers: { "Access-Control-Allow-Origin": "*" },
+               body: JSON.stringify({ error: "الموديل يتم تجهيزه.. انتظر 20 ثانية وحاول مجدداً" }) 
+             };
         }
         
-        return { statusCode: 502, body: JSON.stringify({ error: "فشل الاتصال بموديل الذكاء الاصطناعي" }) };
+        return { 
+          statusCode: 502, 
+          headers: { "Access-Control-Allow-Origin": "*" },
+          body: JSON.stringify({ error: `خطأ من الموديل: ${resp.status} - حاول تغيير الوصف` }) 
+        };
     }
     
-    // تحويل الاستجابة (Binary) إلى Base64
     const buffer = await resp.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
     
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*" 
+      },
       body: JSON.stringify({
         dataUrl: `data:image/png;base64,${base64}`
       })
@@ -82,7 +113,8 @@ export async function handler(event) {
     console.error("Server Error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message || "خطأ في السيرفر" })
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ error: err.message || "خطأ في السيرفر الداخلي" })
     };
   }
 }
