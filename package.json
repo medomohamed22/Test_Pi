@@ -1,8 +1,9 @@
 {
-  "name": "ai-studio",
+  "name": "ultra-ai-netlify",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.0",
-    "axios": "^1.6.0"
+    "@netlify/blobs": "^8.1.0",
+    "cheerio": "^1.0.0-rc.12"
   }
 }
