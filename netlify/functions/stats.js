@@ -1,3 +1,4 @@
+
 const { getStore } = require("@netlify/blobs");
 const store = getStore({ name: "ultra-ai" });
 
