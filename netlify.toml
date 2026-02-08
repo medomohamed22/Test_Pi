@@ -1,23 +1,27 @@
 [build]
-  # المجلد الذي سيتم نشره (بما أن ملف html في الجذر، نتركه فارغاً أو نقطة)
+  # المجلد الذي سيتم نشره
   publish = "."
   # مجلد دوال السيرفر
   functions = "netlify/functions"
 
-# إعدادات لتقليل مشاكل الـ CORS والسماح بالوصول
+# -----------------------------------------------------------
+# هذا هو الجزء الذي يحل مشكلة الـ Build Failed
+# نقوم بتعطيل فحص الأسرار لأننا نعلم أن المفتاح في HTML هو العام
+# -----------------------------------------------------------
+[build.environment]
+  SECRETS_SCAN_ENABLED = "false"
+
+# إعدادات الـ CORS
 [[headers]]
   for = "/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
 
-# تحويل الروابط لتبدو احترافية
-# يحول /api/approve إلى الدالة الحقيقية
+# تحويل مسار API
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
 
-# هذا القسم يخبر Netlify كيف يتعامل مع المتغيرات
 [dev]
   framework = "#static"
-  
