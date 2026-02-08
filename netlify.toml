@@ -1,0 +1,23 @@
+[build]
+  # المجلد الذي سيتم نشره (بما أن ملف html في الجذر، نتركه فارغاً أو نقطة)
+  publish = "."
+  # مجلد دوال السيرفر
+  functions = "netlify/functions"
+
+# إعدادات لتقليل مشاكل الـ CORS والسماح بالوصول
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+# تحويل الروابط لتبدو احترافية
+# يحول /api/approve إلى الدالة الحقيقية
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# هذا القسم يخبر Netlify كيف يتعامل مع المتغيرات
+[dev]
+  framework = "#static"
+  
