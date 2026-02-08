@@ -13,9 +13,9 @@
 
 <style>
 :root {
-  --primary: #7C3AED;       /* بنفسجي حيوي */
+  --primary: #7C3AED;
   --primary-dark: #5B21B6;
-  --accent: #F59E0B;        /* ذهبي */
+  --accent: #F59E0B;
   --bg-body: #F3F4F6;
   --surface: #FFFFFF;
   --text-main: #111827;
@@ -34,7 +34,7 @@ body {
   color: var(--text-main);
   padding-bottom: calc(var(--nav-height) + 20px);
   overflow-y: auto;
-  user-select: none; /* منع تحديد النصوص للتطبيق */
+  user-select: none;
 }
 
 /* --- Utilities --- */
@@ -83,7 +83,7 @@ body {
   border-top: 1px solid var(--border);
   display: flex; justify-content: space-around; align-items: center;
   z-index: 1000;
-  padding-bottom: 10px; /* Safe area for iPhone */
+  padding-bottom: 10px;
   box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
 }
 
@@ -100,12 +100,8 @@ body {
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Active State Animation */
 .nav-item.active { color: var(--primary); }
-.nav-item.active i {
-  transform: translateY(-5px) scale(1.1); /* الوثبة */
-}
-/* نقطة صغيرة تحت العنصر النشط */
+.nav-item.active i { transform: translateY(-5px) scale(1.1); }
 .nav-item.active::after {
   content: ''; position: absolute; bottom: 5px;
   width: 5px; height: 5px; background: var(--primary);
@@ -113,27 +109,20 @@ body {
 }
 
 /* --- Views Layout --- */
-.view-section {
-  animation: fadeScale 0.4s ease-out;
-}
+.view-section { animation: fadeScale 0.4s ease-out; }
 @keyframes fadeScale {
   from { opacity: 0; transform: scale(0.98); }
   to { opacity: 1; transform: scale(1); }
 }
 
 /* --- Product Cards --- */
-.products-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
-}
+.products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .card {
   background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
   overflow: hidden; display: flex; flex-direction: column;
-  position: relative;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
-.card-img {
-  width: 100%; aspect-ratio: 4/3; object-fit: cover; background: #eee;
-}
+.card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; background: #eee; }
 .card-body { padding: 10px; display: flex; flex-direction: column; gap: 4px; }
 .card-price {
   font-weight: 800; color: var(--primary); font-size: 15px;
@@ -206,18 +195,15 @@ input, textarea {
   background: #fdfdfd;
 }
 input:focus, textarea:focus { border-color: var(--primary); background: white; }
-
 </style>
 </head>
 <body>
 
 <header class="header">
   <div class="brand"><i class="fa-solid fa-store"></i> سوق باي</div>
-  
   <button id="loginBtn" class="btn btn-gold">
     <i class="fa-solid fa-fingerprint"></i> دخول
   </button>
-
   <div id="headerUser" class="header-user hidden">
     <div id="userAvatar" class="header-avatar">?</div>
     <div id="userDispName" class="header-name">المستخدم</div>
@@ -225,7 +211,6 @@ input:focus, textarea:focus { border-color: var(--primary); background: white; }
 </header>
 
 <div class="container">
-
   <div id="view-home" class="view-section">
     <h3 style="margin-top:5px;display:flex;align-items:center;gap:8px">
       <i class="fa-solid fa-fire" style="color:var(--accent)"></i> أحدث المعروضات
@@ -258,17 +243,14 @@ input:focus, textarea:focus { border-color: var(--primary); background: white; }
         </div>
         <h3 id="p-username" style="margin:0">...</h3>
         <p id="p-uid" style="font-size:12px;color:gray;margin:5px 0 15px">ID: ...</p>
-        
         <button class="btn btn-primary" style="width:100%" onclick="openAddModal()">
           <i class="fa-solid fa-plus"></i> إضافة إعلان جديد
         </button>
       </div>
-
       <h4 style="margin:20px 0 10px">إعلاناتي</h4>
       <div id="my-ads-list" class="products-grid"></div>
     </div>
   </div>
-
 </div>
 
 <nav class="bottom-nav">
@@ -276,18 +258,15 @@ input:focus, textarea:focus { border-color: var(--primary); background: white; }
     <i class="fa-solid fa-house-chimney"></i>
     <span>الرئيسية</span>
   </button>
-
   <button class="nav-item" onclick="nav('chats')">
     <i class="fa-solid fa-comment-dots"></i>
     <span>المحادثات</span>
   </button>
-
   <button class="nav-item" onclick="nav('profile')">
     <i class="fa-solid fa-user-gear"></i>
     <span>حسابي</span>
   </button>
 </nav>
-
 
 <div id="addModal" class="modal" onclick="if(event.target==this) closeAddModal()">
   <div class="sheet">
@@ -315,9 +294,7 @@ input:focus, textarea:focus { border-color: var(--primary); background: white; }
       </div>
       <button onclick="closeChat()" style="background:none;border:none;font-size:18px"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    
     <div id="msgContainer" class="chat-area" style="display:flex;flex-direction:column;"></div>
-    
     <div style="display:flex;gap:8px;margin-top:auto">
       <input id="msgInput" placeholder="اكتب رسالة..." style="margin:0;border-radius:25px" />
       <button class="btn btn-primary" style="border-radius:50%;width:48px;height:48px;padding:0" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
@@ -342,24 +319,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // --- NAVIGATION LOGIC ---
 function nav(viewName) {
-  // Hide all views
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-  // Show selected view
   const view = document.getElementById(`view-${viewName}`);
   view.classList.remove('hidden');
-  
-  // Re-trigger animation
   view.style.animation = 'none';
-  view.offsetHeight; /* trigger reflow */
+  view.offsetHeight; 
   view.style.animation = 'fadeScale 0.4s ease-out';
 
-  // Update Nav Icon style
   const iconIndex = viewName === 'home' ? 0 : viewName === 'chats' ? 1 : 2;
   document.querySelectorAll('.nav-item')[iconIndex].classList.add('active');
 
-  // Load Context Data
   if(viewName === 'profile' && user) loadMyAds();
   if(viewName === 'chats' && user) loadInbox();
 }
@@ -369,12 +340,14 @@ function initPi(){
   const btn = document.getElementById("loginBtn");
   
   if(!window.Pi){
-    // Mock Login for Browser Testing
+    // Mock Login if not inside Pi Browser
     btn.onclick = () => handleLogin("test_" + Math.floor(Math.random()*1000), "زائر_تجريبي");
     return;
   }
 
+  // ✅ SANDBOX IS FALSE (Production)
   Pi.init({ version: "2.0", sandbox: false });
+  
   btn.onclick = async () => {
     try {
       const auth = await Pi.authenticate(["username"], () => {});
@@ -385,27 +358,24 @@ function initPi(){
 
 async function handleLogin(uid, username) {
   user = { uid, username };
-  await sb.from("users").upsert({ pi_id: uid, username });
+  // ✅ تخزين اسم المستخدم في قاعدة البيانات عند الدخول
+  await sb.from("users").upsert({ pi_id: uid, username: username });
   
-  // 1. Update Header (Hide Login Btn, Show User Info)
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
   document.getElementById("userDispName").innerText = username;
   document.getElementById("userAvatar").innerText = username.charAt(0).toUpperCase();
 
-  // 2. Update Profile View
   document.getElementById("profile-guest").classList.add("hidden");
   document.getElementById("profile-user").classList.remove("hidden");
   document.getElementById("p-username").innerText = username;
   document.getElementById("p-uid").innerText = "UID: " + uid.slice(0,6) + "...";
   
-  // 3. Subscribe to global messages (Notification Badge Logic could go here)
   sb.channel('public:messages')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
        if(payload.new.receiver_pi_id === user.uid) {
-         // Could add a red dot here
          const chatIcon = document.querySelectorAll('.nav-item')[1].querySelector('i');
-         chatIcon.style.color = '#EF4444'; // Turn red temporarily
+         chatIcon.style.color = '#EF4444';
        }
     }).subscribe();
 }
@@ -428,6 +398,7 @@ async function loadAllProducts() {
     
     let btnHtml = "";
     if(!isOwner) {
+       // نمرر اسم البائع من بيانات المنتج
        btnHtml = `<button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%;font-size:12px;padding:6px">مراسلة البائع</button>`;
     } else {
        btnHtml = `<div style="text-align:center;font-size:11px;color:gray;padding:6px">إعلانك</div>`;
@@ -447,14 +418,13 @@ async function loadAllProducts() {
   });
 }
 
-// --- INBOX SYSTEM (The Separated Chat Logic) ---
+// --- INBOX SYSTEM (Modified for Real Usernames) ---
 async function loadInbox() {
   const list = document.getElementById("inbox-list");
   list.innerHTML = "<div style='text-align:center;padding:20px'>جاري تحديث المحادثات...</div>";
 
-  // Get ALL messages where I am sender OR receiver
   const { data } = await sb.from("messages")
-    .select("*, products(name, seller_pi_id, seller_username)") // Join with products
+    .select("*, products(name, seller_pi_id, seller_username)")
     .or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`)
     .order("created_at", {ascending: false});
 
@@ -464,52 +434,57 @@ async function loadInbox() {
     return;
   }
 
-  // Grouping Logic: Key = ProductID + OtherPersonID
-  // This ensures User A talking about Prod X is separate from User B talking about Prod X
+  // 1. تجميع المحادثات وتحديد هوية الطرف الآخر
   const threads = new Map();
-  
+  const otherUserIds = new Set(); // لتخزين IDs الأشخاص الذين نحتاج معرفة أسمائهم
+
   data.forEach(m => {
     const isMeSender = m.sender_pi_id === user.uid;
     const otherId = isMeSender ? m.receiver_pi_id : m.sender_pi_id;
-    
-    // Unique Key for the Chat Room
     const key = `${m.product_id}_${otherId}`;
 
     if(!threads.has(key)) {
-      // Determine Display Name
-      // If I am the seller, the other person is the "Buyer" (Need to fetch name or show Generic)
-      // If I am the buyer, the other person is the "Seller" (We have seller_username from product)
-      
+      otherUserIds.add(otherId); // إضافة الـ ID لقائمة البحث
       const prod = m.products || {};
-      const isISeller = prod.seller_pi_id === user.uid;
       
-      let peerName = "مستخدم";
-      if(isISeller) {
-          // I am seller -> Talking to a Buyer
-          // We don't have buyer name in message easily without another join, 
-          // but we can use their ID or a placeholder.
-          // For best UX, we'd fetch users table, but let's keep it simple:
-          peerName = "مشتري (" + otherId.substring(0,4) + ")";
-      } else {
-          // I am buyer -> Talking to Seller
-          peerName = prod.seller_username || "البائع";
-      }
-
       threads.set(key, {
         pid: m.product_id,
         otherId: otherId,
         prodName: prod.name || "منتج محذوف",
-        peerName: peerName,
         lastMsg: m.content,
+        // سنملأ الاسم لاحقاً
+        peerName: "مستخدم Pi", 
         ts: new Date(m.created_at)
       });
     }
   });
 
+  // 2. جلب أسماء المستخدمين الحقيقية من جدول users
+  if(otherUserIds.size > 0){
+    const { data: usersData } = await sb
+      .from('users')
+      .select('pi_id, username')
+      .in('pi_id', Array.from(otherUserIds));
+      
+    if(usersData){
+      // إنشاء خريطة للأسماء (ID -> Username)
+      const userMap = {};
+      usersData.forEach(u => userMap[u.pi_id] = u.username);
+      
+      // تحديث أسماء المحادثات
+      threads.forEach((val, key) => {
+         if(userMap[val.otherId]) {
+           val.peerName = userMap[val.otherId];
+         }
+      });
+    }
+  }
+
+  // 3. عرض المحادثات
   threads.forEach(t => {
     const item = `
       <div class="inbox-item" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.prodName}', '${t.peerName}')">
-        <div class="inbox-avatar">${t.peerName.charAt(0)}</div>
+        <div class="inbox-avatar">${t.peerName.charAt(0).toUpperCase()}</div>
         <div class="inbox-info">
           <div class="inbox-top">
             <span class="inbox-name">${t.peerName}</span>
@@ -529,7 +504,7 @@ function openChatRoom(pid, otherId, prodName, peerName) {
   
   activeChat = { pid, otherId };
   document.getElementById("chatTitle").innerText = prodName;
-  document.getElementById("chatPeer").innerText = "مع: " + (peerName || "المستخدم");
+  document.getElementById("chatPeer").innerText = "مع: " + (peerName || "مستخدم");
   document.getElementById("chatModal").style.display = "flex";
   
   const container = document.getElementById("msgContainer");
@@ -537,13 +512,10 @@ function openChatRoom(pid, otherId, prodName, peerName) {
   
   loadMessages();
 
-  // Realtime subscription for THIS specific room
-  // Filter: Must be this product AND (sender is other OR receiver is other)
   sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
     { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
     payload => {
       const m = payload.new;
-      // Strict Check: Only show if it belongs to this pair
       const isRel = (m.sender_pi_id == user.uid && m.receiver_pi_id == otherId) || 
                     (m.sender_pi_id == otherId && m.receiver_pi_id == user.uid);
       if(isRel) renderMsg(m);
@@ -559,7 +531,6 @@ async function loadMessages() {
     
   if(data) {
     data.forEach(m => {
-      // Filter again strictly just in case
       const isRel = (m.sender_pi_id == user.uid && m.receiver_pi_id == activeChat.otherId) || 
                     (m.sender_pi_id == activeChat.otherId && m.receiver_pi_id == user.uid);
       if(isRel) renderMsg(m);
@@ -583,9 +554,6 @@ async function sendMsg() {
   const inp = document.getElementById("msgInput");
   const txt = inp.value.trim();
   if(!txt) return;
-
-  // Optimistic UI (Show immediately)
-  // renderMsg({ sender_pi_id: user.uid, content: txt }); 
 
   const { error } = await sb.from("messages").insert({
     product_id: activeChat.pid,
@@ -639,7 +607,6 @@ async function submitProduct() {
     closeAddModal();
     loadAllProducts();
     loadMyAds();
-    // Reset fields
     document.getElementById("addName").value = "";
   } else {
     alert("خطأ: " + error.message);
