@@ -459,60 +459,48 @@ async function loadMyAds() {
 
 // --- PAYMENTS (Pi Logic) ---
 async function promoteProduct(productId) {
-  if(!window.Pi) return alert("هذه الميزة تعمل داخل متصفح Pi فقط");
-
+  if (!window.Pi) return alert("هذه الميزة تعمل داخل متصفح Pi فقط");
+  
+  // لاحظ: نستخدم الروابط النسبية التي ضبطناها في netlify.toml
+  // لم نعد بحاجة لكتابة https://myapp.netlify.app يدوياً
+  const API_BASE = "/api";
+  
   try {
     const paymentData = {
-      amount: 3, 
-      memo: "تمييز إعلان: " + productId, 
-      metadata: { productId: productId, type: "promotion" } 
+      amount: 3,
+      memo: "تمييز إعلان: " + productId,
+      metadata: { productId: productId, type: "promotion" }
     };
-
+    
     const paymentCallbacks = {
       onReadyForServerApproval: async (paymentId) => {
-         // محاكاة approve.js (في الواقع هذا يتم في السيرفر)
-         // هنا نسجل العملية في Supabase
-         await sb.from('payments').insert({
-             payment_id: paymentId,
-             user_id: user.uid,
-             product_id: productId,
-             amount: 3,
-             status: 'approved'
-         });
-         console.log("Approved locally");
+        // استدعاء دالة approve
+        await fetch(`${API_BASE}/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId })
+        });
       },
-      onServerApproval: (paymentId) => {
-         // Pi Server has approved logic
-         console.log("Server approved");
-      },
-      onClientCompletion: (paymentId) => {
-         // المستخدم أنهى الدفع في التطبيق
-         console.log("Client completed");
-      },
+      onServerApproval: (paymentId) => { console.log("Server Approved"); },
+      onClientCompletion: (paymentId) => { console.log("Client Completed"); },
       onServerCompletion: async (paymentId, txid) => {
-         // محاكاة complete.js (تحديث الداتا بيز)
-         // 1. تحديث حالة الدفع
-         await sb.from('payments').update({ status: 'completed' }).eq('payment_id', paymentId);
-         
-         // 2. تحديث المنتج ليكون مميز لمدة 3 أيام
-         const expiry = new Date();
-         expiry.setDate(expiry.getDate() + 3);
-         
-         await sb.from('products').update({ 
-             promoted_until: expiry.toISOString() 
-         }).eq('id', productId);
-         
-         alert("تم الدفع بنجاح! إعلانك الآن مميز في الصفحة الرئيسية.");
-         loadMyAds(); // تحديث الواجهة
+        // استدعاء دالة complete
+        await fetch(`${API_BASE}/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId, txid })
+        });
+        alert("تم الدفع بنجاح! إعلانك الآن مميز.");
+        loadMyAds();
       },
-      onCancel: (paymentId) => { console.log("Cancelled"); },
-      onError: (error, payment) => { console.error(error); alert("حدث خطأ في الدفع"); },
+      onCancel: () => { console.log("Cancelled"); },
+      onError: (err) => { console.error(err);
+        alert("حدث خطأ"); }
     };
-
-    // إنشاء الدفع
+    
     Pi.createPayment(paymentData, paymentCallbacks);
-
-  } catch(err) {
+    
+  } catch (err) {
     alert("خطأ: " + err);
   }
 }
