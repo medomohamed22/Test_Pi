@@ -15,7 +15,7 @@
 :root {
   --primary: #7C3AED;
   --primary-dark: #5B21B6;
-  --accent: #F59E0B;
+  --accent: #F59E0B;        /* ذهبي */
   --bg-body: #F3F4F6;
   --surface: #FFFFFF;
   --text-main: #111827;
@@ -52,6 +52,7 @@ body {
 .btn-gold { background: linear-gradient(135deg, var(--accent), #FBBF24); color: white; }
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
 .btn-whatsapp { background: var(--whatsapp); color: white; }
+.btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; }
 
 /* --- Header --- */
 .header {
@@ -117,7 +118,9 @@ body {
   background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
   overflow: hidden; display: flex; flex-direction: column;
   position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  transition: transform 0.2s;
 }
+.card:active { transform: scale(0.98); }
 
 /* المميز */
 .card.promoted {
@@ -125,30 +128,36 @@ body {
   box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
 }
 .promo-badge {
-  position: absolute; top: 10px; right: 10px; z-index: 10;
+  position: absolute; top: 8px; right: 8px; z-index: 10;
   background: var(--accent); color: white; padding: 4px 8px;
-  border-radius: 8px; font-size: 10px; font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border-radius: 6px; font-size: 10px; font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  display: flex; align-items: center; gap: 4px;
 }
 
-.card-img-wrap { position: relative; width: 100%; aspect-ratio: 4/3; background: #eee; }
+.card-img-wrap {
+  position: relative; width: 100%; 
+  aspect-ratio: 1 / 1; /* مربع للحفاظ على التناسق */
+  background: #f3f4f6;
+  overflow: hidden;
+}
 .card-img { width: 100%; height: 100%; object-fit: cover; }
 
-/* ✅ السعر في دائرة صفراء */
+/* السعر في دائرة صفراء */
 .price-circle {
-  position: absolute; bottom: -15px; left: 10px; z-index: 20;
-  width: 50px; height: 50px;
+  position: absolute; bottom: -12px; left: 8px; z-index: 20;
+  width: 48px; height: 48px;
   background: var(--accent); color: #fff;
   border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   border: 2px solid white;
 }
-.price-val { font-weight: 800; font-size: 14px; line-height: 1; color: #372800; }
-.price-curr { font-size: 10px; font-weight: 700; color: #372800; }
+.price-val { font-weight: 800; font-size: 13px; line-height: 1; color: #372800; }
+.price-curr { font-size: 9px; font-weight: 700; color: #372800; }
 
-.card-body { padding: 20px 10px 10px; display: flex; flex-direction: column; gap: 4px; }
-.card-title { font-size: 13px; margin: 0; line-height: 1.4; font-weight: 700; height: 36px; overflow: hidden; }
+.card-body { padding: 20px 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.card-title { font-size: 13px; margin: 0; line-height: 1.4; font-weight: 700; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
 /* --- Inbox & Chat --- */
 .inbox-item {
@@ -324,10 +333,8 @@ function nav(viewName) {
 function initPi(){
   const btn = document.getElementById("loginBtn");
   
-  // دالة لمعالجة المدفوعات التي لم تكتمل
   const onIncompletePaymentFound = (payment) => {
     console.log("Found incomplete payment:", payment);
-    // يمكنك إضافة كود إكمال الدفع هنا إذا لزم الأمر
   };
 
   if(!window.Pi){
@@ -335,12 +342,10 @@ function initPi(){
     return;
   }
 
-  // تهيئة Pi SDK
   Pi.init({ version: "2.0", sandbox: false });
   
   btn.onclick = async () => {
     try {
-      // طلب الصلاحيات: اسم المستخدم + المدفوعات
       const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
       handleLogin(auth.user.uid, auth.user.username);
     } catch(e) { 
@@ -388,6 +393,7 @@ async function loadAllProducts() {
     const isOwner = user && p.seller_pi_id === user.uid;
     const img = p.image_url || "https://placehold.co/400?text=No+Image";
     
+    // Check Promotion
     let isPromoted = false;
     if(p.promoted_until) {
       const until = new Date(p.promoted_until);
@@ -434,7 +440,7 @@ async function loadAllProducts() {
   });
 }
 
-// --- PROFILE & ADS (With Promote Button) ---
+// --- PROFILE & ADS (With Disabled Promote Button) ---
 async function loadMyAds() {
   const list = document.getElementById("my-ads-list");
   list.innerHTML = "تحميل...";
@@ -445,16 +451,31 @@ async function loadMyAds() {
 
   if(data) {
     data.forEach(p => {
+       // Check if already promoted
        let isPromoted = false;
-       if(p.promoted_until && new Date(p.promoted_until) > now) isPromoted = true;
+       let promoDateStr = "";
+       if(p.promoted_until) {
+          const until = new Date(p.promoted_until);
+          if(until > now) {
+            isPromoted = true;
+            promoDateStr = until.toLocaleDateString("ar-EG");
+          }
+       }
 
+       // ✅ زر التمييز (رمادي إذا كان مميزاً، أصفر إذا انتهى)
        const promoteBtn = isPromoted 
-        ? `<div style="font-size:11px;color:#F59E0B;font-weight:bold"><i class="fa-solid fa-check"></i> مميز حالياً</div>`
-        : `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E;font-size:12px;margin-bottom:6px"><i class="fa-solid fa-arrow-up"></i> تمييز الإعلان (3 Pi)</button>`;
+        ? `<button class="btn btn-disabled" style="width:100%;font-size:12px;margin-bottom:6px" disabled>
+             <i class="fa-solid fa-clock"></i> مميز حتى ${promoDateStr}
+           </button>`
+        : `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E;font-size:12px;margin-bottom:6px">
+             <i class="fa-solid fa-arrow-up"></i> تمييز الإعلان (3 Pi)
+           </button>`;
 
        list.innerHTML += `
        <div class="card">
-         <img src="${p.image_url || ''}" class="card-img" style="height:120px">
+         <div class="card-img-wrap">
+            <img src="${p.image_url || ''}" class="card-img">
+         </div>
          <div class="card-body">
            <div class="card-title">${p.name}</div>
            ${promoteBtn}
@@ -469,7 +490,6 @@ async function loadMyAds() {
 async function promoteProduct(productId) {
   if(!window.Pi) return alert("هذه الميزة تعمل داخل متصفح Pi فقط");
 
-  // استخدام المسار النسبي الذي سيحوله Netlify إلى الدوال
   const API_BASE = "/api"; 
 
   try {
@@ -491,13 +511,11 @@ async function promoteProduct(productId) {
             const txt = await res.text().catch(()=> "");
             console.log("approve =>", res.status, txt);
 
-            if(!res.ok) {
-              throw new Error("approve failed: " + res.status);
-            }
+            if(!res.ok) throw new Error("approve failed: " + res.status);
 
           } catch (e) { 
             console.error(e);
-            alert("فشل إرسال approve للباك إند. افتح Console وشوف approve => status");
+            alert("فشل الاتصال بالخادم. تأكد من الإنترنت.");
           }
       },
       
@@ -514,7 +532,6 @@ async function promoteProduct(productId) {
         alert("فشل الدفع: " + error); 
       },
       
-      /* ✅✅✅ FIX: Pi SDK expects onReadyForServerCompletion (NOT onServerCompletion) */
       onReadyForServerCompletion: async (paymentId, txid) => {
           console.log("Completing payment...", paymentId, txid);
           try {
@@ -529,7 +546,7 @@ async function promoteProduct(productId) {
              
              if(res.ok) {
                alert("تم الدفع بنجاح! إعلانك الآن مميز.");
-               loadMyAds();
+               loadMyAds(); // تحديث الزر ليصبح رمادي
              } else {
                alert("حدث خطأ أثناء تفعيل الميزة، تواصل مع الدعم.");
              }
