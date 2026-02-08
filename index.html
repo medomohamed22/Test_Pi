@@ -374,7 +374,7 @@ function initPi(){
     return;
   }
 
-  Pi.init({ version: "2.0", sandbox: true });
+  Pi.init({ version: "2.0", sandbox: false });
   btn.onclick = async () => {
     try {
       const auth = await Pi.authenticate(["username"], () => {});
