@@ -324,11 +324,10 @@ function nav(viewName) {
 function initPi(){
   const btn = document.getElementById("loginBtn");
   
-  // ✅ التصحيح 1: إضافة دالة لمعالجة المدفوعات غير المكتملة
+  // دالة لمعالجة المدفوعات التي لم تكتمل
   const onIncompletePaymentFound = (payment) => {
     console.log("Found incomplete payment:", payment);
-    // يمكن هنا إرسال الدفع للسيرفر لإكماله
-    // fetch('/api/complete', {method: 'POST', body: JSON.stringify({paymentId: payment.identifier, txid: payment.transaction.txid})})
+    // يمكنك إضافة كود إكمال الدفع هنا إذا لزم الأمر
   };
 
   if(!window.Pi){
@@ -336,12 +335,12 @@ function initPi(){
     return;
   }
 
-  // الوضع المباشر
+  // تهيئة Pi SDK
   Pi.init({ version: "2.0", sandbox: false });
   
   btn.onclick = async () => {
     try {
-      // ✅ التصحيح 2: طلب صلاحية "payments" + تمرير دالة onIncompletePaymentFound
+      // طلب الصلاحيات: اسم المستخدم + المدفوعات
       const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
       handleLogin(auth.user.uid, auth.user.username);
     } catch(e) { 
@@ -466,10 +465,11 @@ async function loadMyAds() {
   }
 }
 
-// --- PAYMENTS (Pi Logic - ✅ FIXED) ---
+// --- PAYMENTS (Pi Logic - With Netlify Rewrite) ---
 async function promoteProduct(productId) {
   if(!window.Pi) return alert("هذه الميزة تعمل داخل متصفح Pi فقط");
 
+  // استخدام المسار النسبي الذي سيحوله Netlify إلى الدوال
   const API_BASE = "/api"; 
 
   try {
@@ -480,9 +480,7 @@ async function promoteProduct(productId) {
     };
 
     const paymentCallbacks = {
-      // 1. الموافقة المبدئية
       onReadyForServerApproval: async (paymentId) => {
-          console.log("Ready for approval", paymentId);
           try {
             await fetch(`${API_BASE}/approve`, {
                 method: "POST",
@@ -492,23 +490,19 @@ async function promoteProduct(productId) {
           } catch (e) { console.error(e); }
       },
       
-      // 2. موافقة السيرفر
       onServerApproval: (paymentId) => { 
         console.log("Server approved", paymentId); 
       },
       
-      // 3. إلغاء المستخدم
       onCancel: (paymentId) => { 
         console.log("User cancelled", paymentId); 
       },
       
-      // 4. وجود خطأ
       onError: (error, payment) => { 
         console.error("Payment error", error); 
         alert("فشل الدفع: " + error); 
       },
       
-      // 5. إكمال الدفع النهائي
       onServerCompletion: async (paymentId, txid) => {
           console.log("Completing payment...", paymentId);
           try {
@@ -537,7 +531,6 @@ async function promoteProduct(productId) {
     alert("خطأ في إنشاء الدفع: " + err);
   }
 }
-
 
 // --- INBOX (Real Usernames) ---
 async function loadInbox() {
