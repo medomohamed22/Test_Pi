@@ -1,27 +1,15 @@
 [build]
-  # المجلد الذي سيتم نشره
   publish = "."
-  # مجلد دوال السيرفر
   functions = "netlify/functions"
 
-# -----------------------------------------------------------
-# هذا هو الجزء الذي يحل مشكلة الـ Build Failed
-# نقوم بتعطيل فحص الأسرار لأننا نعلم أن المفتاح في HTML هو العام
-# -----------------------------------------------------------
-[build.environment]
-  SECRETS_SCAN_ENABLED = "false"
-
-# إعدادات الـ CORS
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-
-# تحويل مسار API
+# هذا هو الكود المسؤول عن تحويل المسار
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
 
-[dev]
-  framework = "#static"
+# إعدادات لضمان عدم حدوث مشاكل CORS
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
