@@ -323,19 +323,32 @@ function nav(viewName) {
 // --- PI SYSTEM ---
 function initPi(){
   const btn = document.getElementById("loginBtn");
+  
+  // دالة لمعالجة المدفوعات التي لم تكتمل (مطلوبة من Pi)
+  const onIncompletePaymentFound = (payment) => {
+    console.log("Found incomplete payment:", payment);
+    // يمكنك هنا إرسال الدفع للسيرفر لإكماله إذا لزم الأمر
+    // fetch('/api/complete', ...)
+  };
+
   if(!window.Pi){
     btn.onclick = () => handleLogin("test_" + Math.floor(Math.random()*1000), "زائر_تجريبي");
     return;
   }
-  // ✅ Live Mode
-  Pi.init({ version: "2.0", sandbox: false });
+
+  Pi.init({ version: "2.0", sandbox: false }); // تأكد أنها false للوضع المباشر
+  
   btn.onclick = async () => {
     try {
-      const auth = await Pi.authenticate(["username"], () => {});
+      // ✅ التعديل هنا: طلبنا صلاحية المدفوعات
+      const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
       handleLogin(auth.user.uid, auth.user.username);
-    } catch(e) { alert("Error: " + e) }
+    } catch(e) { 
+      alert("Error: " + e);
+    }
   };
 }
+
 
 async function handleLogin(uid, username) {
   user = { uid, username };
