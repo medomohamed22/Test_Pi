@@ -13,16 +13,16 @@
 
 <style>
 :root {
-  --primary: #6D28D9;
-  --primary-light: #8B5CF6;
-  --accent: #F59E0B;
-  --bg-body: #F8F9FA;
+  --primary: #7C3AED;       /* بنفسجي حيوي */
+  --primary-dark: #5B21B6;
+  --accent: #F59E0B;        /* ذهبي */
+  --bg-body: #F3F4F6;
   --surface: #FFFFFF;
-  --text-main: #1F2937;
+  --text-main: #111827;
   --text-muted: #6B7280;
   --danger: #EF4444;
   --border: #E5E7EB;
-  --nav-height: 65px;
+  --nav-height: 70px;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,26 +32,26 @@ body {
   font-family: 'Tajawal', sans-serif;
   background-color: var(--bg-body);
   color: var(--text-main);
-  padding-bottom: calc(var(--nav-height) + 20px); /* مسافة للبار السفلي */
-  overflow-y: scroll;
+  padding-bottom: calc(var(--nav-height) + 20px);
+  overflow-y: auto;
+  user-select: none; /* منع تحديد النصوص للتطبيق */
 }
 
 /* --- Utilities --- */
-.container { width: min(100%, 1200px); margin: 0 auto; padding: 16px; }
+.container { width: min(100%, 800px); margin: 0 auto; padding: 16px; }
 .hidden { display: none !important; }
 .btn {
-  border: none; cursor: pointer; border-radius: 12px;
+  border: none; cursor: pointer; border-radius: 14px;
   padding: 10px 16px; font-weight: 700; font-family: inherit;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all 0.2s ease; font-size: 14px;
+  transition: transform 0.1s ease; font-size: 14px;
 }
-.btn:active { transform: scale(0.96); }
-.btn-primary { background: var(--primary); color: white; }
+.btn:active { transform: scale(0.95); }
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2); }
 .btn-gold { background: linear-gradient(135deg, var(--accent), #FBBF24); color: white; }
-.btn-danger { background: #fee2e2; color: var(--danger); }
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
 
-/* --- Top Header --- */
+/* --- Header --- */
 .header {
   position: sticky; top: 0; z-index: 50;
   background: rgba(255,255,255,0.95);
@@ -59,10 +59,23 @@ body {
   border-bottom: 1px solid var(--border);
   padding: 12px 16px;
   display: flex; justify-content: space-between; align-items: center;
+  height: 60px;
 }
-.brand { font-size: 18px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.brand { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
 
-/* --- Bottom Navigation Bar --- */
+/* User Profile in Header */
+.header-user {
+  display: flex; align-items: center; gap: 10px;
+  background: #f9fafb; padding: 4px 12px 4px 4px;
+  border-radius: 99px; border: 1px solid var(--border);
+}
+.header-avatar {
+  width: 32px; height: 32px; background: var(--primary); color: white;
+  border-radius: 50%; display: grid; place-items: center; font-size: 14px;
+}
+.header-name { font-size: 13px; font-weight: 700; color: var(--text-main); }
+
+/* --- Bottom Navigation (Animated) --- */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: var(--nav-height);
@@ -70,97 +83,129 @@ body {
   border-top: 1px solid var(--border);
   display: flex; justify-content: space-around; align-items: center;
   z-index: 1000;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  padding-bottom: 10px; /* Safe area for iPhone */
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
 }
+
 .nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
   color: var(--text-muted); font-size: 11px; font-weight: 600;
-  background: none; border: none; cursor: pointer; padding: 8px; width: 100%;
+  background: none; border: none; cursor: pointer; padding: 8px; width: 60px;
+  position: relative;
+  transition: color 0.3s;
 }
-.nav-item i { font-size: 20px; transition: 0.2s; }
+
+.nav-item i {
+  font-size: 22px;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Active State Animation */
 .nav-item.active { color: var(--primary); }
-.nav-item.active i { transform: translateY(-2px); }
-.badge {
-  background: var(--danger); color: white; font-size: 10px;
-  padding: 2px 6px; border-radius: 10px; position: absolute;
-  top: 8px; margin-right: 15px; display: none;
+.nav-item.active i {
+  transform: translateY(-5px) scale(1.1); /* الوثبة */
+}
+/* نقطة صغيرة تحت العنصر النشط */
+.nav-item.active::after {
+  content: ''; position: absolute; bottom: 5px;
+  width: 5px; height: 5px; background: var(--primary);
+  border-radius: 50%;
 }
 
 /* --- Views Layout --- */
-.view-section { animation: fadeIn 0.3s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.view-section {
+  animation: fadeScale 0.4s ease-out;
+}
+@keyframes fadeScale {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
 
-/* --- Product Cards (Home) --- */
+/* --- Product Cards --- */
 .products-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
 }
 .card {
   background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
   overflow: hidden; display: flex; flex-direction: column;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 .card-img {
-  width: 100%; aspect-ratio: 1/1; object-fit: cover; background: #eee;
+  width: 100%; aspect-ratio: 4/3; object-fit: cover; background: #eee;
 }
-.card-body { padding: 10px; display: flex; flex-direction: column; flex: 1; }
+.card-body { padding: 10px; display: flex; flex-direction: column; gap: 4px; }
 .card-price {
-  font-weight: 800; color: var(--primary); font-size: 16px; margin-bottom: 4px;
+  font-weight: 800; color: var(--primary); font-size: 15px;
   display: flex; align-items: center; gap: 4px;
 }
-.card-price span { font-size: 12px; font-weight: 600; background: #ede9fe; padding: 2px 6px; border-radius: 6px; }
-.card-title { font-size: 14px; margin: 0 0 6px; line-height: 1.4; color: var(--text-main); }
-.card-meta { font-size: 11px; color: var(--text-muted); margin-top: auto; display: flex; justify-content: space-between; }
+.card-price span { font-size: 11px; background: #ede9fe; padding: 2px 6px; border-radius: 6px; }
+.card-title { font-size: 13px; margin: 0; line-height: 1.4; font-weight: 700; height: 36px; overflow: hidden; }
 
-/* --- Inbox List (Chats) --- */
+/* --- Inbox List --- */
 .inbox-item {
-  background: white; padding: 16px; margin-bottom: 10px;
-  border-radius: 12px; border: 1px solid var(--border);
+  background: white; padding: 14px; margin-bottom: 10px;
+  border-radius: 16px; border: 1px solid var(--border);
   display: flex; align-items: center; gap: 12px; cursor: pointer;
+  transition: transform 0.2s;
 }
-.inbox-icon {
-  width: 45px; height: 45px; background: #ede9fe; color: var(--primary);
-  border-radius: 50%; display: grid; place-items: center; font-size: 18px;
+.inbox-item:active { transform: scale(0.98); background: #f9fafb; }
+.inbox-avatar {
+  width: 45px; height: 45px; border-radius: 50%;
+  background: #f3f4f6; color: var(--primary);
+  display: grid; place-items: center; font-size: 18px; font-weight: bold;
 }
-.inbox-content { flex: 1; }
-.inbox-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-.inbox-last { color: var(--text-muted); font-size: 12px; }
+.inbox-info { flex: 1; overflow: hidden; }
+.inbox-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.inbox-name { font-weight: 800; font-size: 14px; color: var(--text-main); }
+.inbox-product { font-size: 11px; color: white; background: var(--accent); padding: 2px 6px; border-radius: 6px; }
+.inbox-msg { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* --- Profile Section --- */
-.profile-header {
-  background: white; padding: 20px; border-radius: 16px;
-  text-align: center; margin-bottom: 20px; border: 1px solid var(--border);
-}
-.profile-avatar {
-  width: 70px; height: 70px; background: var(--primary); color: white;
-  border-radius: 50%; font-size: 28px; display: grid; place-items: center;
-  margin: 0 auto 12px;
-}
-.my-ads-title { font-weight: 800; margin: 20px 0 10px; font-size: 16px; }
-
-/* --- Modals & Sheets --- */
+/* --- Modals --- */
 .modal {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-  z-index: 2000; display: none; align-items: flex-end;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 2000; display: none; align-items: flex-end; justify-content: center;
 }
 .sheet {
-  background: white; width: 100%; border-radius: 20px 20px 0 0;
-  padding: 20px; max-height: 90vh; overflow-y: auto;
-  animation: slideUp 0.3s ease;
+  background: white; width: 100%; max-width: 600px;
+  border-radius: 24px 24px 0 0; padding: 20px;
+  max-height: 90vh; overflow-y: auto;
+  animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex; flex-direction: column;
 }
 @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
 
+/* --- Chat Room --- */
+.chat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 10px;
+}
+.chat-area {
+  flex: 1; overflow-y: auto; background: #f9fafb;
+  padding: 10px; border-radius: 12px; margin-bottom: 10px;
+  min-height: 300px; max-height: 60vh;
+}
+.bubble {
+  max-width: 75%; padding: 10px 14px; border-radius: 18px;
+  margin-bottom: 8px; font-size: 13px; line-height: 1.4; position: relative;
+}
+.bubble.me {
+  background: var(--primary); color: white; align-self: flex-end; margin-right: auto;
+  border-bottom-right-radius: 4px;
+}
+.bubble.other {
+  background: white; border: 1px solid var(--border); align-self: flex-start; margin-left: auto;
+  border-bottom-left-radius: 4px;
+}
+
 /* --- Inputs --- */
 input, textarea {
-  width: 100%; padding: 12px; margin-bottom: 12px;
-  border: 1px solid var(--border); border-radius: 10px;
-  font-family: inherit; font-size: 14px;
+  width: 100%; padding: 14px; margin-bottom: 12px;
+  border: 1px solid var(--border); border-radius: 12px;
+  font-family: inherit; font-size: 14px; outline: none;
+  background: #fdfdfd;
 }
-textarea { resize: none; height: 100px; }
-
-/* Chat Bubbles */
-.chat-area { height: 60vh; overflow-y: auto; background: #f3f4f6; padding: 10px; border-radius: 12px; margin-bottom: 10px; }
-.bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 13px; }
-.me { background: var(--primary); color: white; align-self: flex-end; margin-right: auto; }
-.other { background: white; border: 1px solid var(--border); margin-left: auto; }
+input:focus, textarea:focus { border-color: var(--primary); background: white; }
 
 </style>
 </head>
@@ -168,50 +213,59 @@ textarea { resize: none; height: 100px; }
 
 <header class="header">
   <div class="brand"><i class="fa-solid fa-store"></i> سوق باي</div>
-  <button id="loginBtn" class="btn btn-gold" onclick="alert('جاري تهيئة Pi...')">
+  
+  <button id="loginBtn" class="btn btn-gold">
     <i class="fa-solid fa-fingerprint"></i> دخول
   </button>
+
+  <div id="headerUser" class="header-user hidden">
+    <div id="userAvatar" class="header-avatar">?</div>
+    <div id="userDispName" class="header-name">المستخدم</div>
+  </div>
 </header>
 
 <div class="container">
 
   <div id="view-home" class="view-section">
-    <h3 style="margin-top:0">أحدث المنتجات</h3>
-    <div id="products-list" class="products-grid">
-      </div>
+    <h3 style="margin-top:5px;display:flex;align-items:center;gap:8px">
+      <i class="fa-solid fa-fire" style="color:var(--accent)"></i> أحدث المعروضات
+    </h3>
+    <div id="products-list" class="products-grid"></div>
     <div id="loading" style="text-align:center;padding:20px;color:gray">جاري التحميل...</div>
   </div>
 
   <div id="view-chats" class="view-section hidden">
-    <h3 style="margin-top:0">الرسائل والمحادثات</h3>
+    <h3 style="margin-top:5px">الرسائل الواردة</h3>
     <div id="inbox-list">
-      <div style="text-align:center;padding:40px;color:gray">يجب تسجيل الدخول لعرض الرسائل</div>
+      <div style="text-align:center;padding:40px;color:gray;font-size:14px">
+        <i class="fa-regular fa-comments" style="font-size:30px;margin-bottom:10px;display:block"></i>
+        يجب تسجيل الدخول لعرض رسائلك
+      </div>
     </div>
   </div>
 
   <div id="view-profile" class="view-section hidden">
-    
-    <div id="profile-guest" style="text-align:center;padding:40px;">
-      <i class="fa-solid fa-lock" style="font-size:40px;color:gray;margin-bottom:10px"></i>
-      <p>يرجى تسجيل الدخول لإدارة إعلاناتك</p>
+    <div id="profile-guest" style="text-align:center;padding:50px 20px;">
+      <i class="fa-solid fa-user-lock" style="font-size:50px;color:#d1d5db;margin-bottom:15px"></i>
+      <h3>أنت زائر</h3>
+      <p style="color:gray;font-size:14px">سجل الدخول لتتمكن من إضافة إعلاناتك والتحكم بها.</p>
     </div>
 
     <div id="profile-user" class="hidden">
-      <div class="profile-header">
-        <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
-        <h3 id="p-username" style="margin:0">اسم المستخدم</h3>
-        <small id="p-uid" style="color:gray">ID: ...</small>
-        
-        <div style="margin-top:16px;">
-          <button class="btn btn-primary" style="width:100%" onclick="openAddModal()">
-            <i class="fa-solid fa-plus-circle"></i> إضافة إعلان جديد
-          </button>
+      <div style="background:white;padding:20px;border-radius:20px;text-align:center;border:1px solid var(--border)">
+        <div style="width:80px;height:80px;background:var(--primary);color:white;border-radius:50%;display:grid;place-items:center;font-size:30px;margin:0 auto 10px;">
+          <i class="fa-solid fa-user"></i>
         </div>
+        <h3 id="p-username" style="margin:0">...</h3>
+        <p id="p-uid" style="font-size:12px;color:gray;margin:5px 0 15px">ID: ...</p>
+        
+        <button class="btn btn-primary" style="width:100%" onclick="openAddModal()">
+          <i class="fa-solid fa-plus"></i> إضافة إعلان جديد
+        </button>
       </div>
 
-      <div class="my-ads-title">إعلاناتي المنشورة</div>
-      <div id="my-ads-list" class="products-grid">
-        </div>
+      <h4 style="margin:20px 0 10px">إعلاناتي</h4>
+      <div id="my-ads-list" class="products-grid"></div>
     </div>
   </div>
 
@@ -219,18 +273,17 @@ textarea { resize: none; height: 100px; }
 
 <nav class="bottom-nav">
   <button class="nav-item active" onclick="nav('home')">
-    <i class="fa-solid fa-house"></i>
+    <i class="fa-solid fa-house-chimney"></i>
     <span>الرئيسية</span>
   </button>
 
-  <button class="nav-item" onclick="nav('chats')" style="position:relative">
-    <i class="fa-solid fa-comments"></i>
-    <span id="chatBadge" class="badge">0</span>
+  <button class="nav-item" onclick="nav('chats')">
+    <i class="fa-solid fa-comment-dots"></i>
     <span>المحادثات</span>
   </button>
 
   <button class="nav-item" onclick="nav('profile')">
-    <i class="fa-solid fa-user"></i>
+    <i class="fa-solid fa-user-gear"></i>
     <span>حسابي</span>
   </button>
 </nav>
@@ -238,33 +291,36 @@ textarea { resize: none; height: 100px; }
 
 <div id="addModal" class="modal" onclick="if(event.target==this) closeAddModal()">
   <div class="sheet">
-    <h3>بيع منتج جديد</h3>
-    <input id="addName" placeholder="اسم المنتج (مثال: موبايل سامسونج)" />
+    <h3 style="margin-top:0">ماذا تريد أن تبيع؟</h3>
+    <input id="addName" placeholder="اسم المنتج (مثال: ايفون 13)" />
     <div style="display:flex;gap:10px">
       <input id="addPrice" type="number" placeholder="السعر (Pi)" />
-      <input id="addPhone" type="tel" placeholder="رقم واتساب (اختياري)" />
+      <input id="addPhone" type="tel" placeholder="رقم الموبايل (اختياري)" />
     </div>
-    <textarea id="addDesc" placeholder="وصف المنتج وحالته..."></textarea>
-    <label style="display:block;margin-bottom:8px;font-size:12px">صورة المنتج</label>
+    <textarea id="addDesc" placeholder="وصف حالة المنتج..."></textarea>
+    <label style="font-size:12px;font-weight:bold;margin-bottom:8px;display:block">صورة المنتج</label>
     <input id="addImg" type="file" accept="image/*" />
     <button id="publishBtn" class="btn btn-primary" style="width:100%" onclick="submitProduct()">
-      نشر الإعلان الآن
+      نشر الإعلان
     </button>
   </div>
 </div>
 
 <div id="chatModal" class="modal" style="z-index:2100" onclick="if(event.target==this) closeChat()">
-  <div class="sheet" style="height:90vh;display:flex;flex-direction:column">
-    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-      <b id="chatTitle">محادثة</b>
-      <button onclick="closeChat()" style="background:none;border:none"><i class="fa-solid fa-xmark"></i></button>
+  <div class="sheet" style="height:92vh;">
+    <div class="chat-header">
+      <div>
+        <div id="chatTitle" style="font-weight:800;font-size:15px">اسم المنتج</div>
+        <div id="chatPeer" style="font-size:12px;color:gray">...</div>
+      </div>
+      <button onclick="closeChat()" style="background:none;border:none;font-size:18px"><i class="fa-solid fa-xmark"></i></button>
     </div>
     
-    <div id="msgContainer" class="chat-area" style="flex:1;display:flex;flex-direction:column;"></div>
+    <div id="msgContainer" class="chat-area" style="display:flex;flex-direction:column;"></div>
     
     <div style="display:flex;gap:8px;margin-top:auto">
-      <input id="msgInput" placeholder="اكتب رسالة..." style="margin:0" />
-      <button class="btn btn-primary" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+      <input id="msgInput" placeholder="اكتب رسالة..." style="margin:0;border-radius:25px" />
+      <button class="btn btn-primary" style="border-radius:50%;width:48px;height:48px;padding:0" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
   </div>
 </div>
@@ -272,10 +328,10 @@ textarea { resize: none; height: 100px; }
 <script>
 // --- CONFIG ---
 const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
-const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS"; // مفتاح عام آمن
+const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS"; 
 
 let sb, user = null;
-let activeChat = null; // { pid, otherId, title }
+let activeChat = null; // { pid, otherId }
 
 // --- INIT ---
 document.addEventListener("DOMContentLoaded", async () => {
@@ -284,41 +340,46 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadAllProducts();
 });
 
-// --- NAVIGATION ---
+// --- NAVIGATION LOGIC ---
 function nav(viewName) {
   // Hide all views
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-  // Show selected
-  document.getElementById(`view-${viewName}`).classList.remove('hidden');
+  // Show selected view
+  const view = document.getElementById(`view-${viewName}`);
+  view.classList.remove('hidden');
   
-  // Update Nav Icon
+  // Re-trigger animation
+  view.style.animation = 'none';
+  view.offsetHeight; /* trigger reflow */
+  view.style.animation = 'fadeScale 0.4s ease-out';
+
+  // Update Nav Icon style
   const iconIndex = viewName === 'home' ? 0 : viewName === 'chats' ? 1 : 2;
   document.querySelectorAll('.nav-item')[iconIndex].classList.add('active');
 
-  // Load specific data
+  // Load Context Data
   if(viewName === 'profile' && user) loadMyAds();
   if(viewName === 'chats' && user) loadInbox();
 }
 
-// --- PI LOGIN ---
+// --- PI LOGIN & USER DISPLAY ---
 function initPi(){
   const btn = document.getElementById("loginBtn");
   
   if(!window.Pi){
-    // Demo Mode for browser testing
-    btn.innerHTML = `<i class="fa-solid fa-vial"></i> تجربة (Demo)`;
-    btn.onclick = () => handleLogin("test_user_" + Math.floor(Math.random()*1000), "زائر_تجريبي");
+    // Mock Login for Browser Testing
+    btn.onclick = () => handleLogin("test_" + Math.floor(Math.random()*1000), "زائر_تجريبي");
     return;
   }
 
-  Pi.init({ version: "2.0", sandbox: false });
+  Pi.init({ version: "2.0", sandbox: true });
   btn.onclick = async () => {
     try {
       const auth = await Pi.authenticate(["username"], () => {});
       handleLogin(auth.user.uid, auth.user.username);
-    } catch(e) { alert("فشل الدخول: " + e) }
+    } catch(e) { alert("خطأ في الدخول: " + e) }
   };
 }
 
@@ -326,26 +387,32 @@ async function handleLogin(uid, username) {
   user = { uid, username };
   await sb.from("users").upsert({ pi_id: uid, username });
   
-  document.getElementById("loginBtn").style.display = "none";
+  // 1. Update Header (Hide Login Btn, Show User Info)
+  document.getElementById("loginBtn").classList.add("hidden");
+  document.getElementById("headerUser").classList.remove("hidden");
+  document.getElementById("userDispName").innerText = username;
+  document.getElementById("userAvatar").innerText = username.charAt(0).toUpperCase();
+
+  // 2. Update Profile View
   document.getElementById("profile-guest").classList.add("hidden");
   document.getElementById("profile-user").classList.remove("hidden");
-  
   document.getElementById("p-username").innerText = username;
-  document.getElementById("p-uid").innerText = "ID: " + uid.slice(0,8) + "...";
+  document.getElementById("p-uid").innerText = "UID: " + uid.slice(0,6) + "...";
   
-  // Realtime listener for messages
+  // 3. Subscribe to global messages (Notification Badge Logic could go here)
   sb.channel('public:messages')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-      if(payload.new.receiver_pi_id === user.uid) {
-        document.getElementById("chatBadge").style.display = "block";
-        document.getElementById("chatBadge").innerText = "!";
-      }
+       if(payload.new.receiver_pi_id === user.uid) {
+         // Could add a red dot here
+         const chatIcon = document.querySelectorAll('.nav-item')[1].querySelector('i');
+         chatIcon.style.color = '#EF4444'; // Turn red temporarily
+       }
     }).subscribe();
 }
 
-// --- DATA: ALL PRODUCTS (Home) ---
+// --- PRODUCTS (Home) ---
 async function loadAllProducts() {
-  const { data, error } = await sb.from("products").select("*").order("created_at", {ascending:false});
+  const { data } = await sb.from("products").select("*").order("created_at", {ascending:false});
   document.getElementById("loading").style.display = "none";
   const list = document.getElementById("products-list");
   list.innerHTML = "";
@@ -359,30 +426,11 @@ async function loadAllProducts() {
     const isOwner = user && p.seller_pi_id === user.uid;
     const img = p.image_url || "https://placehold.co/400?text=No+Image";
     
-    // Action Button Logic
-    let actionBtn = "";
-    if(isOwner) {
-       actionBtn = `<button class="btn btn-ghost" style="width:100%;font-size:12px" disabled>إعلانك</button>`;
+    let btnHtml = "";
+    if(!isOwner) {
+       btnHtml = `<button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%;font-size:12px;padding:6px">مراسلة البائع</button>`;
     } else {
-       // WhatsApp logic if phone exists
-       if(p.phone) {
-         let ph = p.phone.replace(/\D/g,'');
-         if(ph.startsWith('0')) ph = '2' + ph; // Assume Egypt for simplicity
-         actionBtn = `
-           <div style="display:flex;gap:5px">
-             <a href="https://wa.me/${ph}" target="_blank" class="btn btn-success" style="flex:1;background:#25D366;color:white;padding:6px">
-               <i class="fa-brands fa-whatsapp"></i>
-             </a>
-             <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}')" class="btn btn-primary" style="flex:1;padding:6px">
-               <i class="fa-solid fa-comment"></i>
-             </button>
-           </div>`;
-       } else {
-         actionBtn = `
-           <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}')" class="btn btn-primary" style="width:100%">
-             <i class="fa-solid fa-comment"></i> محادثة
-           </button>`;
-       }
+       btnHtml = `<div style="text-align:center;font-size:11px;color:gray;padding:6px">إعلانك</div>`;
     }
 
     const html = `
@@ -391,10 +439,7 @@ async function loadAllProducts() {
         <div class="card-body">
           <div class="card-price">${p.price} <span>Pi</span></div>
           <h4 class="card-title">${p.name}</h4>
-          <div class="card-meta">
-            <span>${p.seller_username || 'بائع'}</span>
-          </div>
-          <div style="margin-top:10px">${actionBtn}</div>
+          ${btnHtml}
         </div>
       </div>
     `;
@@ -402,186 +447,122 @@ async function loadAllProducts() {
   });
 }
 
-// --- DATA: MY ADS (Profile) ---
-async function loadMyAds() {
-  if(!user) return;
-  const list = document.getElementById("my-ads-list");
-  list.innerHTML = "<div style='grid-column:1/-1;text-align:center'>جاري التحميل...</div>";
-
-  const { data } = await sb.from("products").select("*").eq("seller_pi_id", user.uid).order("created_at", {ascending:false});
-  list.innerHTML = "";
-
-  if(!data || !data.length) {
-    list.innerHTML = "<div style='grid-column:1/-1;text-align:center;color:gray'>لم تقم بنشر أي إعلان بعد</div>";
-    return;
-  }
-
-  data.forEach(p => {
-    const img = p.image_url || "https://placehold.co/400?text=Image";
-    const html = `
-      <div class="card">
-        <div style="position:relative">
-          <img src="${img}" class="card-img">
-          <button onclick="deleteProduct(${p.id})" class="btn" style="position:absolute;top:5px;right:5px;background:white;color:red;padding:4px 8px;border-radius:8px">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        </div>
-        <div class="card-body">
-          <div class="card-price">${p.price} <span>Pi</span></div>
-          <div class="card-title">${p.name}</div>
-          <button class="btn btn-ghost" style="width:100%;font-size:12px;margin-top:5px">تعديل (قريباً)</button>
-        </div>
-      </div>
-    `;
-    list.innerHTML += html;
-  });
-}
-
-// --- OPERATIONS: ADD & DELETE ---
-function openAddModal() { document.getElementById("addModal").style.display = "flex"; }
-function closeAddModal() { document.getElementById("addModal").style.display = "none"; }
-
-async function submitProduct() {
-  const name = document.getElementById("addName").value;
-  const price = document.getElementById("addPrice").value;
-  const phone = document.getElementById("addPhone").value;
-  const desc = document.getElementById("addDesc").value;
-  const file = document.getElementById("addImg").files[0];
-  const btn = document.getElementById("publishBtn");
-
-  if(!name || !price) return alert("الاسم والسعر مطلوبين");
-  
-  btn.innerText = "جاري النشر..."; btn.disabled = true;
-
-  let image_url = null;
-  if(file) {
-    const path = `${user.uid}/${Date.now()}_${file.name}`;
-    const { error } = await sb.storage.from("images").upload(path, file);
-    if(!error) {
-      const { data } = sb.storage.from("images").getPublicUrl(path);
-      image_url = data.publicUrl;
-    }
-  }
-
-  const { error } = await sb.from("products").insert({
-    name, price, phone, description: desc, image_url,
-    seller_pi_id: user.uid, seller_username: user.username
-  });
-
-  if(!error) {
-    alert("تم النشر بنجاح!");
-    closeAddModal();
-    loadAllProducts(); // Refresh Home
-    loadMyAds();       // Refresh Profile
-    // Clear inputs
-    document.getElementById("addName").value = "";
-    document.getElementById("addPrice").value = "";
-  } else {
-    alert("خطأ: " + error.message);
-  }
-  btn.innerText = "نشر الإعلان الآن"; btn.disabled = false;
-}
-
-async function deleteProduct(id) {
-  if(!confirm("هل أنت متأكد من حذف هذا الإعلان؟")) return;
-  const { error } = await sb.from("products").delete().eq("id", id);
-  if(!error) {
-    loadMyAds();
-    loadAllProducts();
-  } else {
-    alert("خطأ في الحذف");
-  }
-}
-
-// --- CHAT SYSTEM (Groups & Logic) ---
+// --- INBOX SYSTEM (The Separated Chat Logic) ---
 async function loadInbox() {
   const list = document.getElementById("inbox-list");
-  list.innerHTML = "<div style='text-align:center;padding:20px'>جاري تحميل المحادثات...</div>";
-  
-  // Get messages involving me
+  list.innerHTML = "<div style='text-align:center;padding:20px'>جاري تحديث المحادثات...</div>";
+
+  // Get ALL messages where I am sender OR receiver
   const { data } = await sb.from("messages")
-    .select("*, products(name)")
+    .select("*, products(name, seller_pi_id, seller_username)") // Join with products
     .or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`)
     .order("created_at", {ascending: false});
 
   list.innerHTML = "";
   if(!data || !data.length) {
-    list.innerHTML = "<div style='text-align:center;padding:20px;color:gray'>لا توجد رسائل</div>";
+    list.innerHTML = "<div style='text-align:center;padding:40px;color:gray'>لا توجد محادثات نشطة</div>";
     return;
   }
 
-  // Group threads by ProductID + OtherPersonID
+  // Grouping Logic: Key = ProductID + OtherPersonID
+  // This ensures User A talking about Prod X is separate from User B talking about Prod X
   const threads = new Map();
+  
   data.forEach(m => {
-    const otherId = m.sender_pi_id === user.uid ? m.receiver_pi_id : m.sender_pi_id;
-    const key = `${m.product_id}_${otherId}`;
+    const isMeSender = m.sender_pi_id === user.uid;
+    const otherId = isMeSender ? m.receiver_pi_id : m.sender_pi_id;
     
+    // Unique Key for the Chat Room
+    const key = `${m.product_id}_${otherId}`;
+
     if(!threads.has(key)) {
+      // Determine Display Name
+      // If I am the seller, the other person is the "Buyer" (Need to fetch name or show Generic)
+      // If I am the buyer, the other person is the "Seller" (We have seller_username from product)
+      
+      const prod = m.products || {};
+      const isISeller = prod.seller_pi_id === user.uid;
+      
+      let peerName = "مستخدم";
+      if(isISeller) {
+          // I am seller -> Talking to a Buyer
+          // We don't have buyer name in message easily without another join, 
+          // but we can use their ID or a placeholder.
+          // For best UX, we'd fetch users table, but let's keep it simple:
+          peerName = "مشتري (" + otherId.substring(0,4) + ")";
+      } else {
+          // I am buyer -> Talking to Seller
+          peerName = prod.seller_username || "البائع";
+      }
+
       threads.set(key, {
         pid: m.product_id,
         otherId: otherId,
-        pName: m.products ? m.products.name : "منتج #"+m.product_id,
+        prodName: prod.name || "منتج محذوف",
+        peerName: peerName,
         lastMsg: m.content,
-        time: new Date(m.created_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})
+        ts: new Date(m.created_at)
       });
     }
   });
 
   threads.forEach(t => {
     const item = `
-      <div class="inbox-item" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.pName}')">
-        <div class="inbox-icon"><i class="fa-solid fa-comment"></i></div>
-        <div class="inbox-content">
-          <div class="inbox-title">${t.pName}</div>
-          <div class="inbox-last">${t.lastMsg.substring(0,30)}...</div>
+      <div class="inbox-item" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.prodName}', '${t.peerName}')">
+        <div class="inbox-avatar">${t.peerName.charAt(0)}</div>
+        <div class="inbox-info">
+          <div class="inbox-top">
+            <span class="inbox-name">${t.peerName}</span>
+            <span class="inbox-product">${t.prodName}</span>
+          </div>
+          <div class="inbox-msg">${t.lastMsg}</div>
         </div>
-        <div style="font-size:10px;color:gray">${t.time}</div>
       </div>
     `;
     list.innerHTML += item;
   });
 }
 
-// Open Specific Chat
-function openChatRoom(pid, otherId, title) {
+// --- CHAT ROOM & MESSAGING ---
+function openChatRoom(pid, otherId, prodName, peerName) {
   if(!user) return alert("سجل دخول أولاً");
   
   activeChat = { pid, otherId };
-  document.getElementById("chatTitle").innerText = title;
+  document.getElementById("chatTitle").innerText = prodName;
+  document.getElementById("chatPeer").innerText = "مع: " + (peerName || "المستخدم");
   document.getElementById("chatModal").style.display = "flex";
   
-  loadMessages();
+  const container = document.getElementById("msgContainer");
+  container.innerHTML = ""; 
   
-  // Subscribe to THIS chat room
-  const channelName = `chat:${pid}:${user.uid}:${otherId}`;
-  sb.channel(channelName).on('postgres_changes', 
+  loadMessages();
+
+  // Realtime subscription for THIS specific room
+  // Filter: Must be this product AND (sender is other OR receiver is other)
+  sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
     { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
     payload => {
       const m = payload.new;
-      // Check if message belongs to this pair
-      const isRel = (m.sender_pi_id == otherId && m.receiver_pi_id == user.uid) || 
-                    (m.sender_pi_id == user.uid && m.receiver_pi_id == otherId);
+      // Strict Check: Only show if it belongs to this pair
+      const isRel = (m.sender_pi_id == user.uid && m.receiver_pi_id == otherId) || 
+                    (m.sender_pi_id == otherId && m.receiver_pi_id == user.uid);
       if(isRel) renderMsg(m);
     }
   ).subscribe();
 }
 
 async function loadMessages() {
-  const container = document.getElementById("msgContainer");
-  container.innerHTML = "<div style='text-align:center'>تحميل...</div>";
-  
   const { data } = await sb.from("messages")
     .select("*")
     .eq("product_id", activeChat.pid)
     .order("created_at", {ascending: true});
     
-  container.innerHTML = "";
   if(data) {
     data.forEach(m => {
-       // Filter strictly for this pair
-       const isMe = m.sender_pi_id === user.uid;
-       const isOther = m.sender_pi_id === activeChat.otherId;
-       if(isMe || isOther) renderMsg(m);
+      // Filter again strictly just in case
+      const isRel = (m.sender_pi_id == user.uid && m.receiver_pi_id == activeChat.otherId) || 
+                    (m.sender_pi_id == activeChat.otherId && m.receiver_pi_id == user.uid);
+      if(isRel) renderMsg(m);
     });
   }
 }
@@ -589,9 +570,11 @@ async function loadMessages() {
 function renderMsg(m) {
   const container = document.getElementById("msgContainer");
   const isMe = m.sender_pi_id === user.uid;
+  
   const div = document.createElement("div");
   div.className = `bubble ${isMe ? 'me' : 'other'}`;
   div.innerText = m.content;
+  
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
 }
@@ -600,7 +583,10 @@ async function sendMsg() {
   const inp = document.getElementById("msgInput");
   const txt = inp.value.trim();
   if(!txt) return;
-  
+
+  // Optimistic UI (Show immediately)
+  // renderMsg({ sender_pi_id: user.uid, content: txt }); 
+
   const { error } = await sb.from("messages").insert({
     product_id: activeChat.pid,
     sender_pi_id: user.uid,
@@ -614,9 +600,80 @@ async function sendMsg() {
 function closeChat() {
   document.getElementById("chatModal").style.display = "none";
   activeChat = null;
-  sb.removeAllChannels(); // Cleanup listeners
+  sb.removeAllChannels(); 
 }
 
+// --- PROFILE & ADS ---
+function openAddModal() { document.getElementById("addModal").style.display = "flex"; }
+function closeAddModal() { document.getElementById("addModal").style.display = "none"; }
+
+async function submitProduct() {
+  const name = document.getElementById("addName").value;
+  const price = document.getElementById("addPrice").value;
+  const phone = document.getElementById("addPhone").value;
+  const desc = document.getElementById("addDesc").value;
+  const file = document.getElementById("addImg").files[0];
+  const btn = document.getElementById("publishBtn");
+
+  if(!name || !price) return alert("البيانات ناقصة!");
+  
+  btn.innerText = "جاري..."; btn.disabled = true;
+
+  let image_url = null;
+  if(file) {
+    const path = `${user.uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+    const { error } = await sb.storage.from("images").upload(path, file);
+    if(!error) {
+      const { data } = sb.storage.from("images").getPublicUrl(path);
+      image_url = data.publicUrl;
+    }
+  }
+
+  const { error } = await sb.from("products").insert({
+    name, price, phone, description: desc, image_url,
+    seller_pi_id: user.uid, seller_username: user.username
+  });
+
+  if(!error) {
+    alert("تم النشر!");
+    closeAddModal();
+    loadAllProducts();
+    loadMyAds();
+    // Reset fields
+    document.getElementById("addName").value = "";
+  } else {
+    alert("خطأ: " + error.message);
+  }
+  btn.innerText = "نشر الإعلان"; btn.disabled = false;
+}
+
+async function loadMyAds() {
+  const list = document.getElementById("my-ads-list");
+  list.innerHTML = "تحميل...";
+  const { data } = await sb.from("products").select("*").eq("seller_pi_id", user.uid);
+  list.innerHTML = "";
+  
+  if(data) {
+    data.forEach(p => {
+       list.innerHTML += `
+       <div class="card">
+         <img src="${p.image_url || ''}" class="card-img">
+         <div class="card-body">
+           <div class="card-title">${p.name}</div>
+           <button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="color:red;font-size:12px;width:100%"><i class="fa-solid fa-trash"></i> حذف</button>
+         </div>
+       </div>`;
+    });
+  }
+}
+
+async function deleteProduct(id) {
+  if(confirm("حذف الإعلان؟")) {
+    await sb.from("products").delete().eq("id", id);
+    loadMyAds();
+    loadAllProducts();
+  }
+}
 </script>
 </body>
 </html>
