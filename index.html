@@ -1,11 +1,9 @@
-
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OLX Pi Market</title>
+    <title>سوق باي - OLX Pi</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
@@ -16,22 +14,25 @@
 
     <div id="login-screen" class="login-screen">
         <div class="login-box">
-            <i class="fas fa-gem logo-icon"></i>
-            <h1>مرحباً بك في OLX Pi</h1>
-            <p>سوق البيع والشراء بعملة Pi</p>
+            <i class="fas fa-shopping-bag logo-icon"></i>
+            <h1>سوق باي</h1>
+            <p>بيع واشتري بعملة Pi Network</p>
             <button id="pi-login-btn" class="btn-pi">
-                <i class="fas fa-network-wired"></i> تسجيل الدخول عبر Pi
+                <i class="fas fa-fingerprint"></i> تسجيل الدخول
             </button>
+            <p class="note">يجب فتح الموقع داخل Pi Browser</p>
         </div>
     </div>
 
     <div id="app-container" class="hidden">
         <header>
             <div class="container header-content">
-                <div class="logo">OLX Pi</div>
-                <div class="user-info">
-                    <span id="display-username">مستخدم</span>
-                    <button id="open-dashboard" class="btn-icon" title="إعلاناتي ورسائلي">
+                <div class="brand">
+                    <i class="fas fa-store"></i> OLX Pi
+                </div>
+                <div class="user-controls">
+                    <span id="welcome-msg">مرحباً</span>
+                    <button id="open-dashboard" class="icon-btn" title="لوحة التحكم">
                         <i class="fas fa-user-circle"></i>
                     </button>
                     <button id="open-add-modal" class="btn-primary">
@@ -42,59 +43,51 @@
         </header>
 
         <main class="container">
-            <div id="products-grid" class="products-grid"></div>
-            <div id="loading" class="loading hidden">جاري التحميل...</div>
+            <div id="loading" class="loading hidden"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+            <div id="products-grid" class="products-grid">
+                </div>
         </main>
-    </div>
-
-    <div id="dashboard-modal" class="modal">
-        <div class="modal-content dashboard-content">
-            <span class="close-btn" onclick="closeModal('dashboard-modal')">&times;</span>
-            <h2>لوحة التحكم</h2>
-            
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('my-chats')">رسائلي</button>
-                <button class="tab-btn" onclick="switchTab('my-ads')">إعلاناتي</button>
-            </div>
-
-            <div id="my-chats" class="tab-content active">
-                <div id="chats-list" class="list-group">
-                    </div>
-            </div>
-
-            <div id="my-ads" class="tab-content">
-                <div id="my-ads-list" class="list-group">
-                    </div>
-            </div>
-        </div>
     </div>
 
     <div id="add-modal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('add-modal')">&times;</span>
-            <h2>إضافة إعلان جديد</h2>
+            <span class="close-btn">&times;</span>
+            <h2><i class="fas fa-camera"></i> إضافة إعلان</h2>
             <form id="add-product-form">
-                <input type="hidden" id="edit-product-id"> <div class="form-group"><label>اسم المنتج</label><input type="text" id="p-name" required></div>
-                <div class="form-group"><label>السعر (Pi)</label><input type="text" id="p-price" required></div>
+                <div class="form-group"><label>اسم المنتج</label><input type="text" id="p-name" required></div>
+                <div class="form-group"><label>السعر (Pi)</label><input type="number" step="0.000001" id="p-price" required></div>
                 <div class="form-group"><label>الوصف</label><textarea id="p-desc" required></textarea></div>
-                <div class="form-group"><label>رقم للتواصل (اختياري)</label><input type="text" id="p-phone"></div>
-                <div class="form-group"><label>الصورة</label><input type="file" id="p-image" accept="image/*"></div>
-                <button type="submit" id="submit-btn" class="btn-primary full-width">نشر</button>
+                <div class="form-group"><label>رقم الهاتف (اختياري)</label><input type="text" id="p-phone"></div>
+                <div class="form-group"><label>صورة المنتج</label><input type="file" id="p-image" accept="image/*"></div>
+                <button type="submit" id="submit-btn" class="btn-primary full">نشر الإعلان</button>
             </form>
         </div>
     </div>
 
     <div id="chat-modal" class="modal">
         <div class="modal-content chat-box">
-            <span class="close-btn" onclick="closeModal('chat-modal')">&times;</span>
+            <span class="close-btn">&times;</span>
             <div class="chat-header">
-                <h3 id="chat-title">اسم المنتج</h3>
+                <h3 id="chat-title">المحادثة</h3>
             </div>
-            <div id="messages-container" class="messages-container"></div>
-            <form id="chat-form" class="chat-footer">
-                <input type="text" id="message-input" placeholder="اكتب رسالة..." required>
+            <div id="messages-container" class="messages-area"></div>
+            <form id="chat-form" class="chat-input-area">
+                <input type="text" id="message-input" placeholder="اكتب رسالتك..." required>
                 <button type="submit"><i class="fas fa-paper-plane"></i></button>
             </form>
+        </div>
+    </div>
+
+    <div id="dashboard-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>لوحة التحكم</h2>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('my-ads')">إعلاناتي</button>
+                <button class="tab-btn" onclick="switchTab('my-chats')">رسائلي</button>
+            </div>
+            <div id="my-ads" class="tab-content active"></div>
+            <div id="my-chats" class="tab-content"></div>
         </div>
     </div>
 
