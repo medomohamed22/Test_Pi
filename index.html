@@ -514,8 +514,9 @@ async function promoteProduct(productId) {
         alert("فشل الدفع: " + error); 
       },
       
-      onServerCompletion: async (paymentId, txid) => {
-          console.log("Completing payment...", paymentId);
+      /* ✅✅✅ FIX: Pi SDK expects onReadyForServerCompletion (NOT onServerCompletion) */
+      onReadyForServerCompletion: async (paymentId, txid) => {
+          console.log("Completing payment...", paymentId, txid);
           try {
              const res = await fetch(`${API_BASE}/complete`, {
                   method: "POST",
