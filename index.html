@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -483,12 +482,23 @@ async function promoteProduct(productId) {
     const paymentCallbacks = {
       onReadyForServerApproval: async (paymentId) => {
           try {
-            await fetch(`${API_BASE}/approve`, {
+            const res = await fetch(`${API_BASE}/approve`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ paymentId })
             });
-          } catch (e) { console.error(e); }
+
+            const txt = await res.text().catch(()=> "");
+            console.log("approve =>", res.status, txt);
+
+            if(!res.ok) {
+              throw new Error("approve failed: " + res.status);
+            }
+
+          } catch (e) { 
+            console.error(e);
+            alert("فشل إرسال approve للباك إند. افتح Console وشوف approve => status");
+          }
       },
       
       onServerApproval: (paymentId) => { 
@@ -512,6 +522,9 @@ async function promoteProduct(productId) {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ paymentId, txid })
               });
+
+             const txt = await res.text().catch(()=> "");
+             console.log("complete =>", res.status, txt);
              
              if(res.ok) {
                alert("تم الدفع بنجاح! إعلانك الآن مميز.");
