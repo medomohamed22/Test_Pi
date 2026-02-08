@@ -10,6 +10,7 @@
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 
 <style>
 :root {
@@ -137,7 +138,7 @@ body {
 
 .card-img-wrap {
   position: relative; width: 100%; 
-  aspect-ratio: 1 / 1; /* مربع للحفاظ على التناسق */
+  aspect-ratio: 1 / 1; 
   background: #f3f4f6;
   overflow: hidden;
 }
@@ -462,7 +463,6 @@ async function loadMyAds() {
           }
        }
 
-       // ✅ زر التمييز (رمادي إذا كان مميزاً، أصفر إذا انتهى)
        const promoteBtn = isPromoted 
         ? `<button class="btn btn-disabled" style="width:100%;font-size:12px;margin-bottom:6px" disabled>
              <i class="fa-solid fa-clock"></i> مميز حتى ${promoDateStr}
@@ -680,9 +680,30 @@ async function submitProduct(){
     
     let url = null;
     if(file){
-        const path = `${user.uid}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g,'')}`;
-        const {error} = await sb.storage.from("images").upload(path, file);
-        if(!error) url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
+        try {
+          const options = {
+            maxSizeMB: 0.8, // Compress to max 0.8MB
+            maxWidthOrHeight: 1200,
+            useWebWorker: true,
+            fileType: "image/jpeg"
+          };
+          
+          btn.innerText="جاري ضغط الصورة...";
+          const compressedFile = await imageCompression(file, options);
+          
+          btn.innerText="جاري الرفع...";
+          const path = `${user.uid}/${Date.now()}_img.jpg`; // Force jpg extension
+          const {error} = await sb.storage.from("images").upload(path, compressedFile);
+          
+          if(!error) url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
+          else throw error;
+
+        } catch (error) {
+          console.error("Compression/Upload Error:", error);
+          alert("فشل رفع الصورة");
+          btn.innerText="نشر"; btn.disabled=false;
+          return;
+        }
     }
     
     await sb.from("products").insert({
