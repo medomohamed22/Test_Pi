@@ -1,92 +1,87 @@
 // --- 1. إعدادات Supabase ---
 const supabaseUrl = 'https://xncapmzlwuisupkjlftb.supabase.co';
-// هذا هو المفتاح الصحيح (Anon Key) الذي استخرجناه من السجلات السابقة
+// مفتاح anon key الصحيح
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuY2FwbXpsd3Vpc3Vwa2psZnRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0Mzk0MzcsImV4cCI6MjA4NDAxNTQzN30.JVhiue90DHvEirIAeCPSBnJxXvO2RMPvRFu5RMulfig';
 
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- 2. متغيرات الحالة ---
-let currentUser = null; // بيانات المستخدم (سواء حقيقي أو تجريبي)
-let activeChatParams = null; // بيانات الشات المفتوح
+let currentUser = null; 
+let activeChatParams = null;
 
 // --- 3. عند تحميل الصفحة ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App Started...");
-    
-    // محاولة تهيئة Pi Network
+    // محاولة تهيئة Pi Network فور تحميل الصفحة
     initPi();
-
-    // تفعيل الأزرار والنوافذ
     setupEventListeners();
 });
 
-// --- 4. دالة تهيئة Pi وتسجيل الدخول ---
+// --- 4. دالة تهيئة Pi وتسجيل الدخول (الوضع الحقيقي) ---
 async function initPi() {
     const loginBtn = document.getElementById('pi-login-btn');
     
-    // التحقق: هل نحن داخل متصفح Pi؟
-    if (window.Pi) {
-        // --- الوضع الحقيقي (Pi Browser) ---
-        try {
-            const Pi = window.Pi;
-            await Pi.init({ version: "2.0", sandbox: false });
-            
-            loginBtn.addEventListener('click', async () => {
-                try {
-                    // طلب الصلاحيات
-                    const scopes = ['username', 'payments'];
-                    const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                    
-                    // نجاح التسجيل
-                    currentUser = {
-                        uid: authResult.user.uid,
-                        username: authResult.user.username
-                    };
-                    showApp(); // الانتقال للتطبيق
-                } catch (error) {
-                    console.error('Pi Auth Failed:', error);
-                    alert('فشل تسجيل الدخول: ' + error.message);
-                }
-            });
-        } catch (err) {
-            console.error('Pi Init Error:', err);
-        }
-    } else {
-        // --- وضع المحاكاة (Chrome/Edge/Mobile) ---
-        console.warn('Pi SDK not found. Running in Mock Mode.');
-        loginBtn.innerHTML = '<i class="fas fa-bug"></i> دخول تجريبي (للمطورين)';
+    // التحقق: هل مكتبة Pi موجودة؟
+    if (!window.Pi) {
+        alert("تنبيه هام: يجب فتح هذا الموقع داخل تطبيق Pi Browser لكي يعمل تسجيل الدخول.");
+        loginBtn.innerHTML = "يرجى الفتح من متصفح Pi";
+        loginBtn.disabled = true;
+        return;
+    }
+
+    try {
+        const Pi = window.Pi;
         
-        loginBtn.addEventListener('click', () => {
-            // إنشاء مستخدم وهمي للتجربة
-            const randomId = 'test_user_' + Math.floor(Math.random() * 1000);
-            currentUser = {
-                uid: randomId,
-                username: "مستخدم_تجريبي"
-            };
-            alert(`تم الدخول كمستخدم تجريبي:\n${currentUser.username}`);
-            showApp();
+        // 🔴🔴 تفعيل الوضع الحقيقي (Production) بناءً على طلبك 🔴🔴
+        await Pi.init({ version: "2.0", sandbox: false });
+        
+        // تفعيل الزر عند نجاح الـ Init
+        loginBtn.addEventListener('click', async () => {
+            // تغيير نص الزر ليعرف المستخدم أن شيئاً يحدث
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاتصال بـ Pi...';
+            
+            try {
+                // طلب الصلاحيات
+                const scopes = ['username', 'payments'];
+                const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                
+                // نجاح التسجيل
+                console.log("Auth Success:", authResult);
+                
+                currentUser = {
+                    uid: authResult.user.uid,
+                    username: authResult.user.username
+                };
+                
+                showApp(); // الانتقال للتطبيق
+                
+            } catch (error) {
+                console.error('Pi Auth Failed:', error);
+                // إظهار رسالة الخطأ للمستخدم
+                alert('فشل تسجيل الدخول: ' + error.message);
+                loginBtn.innerHTML = originalText; // إعادة الزر لطبيعته
+            }
         });
+        
+    } catch (err) {
+        console.error('Pi Init Error:', err);
+        alert("حدث خطأ في تهيئة Pi SDK: " + err.message);
     }
 }
 
-// دالة مطلوبة لـ Pi SDK (حتى لو فارغة حالياً)
+// دالة مطلوبة لـ Pi SDK
 function onIncompletePaymentFound(payment) { 
     console.log("Incomplete payment found", payment);
+    // يمكن هنا إضافة كود لاستكمال الدفعات المعلقة لاحقاً
 }
 
 // --- 5. تشغيل واجهة التطبيق ---
 function showApp() {
-    // إخفاء شاشة الدخول وإظهار التطبيق
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('app-container').classList.remove('hidden');
-    
-    // عرض اسم المستخدم
     document.getElementById('display-username').textContent = currentUser.username;
     
-    // تحميل المنتجات
     fetchProducts();
-    
-    // تشغيل استقبال الرسائل الفوري
     setupRealtimeSubscription();
 }
 
@@ -114,13 +109,10 @@ async function fetchProducts() {
         }
 
         products.forEach(p => {
-            // هل هذا المنتج ملكي؟
             const isOwner = currentUser && p.seller_pi_id === currentUser.uid;
-            
             const card = document.createElement('div');
             card.className = 'product-card';
             
-            // التعامل مع الصورة
             const imgUrl = p.image_url || 'https://via.placeholder.com/300?text=No+Image';
 
             card.innerHTML = `
@@ -170,10 +162,8 @@ if (addForm) {
         try {
             let finalImageUrl = '';
 
-            // رفع الصورة (إذا وجدت)
             if (fileInput.files && fileInput.files[0]) {
                 const file = fileInput.files[0];
-                // تسمية الملف بالتاريخ لتجنب المشاكل
                 const fileExt = file.name.split('.').pop();
                 const fileName = `img_${Date.now()}.${fileExt}`;
 
@@ -190,7 +180,6 @@ if (addForm) {
                 finalImageUrl = publicUrlData.publicUrl;
             }
 
-            // إدخال البيانات في الجدول
             const { error: insertError } = await supabase
                 .from('products')
                 .insert([{
@@ -199,17 +188,16 @@ if (addForm) {
                     description: desc,
                     phone: phone,
                     image_url: finalImageUrl,
-                    seller_pi_id: currentUser.uid,       // ربط الإعلان بالمستخدم
+                    seller_pi_id: currentUser.uid,
                     seller_username: currentUser.username
                 }]);
 
             if (insertError) throw insertError;
 
-            // نجاح
             alert('تم نشر الإعلان بنجاح!');
             document.getElementById('add-modal').style.display = 'none';
             addForm.reset();
-            fetchProducts(); // تحديث القائمة
+            fetchProducts();
 
         } catch (err) {
             console.error(err);
@@ -230,7 +218,7 @@ window.deleteProduct = async (id) => {
             .from('products')
             .delete()
             .eq('id', id)
-            .eq('seller_pi_id', currentUser.uid); // حماية إضافية: المالك فقط يحذف
+            .eq('seller_pi_id', currentUser.uid);
 
         if (error) throw error;
         
@@ -265,7 +253,6 @@ async function loadMessages() {
     const { productId, otherUser } = activeChatParams;
     const myId = currentUser.uid;
 
-    // جلب الرسائل بيني وبين الطرف الآخر لهذا المنتج
     const { data: msgs, error } = await supabase
         .from('messages')
         .select('*')
@@ -273,7 +260,7 @@ async function loadMessages() {
         .or(`and(sender_pi_id.eq.${myId},receiver_pi_id.eq.${otherUser}),and(sender_pi_id.eq.${otherUser},receiver_pi_id.eq.${myId})`)
         .order('created_at', { ascending: true });
 
-    container.innerHTML = ''; // مسح التحميل
+    container.innerHTML = '';
 
     if (msgs) {
         msgs.forEach(displayMessage);
@@ -281,7 +268,6 @@ async function loadMessages() {
     }
 }
 
-// إرسال رسالة
 document.getElementById('chat-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const input = document.getElementById('message-input');
@@ -300,22 +286,17 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
 
     if (!error) {
         input.value = '';
-        // لا نضيف الرسالة يدوياً، الـ Realtime سيتكفل بذلك
     }
 });
 
-// استقبال الرسائل (Realtime)
 function setupRealtimeSubscription() {
     supabase
         .channel('public:messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
             const newMsg = payload.new;
-            
-            // إذا كان الشات مفتوحاً وتخص هذه المحادثة
             if (activeChatParams && 
                 newMsg.product_id === activeChatParams.productId &&
                 (newMsg.sender_pi_id === activeChatParams.otherUser || newMsg.sender_pi_id === currentUser.uid)) {
-                
                 displayMessage(newMsg);
                 scrollToBottom();
             }
@@ -326,11 +307,9 @@ function setupRealtimeSubscription() {
 function displayMessage(msg) {
     const container = document.getElementById('messages-container');
     const div = document.createElement('div');
-    
     const isMe = msg.sender_pi_id === currentUser.uid;
     div.className = `msg ${isMe ? 'sent' : 'received'}`;
     div.textContent = msg.content;
-    
     container.appendChild(div);
 }
 
@@ -339,16 +318,12 @@ function scrollToBottom() {
     container.scrollTop = container.scrollHeight;
 }
 
-// --- 8. لوحة التحكم (إعلاناتي ورسائلي) ---
+// --- 8. لوحة التحكم ---
 window.switchTab = (tabName) => {
-    // إخفاء الكل
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    
-    // إظهار المطلوب
     document.getElementById(tabName).classList.add('active');
     
-    // تلوين الزر (نحتاج لتحديد الزر الذي تم ضغطه)
     const btns = document.querySelectorAll('.tab-btn');
     if(tabName === 'my-chats') btns[0].classList.add('active');
     if(tabName === 'my-ads') btns[1].classList.add('active');
@@ -387,14 +362,9 @@ async function loadMyChats() {
     const list = document.getElementById('chats-list');
     list.innerHTML = 'جاري التحميل...';
 
-    // جلب كل الرسائل التي أنا طرف فيها
     const { data: messages } = await supabase
         .from('messages')
-        .select(`
-            id, content, created_at, 
-            sender_pi_id, receiver_pi_id, product_id,
-            products (name)
-        `)
+        .select(`id, content, created_at, sender_pi_id, receiver_pi_id, product_id, products (name)`)
         .or(`sender_pi_id.eq.${currentUser.uid},receiver_pi_id.eq.${currentUser.uid}`)
         .order('created_at', { ascending: false });
 
@@ -404,13 +374,9 @@ async function loadMyChats() {
         return;
     }
 
-    // تصفية المحادثات (Group by Product & User)
     const uniqueChats = {};
-    
     messages.forEach(m => {
-        // تحديد الطرف الآخر
         const otherUser = m.sender_pi_id === currentUser.uid ? m.receiver_pi_id : m.sender_pi_id;
-        // مفتاح فريد للمحادثة
         const key = `${m.product_id}_${otherUser}`;
         
         if (!uniqueChats[key]) {
@@ -424,7 +390,6 @@ async function loadMyChats() {
         }
     });
 
-    // عرض القائمة
     Object.values(uniqueChats).forEach(chat => {
         const item = document.createElement('div');
         item.className = 'list-item';
@@ -442,25 +407,18 @@ async function loadMyChats() {
 
 // --- 9. أدوات مساعدة ---
 function setupEventListeners() {
-    // زر لوحة التحكم
     document.getElementById('open-dashboard').addEventListener('click', () => {
         document.getElementById('dashboard-modal').style.display = 'flex';
         switchTab('my-chats');
     });
-
-    // زر إضافة إعلان
     document.getElementById('open-add-modal').addEventListener('click', () => {
         document.getElementById('add-modal').style.display = 'flex';
     });
-
-    // أزرار الإغلاق
     document.querySelectorAll('.close-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             this.closest('.modal').style.display = 'none';
         });
     });
-
-    // إغلاق النوافذ عند النقر خارجها
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = 'none';
