@@ -2,2366 +2,1015 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>سوق Pi المتكامل | Pi Market</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>OLX Pi Market</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
 <!-- Supabase UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <!-- Pi SDK -->
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script defer src="https://sdk.minepi.com/pi-sdk.js"></script>
 
 <style>
 :root{
-  --primary: #7c3aed;
-  --primary-light: #a78bfa;
-  --primary-dark: #5b21b6;
-  --gold: #fbbf24;
-  --gold-light: #fcd34d;
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --text: #0f172a;
-  --text-secondary: #64748b;
-  --border: #e2e8f0;
-  --success: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-  
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
+  --p:#6a1b9a;
+  --p3:#b84cff;
+  --gold:#F8C305;
+  --bg:#f6f3fb;
+  --card:#ffffff;
+  --text:#1f2330;
+  --muted:#6b7280;
+  --stroke:#ece7f6;
+  --shadow: 0 14px 40px rgba(19, 10, 44, .10);
+  --shadow2: 0 10px 26px rgba(106, 27, 154, .12);
+  --r:18px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:"Tajawal",system-ui,-apple-system,Segoe UI,Arial;
+  background:
+    radial-gradient(1100px 400px at 20% -10%, rgba(106,27,154,.14), transparent 55%),
+    radial-gradient(900px 380px at 90% 0%, rgba(248,195,5,.16), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  padding-bottom: 88px;
 }
 
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body{
-  height: 100%;
-  font-family: 'Tajawal', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar{
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track{
-  background: transparent;
-}
-::-webkit-scrollbar-thumb{
-  background: var(--primary-light);
-  border-radius: var(--radius-full);
-}
-::-webkit-scrollbar-thumb:hover{
-  background: var(--primary);
-}
-
-/* Layout */
-.app{
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.container{
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
+.container{ width:min(1120px, 100%); margin:0 auto; padding: 16px; }
 
 /* Header */
 .header{
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-}
-
-.header-content{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 70px;
-  gap: 16px;
-}
-
-.brand{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-}
-
-.brand-icon{
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  border-radius: var(--radius);
-  display: grid;
-  place-items: center;
-  color: white;
-  font-size: 20px;
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  overflow: hidden;
-}
-
-.brand-icon::after{
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
-  animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer{
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.brand-text{
-  display: flex;
-  flex-direction: column;
-}
-
-.brand-title{
-  font-size: 20px;
-  font-weight: 900;
-  color: var(--text);
-  line-height: 1.2;
-}
-
-.brand-subtitle{
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-/* Navigation */
-.nav{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.nav-btn{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.nav-btn:hover{
-  background: var(--bg);
-  color: var(--primary);
-}
-
-.nav-btn.primary{
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
-  box-shadow: var(--shadow-lg);
-}
-
-.nav-btn.primary:hover{
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-xl);
-}
-
-.nav-btn.gold{
-  background: linear-gradient(135deg, var(--gold), #f59e0b);
-  color: #78350f;
-}
-
-.user-pill{
-  display: none;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  background: var(--bg);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-}
-
-.user-pill.active{
-  display: flex;
-}
-
-.user-avatar{
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
-  display: grid;
-  place-items: center;
-  color: white;
-  font-weight: 700;
-  font-size: 14px;
-}
-
-.user-info{
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.user-name{
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.user-status{
-  font-size: 11px;
-  color: var(--success);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.user-status::before{
-  content: '';
-  width: 6px;
-  height: 6px;
-  background: var(--success);
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-}
-
-/* Main Content */
-.main{
-  flex: 1;
-  padding: 24px 0;
-}
-
-/* Hero Section */
-.hero{
-  margin-bottom: 32px;
-}
-
-.hero-card{
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  border-radius: var(--radius-xl);
-  padding: 32px;
-  color: white;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--shadow-xl);
-}
-
-.hero-card::before{
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(251,191,36,0.3) 0%, transparent 70%);
-  animation: pulse 4s ease-in-out infinite;
-}
-
-@keyframes pulse{
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 0.8; }
-}
-
-.hero-content{
-  position: relative;
-  z-index: 1;
-  max-width: 600px;
-}
-
-.hero-badge{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: rgba(255,255,255,0.2);
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 16px;
+  position: sticky; top:0; z-index: 100;
   backdrop-filter: blur(10px);
+  background: rgba(255,255,255,.78);
+  border-bottom: 1px solid rgba(236,231,246,.95);
 }
-
-.hero-title{
-  font-size: 32px;
-  font-weight: 900;
-  margin-bottom: 12px;
-  line-height: 1.2;
+.header .bar{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; padding: 12px 16px;
 }
-
-.hero-desc{
-  font-size: 16px;
-  opacity: 0.9;
-  margin-bottom: 24px;
-  font-weight: 500;
+.brand{ display:flex; align-items:center; gap:10px; font-weight:900; }
+.logo{
+  width:38px;height:38px;border-radius:12px;
+  background: linear-gradient(135deg, var(--p), var(--p3));
+  display:grid;place-items:center;
+  color:#fff; box-shadow: var(--shadow2);
 }
+.brandInfo{line-height:1.1}
+.brandInfo .t{font-size:18px}
+.brandInfo .s{font-size:12px;color:var(--muted);font-weight:800;margin-top:2px}
 
-.hero-stats{
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.hero-stat{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.hero-stat-icon{
-  width: 40px;
-  height: 40px;
-  background: rgba(255,255,255,0.2);
-  border-radius: var(--radius);
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  backdrop-filter: blur(10px);
-}
-
-.hero-stat-text{
-  display: flex;
-  flex-direction: column;
-}
-
-.hero-stat-value{
-  font-size: 20px;
-  font-weight: 900;
-}
-
-.hero-stat-label{
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-/* Section Header */
-.section-header{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.section-title{
-  font-size: 24px;
-  font-weight: 900;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-title i{
-  color: var(--primary);
-}
-
-/* Filters */
-.filters{
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.filter-btn{
-  padding: 8px 16px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.filter-btn:hover, .filter-btn.active{
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-/* Grid */
-.products-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-/* Product Card */
-.product-card{
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-}
-
-.product-card:hover{
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
-  border-color: var(--primary-light);
-}
-
-.product-image-wrap{
-  position: relative;
-  aspect-ratio: 4/3;
-  overflow: hidden;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-}
-
-.product-image{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s;
-}
-
-.product-card:hover .product-image{
-  transform: scale(1.05);
-}
-
-.product-badge{
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  padding: 8px 14px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 900;
-  color: var(--primary);
-  box-shadow: var(--shadow);
-  font-size: 14px;
-}
-
-.product-badge i{
-  color: var(--gold);
-}
-
-.product-status{
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.product-status.active{
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success);
-}
-
-.product-status.sold{
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--danger);
-}
-
-.product-body{
-  padding: 20px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.product-title{
-  font-size: 18px;
-  font-weight: 900;
-  color: var(--text);
-  margin-bottom: 8px;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.product-desc{
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 16px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex: 1;
-}
-
-.product-meta{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  margin-bottom: 16px;
-}
-
-.product-seller{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 700;
-}
-
-.product-seller-avatar{
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
-  display: grid;
-  place-items: center;
-  color: white;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.product-date{
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.product-actions{
-  display: flex;
-  gap: 8px;
-}
-
+.actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
 .btn{
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: var(--radius);
-  border: none;
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
+  border:none; border-radius: 999px;
+  padding: 10px 14px;
+  font-weight:900;
+  cursor:pointer;
+  display:flex; align-items:center; gap:8px;
+  transition:.2s; user-select:none;
 }
+.btn:active{transform: translateY(1px)}
+.btn-primary{ background: linear-gradient(135deg, var(--p), var(--p3)); color:#fff; box-shadow: var(--shadow2); }
+.btn-gold{ background: linear-gradient(135deg, var(--gold), #ffd86b); color:#3a2a00; }
+.btn-ghost{ background:#fff; border: 1px solid var(--stroke); color: var(--text); }
+.btn[disabled]{opacity:.7; cursor:not-allowed}
 
-.btn-primary{
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+.userPill{
+  display:none; align-items:center; gap:10px;
+  background:#fff; border:1px solid var(--stroke);
+  padding:8px 12px; border-radius:999px; font-weight:900;
 }
+.userPill .dot{ width:10px;height:10px;border-radius:99px; background:#22c55e; box-shadow:0 0 0 6px rgba(34,197,94,.14); }
+.userPill small{font-weight:800;color:var(--muted);font-size:11px}
 
-.btn-primary:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
-}
-
-.btn-secondary{
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.btn-secondary:hover{
-  background: var(--border);
-}
-
-.btn-danger{
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--danger);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.btn-danger:hover{
-  background: rgba(239, 68, 68, 0.2);
-}
-
-/* Loading State */
-.loading-state{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-}
-
-.spinner{
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
-}
-
-@keyframes spin{
-  to { transform: rotate(360deg); }
-}
-
-.loading-text{
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-
-.loading-subtext{
-  font-size: 14px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-/* Empty State */
-.empty-state{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  text-align: center;
-  background: var(--surface);
-  border-radius: var(--radius-xl);
-  border: 2px dashed var(--border);
-}
-
-.empty-icon{
-  width: 80px;
-  height: 80px;
-  background: var(--bg);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 32px;
-  color: var(--text-secondary);
-  margin-bottom: 24px;
-}
-
-.empty-title{
-  font-size: 20px;
-  font-weight: 900;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-
-.empty-desc{
-  font-size: 15px;
-  color: var(--text-secondary);
-  max-width: 400px;
-  margin-bottom: 24px;
-  font-weight: 500;
-}
-
-/* Conversations List */
-.conversations-sidebar{
-  position: fixed;
-  top: 70px;
-  left: 0;
-  bottom: 0;
-  width: 380px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  z-index: 90;
-  transform: translateX(-100%);
-  transition: transform 0.3s;
-  display: flex;
-  flex-direction: column;
-}
-
-.conversations-sidebar.open{
-  transform: translateX(0);
-}
-
-.sidebar-header{
-  padding: 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sidebar-title{
-  font-size: 18px;
-  font-weight: 900;
-}
-
-.conversations-list{
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-}
-
-.conversation-item{
-  display: flex;
-  gap: 12px;
+/* Hero */
+.hero{ padding: 14px 0 6px; }
+.heroCard{
+  background: linear-gradient(135deg, rgba(106,27,154,.10), rgba(248,195,5,.08));
+  border:1px solid rgba(236,231,246,.95);
+  border-radius: 22px;
   padding: 16px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 8px;
-  position: relative;
+  box-shadow: var(--shadow);
+  display:flex; align-items:center; justify-content:space-between;
+  gap: 14px; overflow:hidden;
+}
+.heroTitle{ font-weight:1000; font-size:18px; margin:0; }
+.heroSub{ margin:6px 0 0; color:var(--muted); font-weight:800; font-size:13px; }
+.heroRight{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.chip{
+  background:#fff; border:1px solid var(--stroke);
+  padding: 8px 12px; border-radius: 999px;
+  font-size: 12px; color: var(--muted); font-weight:900;
 }
 
-.conversation-item:hover, .conversation-item.active{
-  background: var(--bg);
+/* State */
+.state{
+  margin-top:14px;
+  background:#fff; border:1px solid var(--stroke);
+  border-radius: 18px; padding: 16px;
+  box-shadow: 0 10px 26px rgba(19,10,44,.05);
+  display:flex; align-items:center; justify-content:space-between; gap: 12px;
 }
-
-.conversation-avatar{
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
-  display: grid;
-  place-items: center;
-  color: white;
-  font-weight: 700;
-  flex-shrink: 0;
-  position: relative;
+.state .left{ display:flex; align-items:center; gap:10px; }
+.spin{
+  width:22px;height:22px;border-radius:50%;
+  border: 3px solid rgba(106,27,154,.15);
+  border-top-color: var(--p);
+  animation: sp 1s linear infinite;
 }
+@keyframes sp{to{transform: rotate(360deg)}}
+.state p{margin:0; font-weight:1000}
+.state small{color:var(--muted); font-weight:900}
 
-.conversation-avatar.online::after{
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 12px;
-  height: 12px;
-  background: var(--success);
-  border: 2px solid white;
-  border-radius: 50%;
+/* Grid / Cards */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  margin-top: 14px;
 }
-
-.conversation-content{
-  flex: 1;
-  min-width: 0;
+.card{
+  grid-column: span 4;
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: var(--r);
+  overflow:hidden;
+  box-shadow: 0 10px 26px rgba(19,10,44,.05);
+  transition: .2s;
 }
-
-.conversation-header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+.card:hover{ transform: translateY(-3px); box-shadow: 0 16px 46px rgba(19,10,44,.10); }
+.imgWrap{
+  position:relative;
+  width:100%;
+  aspect-ratio: 4/3;
+  background: linear-gradient(135deg, rgba(106,27,154,.10), rgba(248,195,5,.12));
+  overflow:hidden;
 }
-
-.conversation-name{
-  font-weight: 800;
-  font-size: 15px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.card img{ width:100%; height:100%; object-fit: cover; display:block; }
+.badgePrice{
+  position:absolute;
+  left:12px; top:12px;
+  background: rgba(255,255,255,.92);
+  border:1px solid rgba(236,231,246,.95);
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight:1000;
+  color: var(--p);
+  display:flex; align-items:center; gap:6px;
+  box-shadow: 0 12px 26px rgba(19,10,44,.08);
 }
-
-.conversation-time{
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 600;
+.badgePrice i{color: #d7a900}
+.body{ padding: 12px 12px 14px; }
+.title{ margin:0; font-size: 15px; font-weight: 1000; line-height:1.25; }
+.desc{
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px; font-weight: 800; line-height: 1.5;
+  display:-webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow:hidden;
 }
-
-.conversation-preview{
-  font-size: 13px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 500;
+.meta{
+  margin-top: 10px;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
 }
+.meta small{ color: var(--muted); font-weight: 900; }
 
-.conversation-unread{
-  position: absolute;
-  top: 50%;
-  left: 16px;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  background: var(--primary);
-  color: white;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 900;
+.cta{ margin-top: 10px; display:flex; gap:10px; }
+.btn-card{
+  flex:1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 1000;
+  border: 1px solid var(--stroke);
+  background: #fff;
+  cursor:pointer;
+  transition:.2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
 }
+.btn-card:hover{transform: translateY(-1px)}
+.btn-card.primary{ border:none; background: linear-gradient(135deg, var(--p), var(--p3)); color:#fff; }
+.btn-card.secondary{ border:1px solid rgba(106,27,154,.22); color: var(--p); background:#fff; }
 
-/* Chat Modal */
-.modal-overlay{
+/* Bottom bar (mobile) */
+.bottomBar{
   position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  transition: opacity 0.3s;
+  bottom: 14px; left: 0; right: 0;
+  z-index: 120;
+  display:none;
+  padding: 0 14px;
+}
+.bottomBar .wrap{
+  background: rgba(255,255,255,.86);
+  border: 1px solid rgba(236,231,246,.95);
+  box-shadow: var(--shadow);
+  border-radius: 999px;
+  padding: 10px;
+  display:flex; gap:10px; justify-content:space-between;
+}
+.bottomBar button{
+  flex:1;
+  border-radius: 999px;
+  padding: 12px 12px;
+  border: 1px solid var(--stroke);
+  background:#fff;
+  font-weight: 1000;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.bottomBar button.primary{
+  border:none;
+  background: linear-gradient(135deg, var(--p), var(--p3));
+  color:#fff;
 }
 
-.modal-overlay.active{
-  display: flex;
-  opacity: 1;
-}
-
+/* Modals */
 .modal{
-  background: var(--surface);
-  border-radius: var(--radius-xl);
-  width: 100%;
-  max-width: 900px;
-  height: 80vh;
-  max-height: 700px;
-  display: flex;
-  overflow: hidden;
-  box-shadow: var(--shadow-xl);
-  transform: scale(0.95);
-  transition: transform 0.3s;
+  position: fixed; inset: 0;
+  display:none; align-items:center; justify-content:center;
+  background: rgba(0,0,0,.55);
+  z-index: 2000; padding: 18px;
+}
+.sheet{
+  width: min(560px, 100%);
+  background:#fff;
+  border:1px solid var(--stroke);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  animation: pop .18s ease-out;
+}
+@keyframes pop{
+  from{transform: translateY(10px) scale(.98); opacity:0}
+  to{transform: translateY(0) scale(1); opacity:1}
+}
+.sheetHead{
+  padding: 14px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom: 1px solid var(--stroke);
+  background: linear-gradient(135deg, rgba(106,27,154,.06), rgba(248,195,5,.06));
+}
+.sheetHead h3{margin:0; font-size:16px; font-weight: 1000}
+.iconBtn{
+  width: 40px; height:40px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background:#fff;
+  cursor:pointer;
+  display:grid; place-items:center;
+}
+.sheetBody{padding: 14px}
+.field{margin-bottom: 10px}
+label{display:block;font-weight:1000;margin-bottom:6px;font-size:12px;color:var(--muted)}
+input,textarea{
+  width:100%;
+  border:1px solid var(--stroke);
+  border-radius: 14px;
+  padding: 12px;
+  font-family:inherit;
+  font-weight:900;
+  outline:none;
+  background:#fff;
+}
+textarea{min-height: 110px; resize: vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheetFoot{
+  padding: 14px;
+  border-top:1px solid var(--stroke);
+  display:flex; gap:10px;
+}
+.sheetFoot .btnWide{ flex:1; border-radius: 14px; padding: 12px 14px; font-weight: 1000; }
+
+/* Chat */
+.chatBox{ display:flex; flex-direction:column; height: min(78vh, 680px); }
+.chatTopHint{
+  padding:10px 14px;
+  background:#fff;
+  border-bottom:1px solid var(--stroke);
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+}
+.chatTopHint small{color:var(--muted);font-weight:900}
+.chatRooms{ display:flex; gap:8px; overflow:auto; padding: 10px 14px; background:#fff; border-bottom:1px solid var(--stroke); }
+.roomChip{
+  flex:0 0 auto;
+  border:1px solid var(--stroke);
+  background:#fff;
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:1000;
+  cursor:pointer;
+  display:flex; align-items:center; gap:8px;
+}
+.roomChip.active{
+  border-color: rgba(106,27,154,.25);
+  background: rgba(106,27,154,.08);
+  color: var(--p);
 }
 
-.modal-overlay.active .modal{
-  transform: scale(1);
+.msgs{
+  flex:1;
+  overflow:auto;
+  padding: 12px;
+  background: #faf9ff;
+  border-bottom:1px solid var(--stroke);
 }
-
-.chat-container{
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.chat-header{
-  padding: 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg);
-}
-
-.chat-user{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.chat-avatar{
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
-  display: grid;
-  place-items: center;
-  color: white;
-  font-weight: 800;
-  position: relative;
-}
-
-.chat-avatar.online::after{
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 12px;
-  height: 12px;
-  background: var(--success);
-  border: 2px solid white;
-  border-radius: 50%;
-}
-
-.chat-info h3{
-  font-size: 16px;
-  font-weight: 900;
-  margin-bottom: 2px;
-}
-
-.chat-info p{
+.bubble{
+  max-width: 82%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  margin: 8px 0;
+  font-weight:900;
   font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.chat-actions{
-  display: flex;
-  gap: 8px;
-}
-
-.icon-btn{
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-secondary);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.icon-btn:hover{
-  background: var(--bg);
-  color: var(--primary);
-}
-
-.chat-messages{
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
-}
-
-.message{
-  display: flex;
-  gap: 12px;
-  max-width: 70%;
-  animation: messageSlide 0.3s ease;
-}
-
-@keyframes messageSlide{
-  from{
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to{
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.message.own{
-  align-self: flex-end;
-  flex-direction: row-reverse;
-}
-
-.message-avatar{
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
-  display: grid;
-  place-items: center;
-  color: white;
-  font-size: 13px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.message-content{
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.message-bubble{
-  padding: 12px 16px;
-  border-radius: var(--radius-lg);
-  font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.4;
   word-wrap: break-word;
-  font-weight: 500;
+  white-space: pre-wrap;
 }
-
-.message:not(.own) .message-bubble{
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-bottom-right-radius: 4px;
+.bubble.me{
+  margin-left:auto;
+  background: rgba(106,27,154,.12);
+  border:1px solid rgba(106,27,154,.18);
 }
-
-.message.own .message-bubble{
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
-  border-bottom-left-radius: 4px;
+.bubble.other{
+  background:#fff;
+  border:1px solid rgba(236,231,246,.95);
 }
-
-.message-time{
-  font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.message.own .message-time{
-  justify-content: flex-end;
-}
-
-.chat-input-area{
-  padding: 20px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.chat-input-wrap{
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.chat-input{
-  flex: 1;
-  padding: 14px 20px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  font-family: inherit;
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s;
-  background: var(--bg);
-}
-
-.chat-input:focus{
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-.send-btn{
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: var(--shadow-lg);
-}
-
-.send-btn:hover{
-  transform: scale(1.05);
-  box-shadow: var(--shadow-xl);
-}
-
-.send-btn:disabled{
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Add Product Modal */
-.form-modal{
-  max-width: 560px;
-  height: auto;
-  max-height: 90vh;
-  flex-direction: column;
-}
-
-.modal-header{
-  padding: 24px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.modal-title{
-  font-size: 20px;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.modal-body{
-  padding: 24px;
-  overflow-y: auto;
-}
-
-.form-group{
-  margin-bottom: 20px;
-}
-
-.form-label{
-  display: block;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-
-.form-input, .form-textarea{
-  width: 100%;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-family: inherit;
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s;
-  background: var(--bg);
-}
-
-.form-input:focus, .form-textarea:focus{
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-.form-textarea{
-  min-height: 120px;
-  resize: vertical;
-}
-
-.form-row{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.file-input-wrap{
-  position: relative;
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.file-input-wrap:hover{
-  border-color: var(--primary);
-  background: rgba(124, 58, 237, 0.02);
-}
-
-.file-input{
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.file-label{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.file-label i{
-  font-size: 24px;
-  color: var(--primary);
-}
-
-.modal-footer{
-  padding: 20px 24px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-/* Mobile Bottom Bar */
-.mobile-bar{
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  padding: 12px 16px;
-  display: none;
-  gap: 12px;
-  z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-}
-
-.mobile-btn{
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: var(--radius);
-  transition: all 0.2s;
-}
-
-.mobile-btn i{
-  font-size: 20px;
-}
-
-.mobile-btn.active, .mobile-btn:hover{
-  color: var(--primary);
-  background: rgba(124, 58, 237, 0.1);
-}
-
-/* Toast */
-.toast{
-  position: fixed;
-  top: 90px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-20px);
-  background: var(--text);
-  color: white;
-  padding: 14px 24px;
-  border-radius: var(--radius-full);
-  font-weight: 700;
-  font-size: 14px;
-  z-index: 2000;
-  opacity: 0;
-  transition: all 0.3s;
-  box-shadow: var(--shadow-xl);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.toast.show{
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-.toast.success{
-  background: var(--success);
-}
-
-.toast.error{
-  background: var(--danger);
+.chatInput{ display:flex; gap:10px; padding: 12px; background:#fff; }
+.chatInput input{ border-radius: 999px; }
+.sendBtn{
+  width: 52px;
+  border-radius: 999px;
+  border:none;
+  background: linear-gradient(135deg, var(--p), var(--p3));
+  color:#fff;
+  cursor:pointer;
+  display:grid;place-items:center;
+  font-size: 16px;
 }
 
 /* Responsive */
-@media (max-width: 1024px){
-  .conversations-sidebar{
-    width: 320px;
-  }
-}
-
-@media (max-width: 768px){
-  .header-content{
-    height: 60px;
-  }
-  
-  .brand-title{
-    font-size: 16px;
-  }
-  
-  .nav-btn span{
-    display: none;
-  }
-  
-  .nav-btn{
-    padding: 10px;
-  }
-  
-  .hero-title{
-    font-size: 24px;
-  }
-  
-  .products-grid{
-    grid-template-columns: 1fr;
-  }
-  
-  .conversations-sidebar{
-    width: 100%;
-    top: 60px;
-    z-index: 95;
-  }
-  
-  .modal{
-    max-width: 100%;
-    height: 100vh;
-    max-height: 100vh;
-    border-radius: 0;
-  }
-  
-  .mobile-bar{
-    display: flex;
-  }
-  
-  .main{
-    padding-bottom: 80px;
-  }
-  
-  .message{
-    max-width: 85%;
-  }
-}
-
-/* Animations */
-@keyframes fadeIn{
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-in{
-  animation: fadeIn 0.4s ease forwards;
+@media (max-width: 980px){ .card{grid-column: span 6;} }
+@media (max-width: 640px){
+  .container{padding: 14px}
+  .card{grid-column: span 12;}
+  .heroCard{flex-direction:column; align-items:flex-start}
+  .heroRight{justify-content:flex-start}
+  .actions .btn-ghost{display:none}
+  .bottomBar{display:block}
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
-  <!-- Header -->
-  <header class="header">
-    <div class="container header-content">
-      <a href="#" class="brand" onclick="showPage('home'); return false;">
-        <div class="brand-icon">
-          <i class="fa-solid fa-store"></i>
-        </div>
-        <div class="brand-text">
-          <span class="brand-title">سوق Pi</span>
-          <span class="brand-subtitle">تسوق بأمان باستخدام Pi</span>
-        </div>
-      </a>
-      
-      <nav class="nav">
-        <div id="userPill" class="user-pill">
-          <div class="user-avatar" id="userAvatar">U</div>
-          <div class="user-info">
-            <span class="user-name" id="userName">مستخدم</span>
-            <span class="user-status">متصل</span>
-          </div>
-        </div>
-        
-        <button id="chatToggleBtn" class="nav-btn" onclick="toggleConversations()" style="display:none">
-          <i class="fa-solid fa-comments"></i>
-          <span>محادثاتي</span>
-          <span id="unreadBadge" style="display:none; background:var(--danger); color:white; padding:2px 8px; border-radius:99px; font-size:11px;">0</span>
-        </button>
-        
-        <button id="loginBtn" class="nav-btn gold" onclick="handleAuth()">
-          <i class="fa-solid fa-fingerprint"></i>
-          <span>تسجيل الدخول</span>
-        </button>
-        
-        <button id="addBtn" class="nav-btn primary" onclick="openAddModal()" style="display:none">
-          <i class="fa-solid fa-plus"></i>
-          <span>إعلان جديد</span>
-        </button>
-      </nav>
+<div class="header">
+  <div class="bar container">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-store"></i></div>
+      <div class="brandInfo">
+        <div class="t">سوق Pi</div>
+        <div class="s">بيع واشتري بسهولة + شات منفصل لكل إعلان</div>
+      </div>
     </div>
-  </header>
 
-  <!-- Conversations Sidebar -->
-  <aside id="conversationsSidebar" class="conversations-sidebar">
-    <div class="sidebar-header">
-      <h2 class="sidebar-title">محادثاتي</h2>
-      <button class="icon-btn" onclick="toggleConversations()">
-        <i class="fa-solid fa-xmark"></i>
+    <div class="actions">
+      <div id="userPill" class="userPill" title="أنت مسجل دخول">
+        <span class="dot"></span>
+        <div style="line-height:1">
+          <div id="userName" style="font-size:13px"></div>
+          <small id="userId"></small>
+        </div>
+      </div>
+
+      <button id="loginBtn" class="btn btn-gold"><i class="fa-solid fa-fingerprint"></i><span>دخول</span></button>
+      <button id="refreshBtn" class="btn btn-ghost" onclick="refresh()"><i class="fa-solid fa-rotate"></i><span>تحديث</span></button>
+
+      <button id="sellBtn" class="btn btn-primary" onclick="openModal('addModal')" style="display:none">
+        <i class="fa-solid fa-plus"></i><span>بيع</span>
       </button>
     </div>
-    <div id="conversationsList" class="conversations-list">
-      <!-- Conversations loaded here -->
+  </div>
+</div>
+
+<div class="container hero">
+  <div class="heroCard">
+    <div>
+      <p class="heroTitle">كل إعلان له شات لوحده… ومفيش خلط بين المحادثات ✅</p>
+      <p class="heroSub">اضغط “محادثة” على أي إعلان — هتفتح محادثته فقط</p>
     </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main">
-    <div class="container">
-      <!-- Hero -->
-      <section class="hero">
-        <div class="hero-card">
-          <div class="hero-content">
-            <div class="hero-badge">
-              <i class="fa-solid fa-sparkles"></i>
-              منصة موثوقة للتداول بـ Pi
-            </div>
-            <h1 class="hero-title">اعرض منتجاتك واشتري ما تحتاجه بأمان 💜</h1>
-            <p class="hero-desc">نظام شات متكامل لكل إعلان، محادثات منفصلة، وتحديث فوري مع أفضل تجربة مستخدم</p>
-            <div class="hero-stats">
-              <div class="hero-stat">
-                <div class="hero-stat-icon">
-                  <i class="fa-solid fa-shield-check"></i>
-                </div>
-                <div class="hero-stat-text">
-                  <span class="hero-stat-value">100%</span>
-                  <span class="hero-stat-label">آمن</span>
-                </div>
-              </div>
-              <div class="hero-stat">
-                <div class="hero-stat-icon">
-                  <i class="fa-solid fa-bolt"></i>
-                </div>
-                <div class="hero-stat-text">
-                  <span class="hero-stat-value">Real-time</span>
-                  <span class="hero-stat-label">شات فوري</span>
-                </div>
-              </div>
-              <div class="hero-stat">
-                <div class="hero-stat-icon">
-                  <i class="fa-solid fa-image"></i>
-                </div>
-                <div class="hero-stat-text">
-                  <span class="hero-stat-value">صور</span>
-                  <span class="hero-stat-label">للمنتجات</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Products Section -->
-      <section id="productsSection">
-        <div class="section-header">
-          <h2 class="section-title">
-            <i class="fa-solid fa-grid-2"></i>
-            أحدث الإعلانات
-          </h2>
-          <div class="filters">
-            <button class="filter-btn active" onclick="filterProducts('all')">الكل</button>
-            <button class="filter-btn" onclick="filterProducts('active')">متاح</button>
-            <button class="filter-btn" onclick="filterProducts('sold')">تم البيع</button>
-          </div>
-        </div>
-        
-        <div id="loadingState" class="loading-state">
-          <div class="spinner"></div>
-          <div class="loading-text">جاري تحميل الإعلانات...</div>
-          <div class="loading-subtext">يرجى الانتظار قليلاً</div>
-        </div>
-        
-        <div id="emptyState" class="empty-state" style="display:none">
-          <div class="empty-icon">
-            <i class="fa-solid fa-box-open"></i>
-          </div>
-          <h3 class="empty-title">لا توجد إعلانات حالياً</h3>
-          <p class="empty-desc">كن أول من يضيف إعلاناً في السوق!</p>
-          <button class="btn btn-primary" onclick="openAddModal()">
-            <i class="fa-solid fa-plus"></i>
-            إضافة إعلان
-          </button>
-        </div>
-        
-        <div id="productsGrid" class="products-grid"></div>
-      </section>
+    <div class="heroRight">
+      <div class="chip"><i class="fa-solid fa-bolt"></i> Realtime</div>
+      <div class="chip"><i class="fa-solid fa-comments"></i> Rooms</div>
+      <div class="chip"><i class="fa-solid fa-image"></i> Storage</div>
     </div>
-  </main>
+  </div>
 
-  <!-- Mobile Bottom Bar -->
-  <nav class="mobile-bar">
-    <button class="mobile-btn active" onclick="showPage('home')">
-      <i class="fa-solid fa-home"></i>
-      <span>الرئيسية</span>
-    </button>
-    <button class="mobile-btn" onclick="toggleConversations()">
-      <i class="fa-solid fa-comments"></i>
-      <span>المحادثات</span>
-    </button>
-    <button class="mobile-btn" onclick="openAddModal()" id="mobileAddBtn" style="display:none">
-      <i class="fa-solid fa-plus-circle"></i>
-      <span>إضافة</span>
-    </button>
-    <button class="mobile-btn" onclick="handleAuth()" id="mobileAuthBtn">
-      <i class="fa-solid fa-user"></i>
-      <span>حسابي</span>
-    </button>
-  </nav>
+  <div id="state" class="state">
+    <div class="left">
+      <div class="spin"></div>
+      <div>
+        <p id="stateTitle">جاري تحميل المنتجات...</p>
+        <small id="stateSub">لو فيه مشكلة (RLS) هتظهر هنا</small>
+      </div>
+    </div>
+    <button class="btn btn-ghost" onclick="refresh()"><i class="fa-solid fa-rotate"></i> إعادة تحميل</button>
+  </div>
+
+  <div id="products" class="grid"></div>
+</div>
+
+<div class="bottomBar">
+  <div class="wrap">
+    <button onclick="refresh()"><i class="fa-solid fa-rotate"></i> تحديث</button>
+    <button class="primary" onclick="openModal('addModal')"><i class="fa-solid fa-plus"></i> بيع</button>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div id="addModal" class="modal" onclick="modalBackdropClose(event,'addModal')">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheetHead">
+      <h3><i class="fa-solid fa-badge-check" style="color:var(--p)"></i> إضافة إعلان</h3>
+      <button class="iconBtn" onclick="closeModal('addModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="sheetBody">
+      <div class="field">
+        <label>اسم المنتج</label>
+        <input id="pName" placeholder="مثال: iPhone 13 Pro" />
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>السعر (Pi)</label>
+          <input id="pPrice" type="number" placeholder="مثال: 20" />
+        </div>
+        <div class="field">
+          <label>رقم الهاتف (اختياري)</label>
+          <input id="pPhone" placeholder="01xxxxxxxxx" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>الوصف</label>
+        <textarea id="pDesc" placeholder="اكتب تفاصيل الإعلان..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>صورة (اختياري)</label>
+        <input id="pImg" type="file" accept="image/*" />
+      </div>
+    </div>
+
+    <div class="sheetFoot">
+      <button class="btn btn-ghost btnWide" onclick="closeModal('addModal')">إلغاء</button>
+      <button id="publishBtn" class="btn btn-primary btnWide" onclick="add()">
+        <i class="fa-solid fa-paper-plane"></i> نشر
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- Chat Modal -->
-<div id="chatModal" class="modal-overlay" onclick="closeChatOnBackdrop(event)">
-  <div class="modal">
-    <div class="chat-container">
-      <div class="chat-header">
-        <div class="chat-user">
-          <div class="chat-avatar" id="chatAvatar">U</div>
-          <div class="chat-info">
-            <h3 id="chatUserName">اسم المستخدم</h3>
-            <p id="chatProductTitle">عنوان الإعلان</p>
-          </div>
-        </div>
-        <div class="chat-actions">
-          <button class="icon-btn" onclick="refreshChat()" title="تحديث">
-            <i class="fa-solid fa-rotate"></i>
-          </button>
-          <button class="icon-btn" onclick="closeChat()" title="إغلاق">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
+<div id="chatModal" class="modal" onclick="modalBackdropClose(event,'chatModal')">
+  <div class="sheet chatBox" role="dialog" aria-modal="true">
+
+    <div class="sheetHead">
+      <h3 id="chatTitle"><i class="fa-solid fa-comments" style="color:var(--p)"></i> المحادثة</h3>
+      <div style="display:flex;gap:8px">
+        <button class="iconBtn" onclick="refreshChat()" title="تحديث"><i class="fa-solid fa-rotate"></i></button>
+        <button class="iconBtn" onclick="closeChat()" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      
-      <div id="chatMessages" class="chat-messages"></div>
-      
-      <div class="chat-input-area">
-        <div class="chat-input-wrap">
-          <input type="text" id="messageInput" class="chat-input" placeholder="اكتب رسالتك هنا..." onkeypress="handleMessageKeypress(event)">
-          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
+    </div>
+
+    <div class="chatTopHint">
+      <small id="chatHint">ملاحظة: هذه المحادثة تخص الإعلان الحالي فقط.</small>
+      <small id="chatPeer"></small>
+    </div>
+
+    <!-- Rooms chips: تحفظ آخر شاتات فتحتها -->
+    <div id="roomsBar" class="chatRooms" style="display:none"></div>
+
+    <div id="msgs" class="msgs"></div>
+
+    <div class="chatInput">
+      <input id="msgInput" placeholder="اكتب رسالة..." />
+      <button id="sendBtn" class="sendBtn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
   </div>
 </div>
-
-<!-- Add Product Modal -->
-<div id="addModal" class="modal-overlay" onclick="closeAddOnBackdrop(event)">
-  <div class="modal form-modal">
-    <div class="modal-header">
-      <h2 class="modal-title">
-        <i class="fa-solid fa-circle-plus" style="color:var(--primary)"></i>
-        إضافة إعلان جديد
-      </h2>
-      <button class="icon-btn" onclick="closeAddModal()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">اسم المنتج *</label>
-        <input type="text" id="productName" class="form-input" placeholder="مثال: iPhone 14 Pro Max">
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">السعر (Pi) *</label>
-          <input type="number" id="productPrice" class="form-input" placeholder="50" min="0" step="0.01">
-        </div>
-        <div class="form-group">
-          <label class="form-label">رقم الهاتف</label>
-          <input type="tel" id="productPhone" class="form-input" placeholder="01xxxxxxxxx">
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">الوصف</label>
-        <textarea id="productDesc" class="form-textarea" placeholder="اكتب وصفاً تفصيلياً للمنتج..."></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">صورة المنتج</label>
-        <div class="file-input-wrap">
-          <input type="file" id="productImage" class="file-input" accept="image/*" onchange="handleImagePreview(this)">
-          <div class="file-label" id="fileLabel">
-            <i class="fa-solid fa-cloud-arrow-up"></i>
-            <span>اضغط لرفع صورة أو اسحبها هنا</span>
-            <small style="font-size:12px; opacity:0.7">JPG, PNG حتى 5MB</small>
-          </div>
-        </div>
-        <img id="imagePreview" style="display:none; width:100%; margin-top:12px; border-radius:var(--radius); max-height:200px; object-fit:cover;">
-      </div>
-    </div>
-    
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeAddModal()">إلغاء</button>
-      <button class="btn btn-primary" id="publishBtn" onclick="publishProduct()">
-        <i class="fa-solid fa-paper-plane"></i>
-        نشر الإعلان
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Toast -->
-<div id="toast" class="toast"></div>
 
 <script>
-// ==================== CONFIG ====================
+/* ===============================
+   CONFIG
+================================ */
 const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
 
-// ==================== STATE ====================
-let supabase = null;
-let currentUser = null;
-let currentFilter = 'all';
-let conversations = [];
-let activeConversation = null;
-let messagesSubscription = null;
-let conversationsSubscription = null;
+let sb;
+let user = null;
 
-// ==================== INIT ====================
-document.addEventListener('DOMContentLoaded', async () => {
-  if (!window.supabase) {
-    showToast('فشل تحميل Supabase', 'error');
-    return;
+/**
+ * activeChat = {
+ *   pid: number,
+ *   other: string (seller_pi_id),
+ *   title: string,
+ *   sellerName: string
+ * }
+ */
+let activeChat = null;
+let chatChannel = null;
+let loadedMsgs = new Set();
+
+/** Rooms cache: لكل إعلان شات منفصل */
+let rooms = []; // [{pid, other, title, sellerName}]
+
+const el = (id)=>document.getElementById(id);
+
+function safeText(s){ return (s ?? "").toString().replace(/[<>]/g, ""); }
+
+function setState(title, sub, spinning=true){
+  el("state").style.display = "flex";
+  el("stateTitle").innerText = title || "";
+  el("stateSub").innerText = sub || "";
+  el("state").querySelector(".spin").style.display = spinning ? "block" : "none";
+}
+
+function toast(msg){
+  const t = document.createElement("div");
+  t.style.cssText = `
+    position:fixed;top:18px;left:50%;transform:translateX(-50%);
+    background:#111827;color:#fff;padding:10px 14px;border-radius:999px;
+    font-weight:1000;z-index:5000;box-shadow:0 14px 40px rgba(0,0,0,.25);
+    max-width:92%;text-align:center
+  `;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2200);
+}
+
+function btnLoading(btn, on, text){
+  if(!btn) return;
+  btn.disabled = on;
+  const icon = btn.querySelector("i");
+  if(icon){
+    icon.classList.toggle("fa-spinner", on);
+    icon.classList.toggle("fa-spin", on);
   }
-  
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  
-  // Check for existing session
-  const savedUser = localStorage.getItem('pi_user');
-  if (savedUser) {
-    currentUser = JSON.parse(savedUser);
-    updateUIForUser();
+  if(text){
+    const span = btn.querySelector("span");
+    if(span) span.innerText = text;
+    else btn.innerText = text;
   }
-  
+}
+
+/* ===============================
+   BOOT
+================================ */
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!window.supabase) { alert("Supabase UMD لم يتحمل"); return; }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  initPiOnce();
   await loadProducts();
-  setupRealtime();
 });
 
-// ==================== AUTH ====================
-async function handleAuth() {
-  if (currentUser) {
-    // Logout
-    currentUser = null;
-    localStorage.removeItem('pi_user');
-    updateUIForUser();
-    showToast('تم تسجيل الخروج');
+/* ===============================
+   PI LOGIN
+================================ */
+let piInitialized = false;
+
+function initPiOnce(){
+  const btn = el("loginBtn");
+
+  if(!window.Pi){
+    btn.innerHTML = `<i class="fa-solid fa-flask"></i><span>دخول تجريبي</span>`;
+    btn.onclick = () => {
+      const fake = "test_" + Math.floor(Math.random()*100000);
+      login(fake, "مستخدم_تجريبي");
+    };
     return;
   }
-  
-  const btn = document.getElementById('loginBtn');
-  const originalContent = btn.innerHTML;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-  btn.disabled = true;
-  
-  try {
-    if (!window.Pi) {
-      // Demo mode
-      const demoId = 'demo_' + Math.random().toString(36).substr(2, 9);
-      const demoName = 'مستخدم_' + Math.floor(Math.random() * 1000);
-      await loginUser(demoId, demoName);
-      showToast('تسجيل دخول تجريبي');
-    } else {
-      Pi.init({ version: "2.0", sandbox: false });
-      const auth = await Pi.authenticate(['username'], () => {});
-      await loginUser(auth.user.uid, auth.user.username);
-      showToast('تم تسجيل الدخول بنجاح ✅');
-    }
-  } catch (err) {
-    console.error(err);
-    showToast('فشل تسجيل الدخول', 'error');
-  } finally {
-    btn.innerHTML = originalContent;
-    btn.disabled = false;
+
+  if(!piInitialized){
+    // لو مش داخل Pi Browser أو App مش Production هتفشل لو sandbox:false
+    Pi.init({ version:"2.0", sandbox:false });
+    piInitialized = true;
   }
-}
 
-async function loginUser(piId, username) {
-  // Save user to database
-  const { error } = await supabase
-    .from('users')
-    .upsert({ 
-      pi_id: piId, 
-      username: username,
-      is_online: true,
-      last_seen: new Date().toISOString()
-    });
-  
-  if (error) throw error;
-  
-  currentUser = { pi_id: piId, username };
-  localStorage.setItem('pi_user', JSON.stringify(currentUser));
-  updateUIForUser();
-  loadConversations();
-}
-
-function updateUIForUser() {
-  const loginBtn = document.getElementById('loginBtn');
-  const addBtn = document.getElementById('addBtn');
-  const mobileAddBtn = document.getElementById('mobileAddBtn');
-  const userPill = document.getElementById('userPill');
-  const chatToggleBtn = document.getElementById('chatToggleBtn');
-  const mobileAuthBtn = document.getElementById('mobileAuthBtn');
-  
-  if (currentUser) {
-    loginBtn.innerHTML = '<i class="fa-solid fa-sign-out"></i><span>خروج</span>';
-    loginBtn.classList.remove('gold');
-    loginBtn.classList.add('secondary');
-    
-    addBtn.style.display = 'flex';
-    mobileAddBtn.style.display = 'flex';
-    chatToggleBtn.style.display = 'flex';
-    userPill.classList.add('active');
-    
-    document.getElementById('userName').textContent = currentUser.username;
-    document.getElementById('userAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
-    
-    mobileAuthBtn.innerHTML = '<i class="fa-solid fa-sign-out"></i><span>خروج</span>';
-  } else {
-    loginBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i><span>تسجيل الدخول</span>';
-    loginBtn.classList.add('gold');
-    loginBtn.classList.remove('secondary');
-    
-    addBtn.style.display = 'none';
-    mobileAddBtn.style.display = 'none';
-    chatToggleBtn.style.display = 'none';
-    userPill.classList.remove('active');
-    
-    mobileAuthBtn.innerHTML = '<i class="fa-solid fa-user"></i><span>حسابي</span>';
-    
-    // Close sidebar if open
-    document.getElementById('conversationsSidebar').classList.remove('open');
-  }
-}
-
-// ==================== PRODUCTS ====================
-async function loadProducts() {
-  const loadingState = document.getElementById('loadingState');
-  const emptyState = document.getElementById('emptyState');
-  const grid = document.getElementById('productsGrid');
-  
-  loadingState.style.display = 'flex';
-  emptyState.style.display = 'none';
-  grid.innerHTML = '';
-  
-  try {
-    let query = supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (currentFilter !== 'all') {
-      query = query.eq('status', currentFilter);
+  btn.onclick = async () => {
+    try{
+      btnLoading(btn, true, "جاري الدخول");
+      const auth = await Pi.authenticate(["username"], () => {});
+      await login(auth.user.uid, auth.user.username);
+      toast("تم تسجيل الدخول ✅");
+    }catch(e){
+      console.error(e);
+      toast("فشل تسجيل الدخول");
+    }finally{
+      btnLoading(btn, false, user ? user.name : "دخول");
     }
-    
-    const { data, error } = await query;
-    
-    if (error) throw error;
-    
-    loadingState.style.display = 'none';
-    
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'flex';
+  };
+}
+
+async function login(uid, name){
+  user = { uid, name };
+
+  const { error } = await sb.from("users").upsert({ pi_id: uid, username: name });
+  if(error){
+    console.error(error);
+    toast("خطأ users/RLS");
+  }
+
+  el("userPill").style.display = "flex";
+  el("userName").innerText = name;
+  el("userId").innerText = uid.slice(0,10) + "…";
+
+  el("loginBtn").innerHTML = `<i class="fa-solid fa-user-check"></i><span>${name}</span>`;
+  el("sellBtn").style.display = "inline-flex";
+
+  await loadProducts();
+}
+
+/* ===============================
+   PRODUCTS
+================================ */
+async function loadProducts(){
+  setState("جاري تحميل المنتجات...", "لو ظهر permission denied يبقى لازم Policies للـ products", true);
+  const div = el("products");
+  div.innerHTML = "";
+
+  try{
+    const { data, error } = await sb
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending:false });
+
+    if(error){
+      console.error(error);
+      setState("تعذر تحميل المنتجات", error.message, false);
       return;
     }
-    
-    data.forEach((product, index) => {
-      const card = createProductCard(product);
-      card.style.animationDelay = `${index * 0.05}s`;
-      card.classList.add('animate-in');
-      grid.appendChild(card);
+
+    if(!data || data.length === 0){
+      setState("لا توجد إعلانات الآن", "اضغط (بيع) لإضافة أول إعلان", false);
+      return;
+    }
+
+    el("state").style.display = "none";
+
+    data.forEach(p=>{
+      const img = p.image_url || "https://via.placeholder.com/800x600?text=No+Image";
+      const title = safeText(p.name || "منتج بدون اسم");
+      const desc  = safeText(p.description || "—");
+      const price = (p.price ?? 0);
+      const sellerName = safeText(p.seller_username || "بائع");
+      const sellerId   = safeText(p.seller_pi_id || "");
+
+      const isOwner = user && sellerId === user.uid;
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="imgWrap">
+          <img src="${img}" alt="${title}">
+          <div class="badgePrice"><i class="fa-solid fa-coins"></i> ${price} Pi</div>
+        </div>
+        <div class="body">
+          <h4 class="title">${title}</h4>
+          <p class="desc">${desc}</p>
+
+          <div class="meta">
+            <small><i class="fa-regular fa-clock"></i> ${new Date(p.created_at || Date.now()).toLocaleString("ar-EG")}</small>
+            <small><i class="fa-solid fa-user"></i> ${sellerName}</small>
+          </div>
+
+          <div class="cta">
+            ${
+              isOwner
+                ? `<button class="btn-card secondary" onclick="copyText('${price} Pi - ${title.replace(/'/g,"\\'")}')">
+                      <i class="fa-solid fa-copy"></i> نسخ
+                   </button>
+                   <button class="btn-card secondary" style="border-color:rgba(239,68,68,.25);color:#b91c1c" onclick="deleteProduct(${p.id})">
+                      <i class="fa-solid fa-trash"></i> حذف
+                   </button>`
+                : `<button class="btn-card primary" onclick="openChatRoom(${p.id}, '${sellerId}', '${title.replace(/'/g,"\\'")}', '${sellerName.replace(/'/g,"\\'")}')">
+                      <i class="fa-solid fa-comments"></i> محادثة
+                   </button>
+                   <button class="btn-card secondary" onclick="copyText('${price} Pi - ${title.replace(/'/g,"\\'")}')">
+                      <i class="fa-solid fa-share-nodes"></i> مشاركة
+                   </button>`
+            }
+          </div>
+        </div>
+      `;
+      div.appendChild(card);
     });
-    
-  } catch (err) {
+
+  }catch(err){
     console.error(err);
-    loadingState.style.display = 'none';
-    showToast('فشل تحميل الإعلانات', 'error');
+    setState("خطأ غير متوقع", err.message || "Unknown error", false);
   }
 }
 
-function createProductCard(product) {
-  const isOwner = currentUser && product.seller_pi_id === currentUser.pi_id;
-  const isSold = product.status === 'sold';
-  
-  const div = document.createElement('div');
-  div.className = 'product-card';
-  
-  const imageUrl = product.image_url || 'https://via.placeholder.com/400x300?text=No+Image';
-  
-  div.innerHTML = `
-    <div class="product-image-wrap">
-      <img src="${imageUrl}" alt="${escapeHtml(product.name)}" class="product-image">
-      <div class="product-badge">
-        <i class="fa-solid fa-coins"></i>
-        ${product.price} Pi
-      </div>
-      ${isSold ? '<div class="product-status sold">تم البيع</div>' : '<div class="product-status active">متاح</div>'}
-    </div>
-    <div class="product-body">
-      <h3 class="product-title">${escapeHtml(product.name)}</h3>
-      <p class="product-desc">${escapeHtml(product.description || 'لا يوجد وصف')}</p>
-      
-      <div class="product-meta">
-        <div class="product-seller">
-          <div class="product-seller-avatar">${product.seller_username ? product.seller_username.charAt(0).toUpperCase() : 'U'}</div>
-          <span>${escapeHtml(product.seller_username || 'مستخدم')}</span>
-        </div>
-        <span class="product-date">${formatDate(product.created_at)}</span>
-      </div>
-      
-      <div class="product-actions">
-        ${isOwner ? `
-          <button class="btn btn-danger" onclick="deleteProduct('${product.id}')">
-            <i class="fa-solid fa-trash"></i>
-            حذف
-          </button>
-        ` : isSold ? `
-          <button class="btn btn-secondary" disabled>
-            <i class="fa-solid fa-check"></i>
-            تم البيع
-          </button>
-        ` : `
-          <button class="btn btn-primary" onclick="startChat('${product.id}', '${product.seller_pi_id}', '${escapeHtml(product.seller_username)}', '${escapeHtml(product.name)}')">
-            <i class="fa-solid fa-comment-dots"></i>
-            مراسلة
-          </button>
-        `}
-      </div>
-    </div>
-  `;
-  
-  return div;
+function copyText(text){
+  navigator.clipboard?.writeText(text);
+  toast("تم النسخ ✅");
 }
 
-function filterProducts(filter) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.textContent.includes(filter === 'all' ? 'الكل' : filter === 'active' ? 'متاح' : 'تم البيع')) {
-      btn.classList.add('active');
-    }
-  });
+async function deleteProduct(id){
+  if(!user) return toast("سجل دخول الأول");
+  if(!confirm("متأكد من حذف الإعلان؟")) return;
+
+  const { error } = await sb.from("products").delete().eq("id", id);
+  if(error){
+    console.error(error);
+    toast("فشل الحذف (RLS غالباً)");
+    return;
+  }
+  toast("تم الحذف ✅");
   loadProducts();
 }
 
-async function deleteProduct(productId) {
-  if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return;
-  
-  try {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', productId);
-    
-    if (error) throw error;
-    
-    showToast('تم حذف الإعلان');
-    loadProducts();
-  } catch (err) {
-    showToast('فشل الحذف', 'error');
-  }
-}
+/* ===============================
+   ADD PRODUCT + STORAGE
+================================ */
+async function add(){
+  if(!user) return toast("سجل دخول الأول");
 
-// ==================== ADD PRODUCT ====================
-function openAddModal() {
-  if (!currentUser) {
-    showToast('سجل دخول أولاً', 'error');
-    return;
-  }
-  document.getElementById('addModal').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
+  const name = el("pName").value.trim();
+  const price = Number(el("pPrice").value || 0);
+  const desc = el("pDesc").value.trim();
+  const phone = el("pPhone").value.trim();
 
-function closeAddModal() {
-  document.getElementById('addModal').classList.remove('active');
-  document.body.style.overflow = '';
-  // Reset form
-  document.getElementById('productName').value = '';
-  document.getElementById('productPrice').value = '';
-  document.getElementById('productPhone').value = '';
-  document.getElementById('productDesc').value = '';
-  document.getElementById('productImage').value = '';
-  document.getElementById('imagePreview').style.display = 'none';
-  document.getElementById('fileLabel').style.display = 'flex';
-}
+  if(!name || !price) return toast("اكتب الاسم والسعر");
 
-function closeAddOnBackdrop(e) {
-  if (e.target.id === 'addModal') closeAddModal();
-}
+  const btn = el("publishBtn");
+  btnLoading(btn, true, "جاري النشر");
 
-function handleImagePreview(input) {
-  const file = input.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      document.getElementById('imagePreview').src = e.target.result;
-      document.getElementById('imagePreview').style.display = 'block';
-      document.getElementById('fileLabel').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  }
-}
+  let image_url = null;
 
-async function publishProduct() {
-  const name = document.getElementById('productName').value.trim();
-  const price = parseFloat(document.getElementById('productPrice').value);
-  const phone = document.getElementById('productPhone').value.trim();
-  const desc = document.getElementById('productDesc').value.trim();
-  const fileInput = document.getElementById('productImage');
-  
-  if (!name || !price) {
-    showToast('أدخل الاسم والسعر', 'error');
-    return;
-  }
-  
-  const btn = document.getElementById('publishBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري النشر...';
-  
-  try {
-    let imageUrl = null;
-    
-    if (fileInput.files[0]) {
-      const file = fileInput.files[0];
-      const ext = file.name.split('.').pop();
-      const path = `products/${currentUser.pi_id}/${Date.now()}.${ext}`;
-      
-      const { error: uploadError } = await supabase
-        .storage
-        .from('images')
-        .upload(path, file);
-      
-      if (uploadError) throw uploadError;
-      
-      const { data: urlData } = supabase
-        .storage
-        .from('images')
-        .getPublicUrl(path);
-      
-      imageUrl = urlData.publicUrl;
-    }
-    
-    const { error } = await supabase
-      .from('products')
-      .insert({
-        name,
-        price,
-        description: desc,
-        phone,
-        image_url: imageUrl,
-        seller_pi_id: currentUser.pi_id,
-        seller_username: currentUser.username,
-        status: 'active'
-      });
-    
-    if (error) throw error;
-    
-    showToast('تم نشر الإعلان بنجاح ✅');
-    closeAddModal();
-    loadProducts();
-    
-  } catch (err) {
-    console.error(err);
-    showToast('فشل النشر: ' + err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> نشر الإعلان';
-  }
-}
+  try{
+    const file = el("pImg").files?.[0];
 
-// ==================== CONVERSATIONS ====================
-function toggleConversations() {
-  if (!currentUser) {
-    showToast('سجل دخول أولاً', 'error');
-    return;
-  }
-  const sidebar = document.getElementById('conversationsSidebar');
-  sidebar.classList.toggle('open');
-  if (sidebar.classList.contains('open')) {
-    loadConversations();
-  }
-}
+    if(file){
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `img/${user.uid}/${Date.now()}_${Math.random().toString(16).slice(2)}.${ext}`;
 
-async function loadConversations() {
-  if (!currentUser) return;
-  
-  const list = document.getElementById('conversationsList');
-  list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-secondary);">جاري التحميل...</div>';
-  
-  try {
-    const { data, error } = await supabase
-      .from('conversations')
-      .select(`
-        *,
-        product:products(name, price)
-      `)
-      .or(`buyer_pi_id.eq.${currentUser.pi_id},seller_pi_id.eq.${currentUser.pi_id}`)
-      .order('last_message_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    conversations = data || [];
-    renderConversations();
-    updateUnreadBadge();
-    
-  } catch (err) {
-    console.error(err);
-    list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--danger);">فشل التحميل</div>';
-  }
-}
+      const up = await sb.storage
+        .from("images")
+        .upload(path, file, { contentType: file.type, upsert:false });
 
-function renderConversations() {
-  const list = document.getElementById('conversationsList');
-  
-  if (conversations.length === 0) {
-    list.innerHTML = `
-      <div style="padding:40px 20px; text-align:center; color:var(--text-secondary);">
-        <i class="fa-solid fa-comments" style="font-size:48px; margin-bottom:16px; opacity:0.3;"></i>
-        <p>لا توجد محادثات</p>
-        <p style="font-size:13px; margin-top:8px;">ابدأ محادثة من أي إعلان</p>
-      </div>
-    `;
-    return;
-  }
-  
-  list.innerHTML = '';
-  conversations.forEach(conv => {
-    const isBuyer = conv.buyer_pi_id === currentUser.pi_id;
-    const otherName = isBuyer ? conv.seller_pi_id : conv.buyer_pi_id;
-    const unreadCount = isBuyer ? conv.unread_count_buyer : conv.unread_count_seller;
-    
-    const item = document.createElement('div');
-    item.className = 'conversation-item';
-    if (activeConversation?.id === conv.id) item.classList.add('active');
-    
-    item.onclick = () => openConversation(conv);
-    
-    item.innerHTML = `
-      <div class="conversation-avatar ${Math.random() > 0.5 ? 'online' : ''}">
-        ${otherName.charAt(0).toUpperCase()}
-      </div>
-      <div class="conversation-content">
-        <div class="conversation-header">
-          <span class="conversation-name">${escapeHtml(otherName)}</span>
-          <span class="conversation-time">${formatTime(conv.last_message_at)}</span>
-        </div>
-        <div class="conversation-preview">${escapeHtml(conv.last_message || 'ابدأ المحادثة...')}</div>
-      </div>
-      ${unreadCount > 0 ? `<div class="conversation-unread">${unreadCount}</div>` : ''}
-    `;
-    
-    list.appendChild(item);
-  });
-}
-
-function updateUnreadBadge() {
-  const badge = document.getElementById('unreadBadge');
-  const totalUnread = conversations.reduce((sum, conv) => {
-    const isBuyer = conv.buyer_pi_id === currentUser.pi_id;
-    return sum + (isBuyer ? conv.unread_count_buyer : conv.unread_count_seller);
-  }, 0);
-  
-  if (totalUnread > 0) {
-    badge.textContent = totalUnread > 9 ? '9+' : totalUnread;
-    badge.style.display = 'block';
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-// ==================== CHAT ====================
-async function startChat(productId, sellerId, sellerName, productTitle) {
-  if (!currentUser) {
-    showToast('سجل دخول أولاً', 'error');
-    return;
-  }
-  
-  if (sellerId === currentUser.pi_id) {
-    showToast('لا يمكنك مراسلة نفسك!', 'error');
-    return;
-  }
-  
-  try {
-    // Check if conversation exists
-    let { data: existing } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('product_id', productId)
-      .eq('buyer_pi_id', currentUser.pi_id)
-      .single();
-    
-    if (!existing) {
-      // Create new conversation
-      const { data: newConv, error } = await supabase
-        .from('conversations')
-        .insert({
-          product_id: productId,
-          buyer_pi_id: currentUser.pi_id,
-          seller_pi_id: sellerId
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      existing = newConv;
-    }
-    
-    openConversation(existing, sellerName, productTitle);
-    
-  } catch (err) {
-    console.error(err);
-    showToast('فشل بدء المحادثة', 'error');
-  }
-}
-
-async function openConversation(conv, otherName, productTitle) {
-  activeConversation = conv;
-  
-  const isBuyer = conv.buyer_pi_id === currentUser.pi_id;
-  const displayName = otherName || (isBuyer ? conv.seller_pi_id : conv.buyer_pi_id);
-  const displayProduct = productTitle || conv.product?.name || 'إعلان';
-  
-  document.getElementById('chatUserName').textContent = displayName;
-  document.getElementById('chatProductTitle').textContent = displayProduct;
-  document.getElementById('chatAvatar').textContent = displayName.charAt(0).toUpperCase();
-  
-  document.getElementById('chatModal').classList.add('active');
-  document.body.style.overflow = 'hidden';
-  
-  // Mark messages as read
-  const unreadField = isBuyer ? 'unread_count_buyer' : 'unread_count_seller';
-  await supabase
-    .from('conversations')
-    .update({ [unreadField]: 0 })
-    .eq('id', conv.id);
-  
-  await loadMessages();
-  subscribeToMessages(conv.id);
-  
-  // Update sidebar UI
-  renderConversations();
-  updateUnreadBadge();
-}
-
-async function loadMessages() {
-  if (!activeConversation) return;
-  
-  const container = document.getElementById('chatMessages');
-  container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary);">جاري التحميل...</div>';
-  
-  try {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', activeConversation.id)
-      .order('created_at', { ascending: true });
-    
-    if (error) throw error;
-    
-    container.innerHTML = '';
-    data?.forEach(msg => appendMessage(msg));
-    scrollToBottom();
-    
-  } catch (err) {
-    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger);">فشل تحميل الرسائل</div>';
-  }
-}
-
-function appendMessage(msg) أحتاج لإكمال كود JavaScript وإضافة الوظائف المتبقية. دعني أكمل الكود:
-
-```html
-  const isMe = msg.sender_pi_id === currentUser.pi_id;
-  
-  const div = document.createElement('div');
-  div.className = `message ${isMe ? 'own' : ''}`;
-  div.innerHTML = `
-    <div class="message-avatar">${msg.sender_pi_id.charAt(0).toUpperCase()}</div>
-    <div class="message-content">
-      <div class="message-bubble">${escapeHtml(msg.content)}</div>
-      <div class="message-time">
-        ${formatTime(msg.created_at)}
-        ${isMe ? '<i class="fa-solid fa-check-double" style="color:var(--primary-light);"></i>' : ''}
-      </div>
-    </div>
-  `;
-  
-  container.appendChild(div);
-}
-
-function scrollToBottom() {
-  const container = document.getElementById('chatMessages');
-  container.scrollTop = container.scrollHeight;
-}
-
-function subscribeToMessages(conversationId) {
-  if (messagesSubscription) {
-    messagesSubscription.unsubscribe();
-  }
-  
-  messagesSubscription = supabase
-    .channel(`messages:${conversationId}`)
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages',
-      filter: `conversation_id=eq.${conversationId}`
-    }, (payload) => {
-      const msg = payload.new;
-      // Only add if not already displayed
-      const existing = document.querySelector(`[data-msg-id="${msg.id}"]`);
-      if (!existing) {
-        appendMessage(msg);
-        scrollToBottom();
-        
-        // Mark as read if received
-        if (msg.receiver_pi_id === currentUser.pi_id) {
-          supabase
-            .from('messages')
-            .update({ is_read: true })
-            .eq('id', msg.id);
-        }
+      if(up.error){
+        console.error(up.error);
+        toast("فشل رفع الصورة (Storage/RLS)");
+      }else{
+        const pub = sb.storage.from("images").getPublicUrl(path);
+        image_url = pub.data.publicUrl;
       }
-    })
+    }
+
+    const { error } = await sb.from("products").insert({
+      name,
+      price,
+      description: desc,
+      phone,
+      image_url,
+      seller_pi_id: user.uid,
+      seller_username: user.name
+    });
+
+    if(error){
+      console.error(error);
+      toast("فشل النشر (RLS/Table)");
+      return;
+    }
+
+    toast("تم النشر ✅");
+    closeModal("addModal");
+    el("pName").value = "";
+    el("pPrice").value = "";
+    el("pDesc").value = "";
+    el("pPhone").value = "";
+    el("pImg").value = "";
+
+    loadProducts();
+
+  }finally{
+    btnLoading(btn, false, "نشر");
+  }
+}
+
+/* ===============================
+   CHAT (Room per product + pair)
+   ✅ كل إعلان = شات منفصل
+================================ */
+function roomKey(pid, other){
+  // key فريد للـ room
+  return `${pid}__${user?.uid || "anon"}__${other}`;
+}
+
+function pushRoom(room){
+  // خزّن آخر rooms (بدون تكرار)
+  const key = roomKey(room.pid, room.other);
+  rooms = rooms.filter(r => roomKey(r.pid, r.other) !== key);
+  rooms.unshift(room);
+  rooms = rooms.slice(0, 10);
+  renderRoomsBar();
+}
+
+function renderRoomsBar(){
+  const bar = el("roomsBar");
+  if(!user || rooms.length === 0){
+    bar.style.display = "none";
+    bar.innerHTML = "";
+    return;
+  }
+  bar.style.display = "flex";
+  bar.innerHTML = rooms.map(r=>{
+    const active = activeChat && r.pid === activeChat.pid && r.other === activeChat.other ? "active" : "";
+    return `
+      <button class="roomChip ${active}" onclick="openChatRoom(${r.pid}, '${r.other}', '${r.title.replace(/'/g,"\\'")}', '${r.sellerName.replace(/'/g,"\\'")}')">
+        <i class="fa-solid fa-hashtag"></i> ${safeText(r.title).slice(0,18)}
+      </button>
+    `;
+  }).join("");
+}
+
+function openChatRoom(pid, other, title, sellerName){
+  if(!user) return toast("سجل دخول الأول");
+
+  activeChat = { pid, other, title, sellerName };
+  loadedMsgs = new Set();
+
+  // UI
+  el("chatTitle").innerHTML = `<i class="fa-solid fa-comments" style="color:var(--p)"></i> ${safeText(title)}`;
+  el("chatPeer").innerHTML = `<i class="fa-solid fa-user"></i> ${safeText(sellerName)} • <span style="color:var(--muted)">${safeText(other).slice(0,10)}…</span>`;
+  el("chatHint").innerText = "هذه المحادثة تخص هذا الإعلان فقط (شات منفصل لكل إعلان).";
+
+  el("chatModal").style.display = "flex";
+  el("msgInput").value = "";
+
+  // cache rooms
+  pushRoom({ pid, other, title, sellerName });
+
+  // load history
+  loadMsgs(true);
+
+  // unsubscribe previous channel
+  if(chatChannel){
+    sb.removeChannel(chatChannel);
+    chatChannel = null;
+  }
+
+  // subscribe to realtime for this room only
+  // ✅ نفلتر داخل callback حسب product_id + الطرفين
+  const chanName = `room_${pid}_${user.uid}_${other}`;
+  chatChannel = sb.channel(chanName)
+    .on(
+      "postgres_changes",
+      { event:"INSERT", schema:"public", table:"messages" },
+      (payload) => {
+        const m = payload.new;
+        if(m.product_id !== pid) return;
+
+        const samePair =
+          (m.sender_pi_id === user.uid && m.receiver_pi_id === other) ||
+          (m.sender_pi_id === other && m.receiver_pi_id === user.uid);
+
+        if(!samePair) return;
+        showMsg(m, true);
+      }
+    )
     .subscribe();
+
+  renderRoomsBar();
 }
 
-async function sendMessage() {
-  const input = document.getElementById('messageInput');
+async function loadMsgs(scrollToEnd=false){
+  if(!activeChat) return;
+
+  const msgsEl = el("msgs");
+  msgsEl.innerHTML = `<div style="padding:10px;color:var(--muted);font-weight:1000">جاري تحميل الرسائل...</div>`;
+
+  // ✅ هنا بنجيب رسائل الإعلان فقط ثم نفلتر الطرفين
+  const { data, error } = await sb
+    .from("messages")
+    .select("*")
+    .eq("product_id", activeChat.pid)
+    .order("created_at", { ascending:true });
+
+  if(error){
+    console.error(error);
+    msgsEl.innerHTML = `<div style="padding:10px;color:#b91c1c;font-weight:1000">خطأ messages/RLS: ${safeText(error.message)}</div>`;
+    return;
+  }
+
+  msgsEl.innerHTML = "";
+  (data||[]).forEach(m=>{
+    const samePair =
+      (m.sender_pi_id === user.uid && m.receiver_pi_id === activeChat.other) ||
+      (m.sender_pi_id === activeChat.other && m.receiver_pi_id === user.uid);
+    if(samePair) showMsg(m, false);
+  });
+
+  if(scrollToEnd) scrollMsgsToEnd(false);
+}
+
+function showMsg(m, smooth){
+  if(loadedMsgs.has(m.id)) return;
+  loadedMsgs.add(m.id);
+
+  const isMe = m.sender_pi_id === user.uid;
+  const b = document.createElement("div");
+  b.className = "bubble " + (isMe ? "me" : "other");
+  b.textContent = m.content || "";
+
+  el("msgs").appendChild(b);
+  scrollMsgsToEnd(smooth);
+}
+
+function scrollMsgsToEnd(smooth=true){
+  const box = el("msgs");
+  box.scrollTo({ top: box.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+}
+
+async function send(){
+  if(!user || !activeChat) return toast("افتح محادثة إعلان الأول");
+  const input = el("msgInput");
   const content = input.value.trim();
-  
-  if (!content || !activeConversation) return;
-  
-  const btn = document.getElementById('sendBtn');
+  if(!content) return;
+
+  const btn = el("sendBtn");
   btn.disabled = true;
-  
-  try {
-    const receiverId = activeConversation.buyer_pi_id === currentUser.pi_id 
-      ? activeConversation.seller_pi_id 
-      : activeConversation.buyer_pi_id;
-    
-    const { error } = await supabase
-      .from('messages')
-      .insert({
-        conversation_id: activeConversation.id,
-        sender_pi_id: currentUser.pi_id,
-        receiver_pi_id: receiverId,
-        content: content
-      });
-    
-    if (error) throw error;
-    
-    input.value = '';
-    
-  } catch (err) {
-    showToast('فشل إرسال الرسالة', 'error');
-  } finally {
-    btn.disabled = false;
-    input.focus();
+
+  const { error } = await sb.from("messages").insert({
+    product_id: activeChat.pid,
+    sender_pi_id: user.uid,
+    receiver_pi_id: activeChat.other,
+    content
+  });
+
+  btn.disabled = false;
+
+  if(error){
+    console.error(error);
+    toast("فشل إرسال الرسالة (RLS/Realtime)");
+    return;
+  }
+
+  input.value = "";
+}
+
+function refreshChat(){
+  if(el("chatModal").style.display === "flex"){
+    toast("تحديث الرسائل...");
+    loadMsgs(true);
   }
 }
 
-function handleMessageKeypress(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
+function closeChat(){
+  el("chatModal").style.display = "none";
+  activeChat = null;
+  loadedMsgs = new Set();
+
+  if(chatChannel){
+    sb.removeChannel(chatChannel);
+    chatChannel = null;
+  }
+
+  renderRoomsBar();
+}
+
+/* ===============================
+   MODALS
+================================ */
+function openModal(id){
+  if(id === "addModal" && !user) return toast("سجل دخول الأول");
+  el(id).style.display = "flex";
+}
+function closeModal(id){ el(id).style.display = "none"; }
+function modalBackdropClose(e, id){
+  if(e.target && e.target.id === id){
+    if(id === "chatModal") closeChat();
+    else closeModal(id);
   }
 }
 
-function closeChat() {
-  document.getElementById('chatModal').classList.remove('active');
-  document.body.style.overflow = '';
-  activeConversation = null;
-  if (messagesSubscription) {
-    messagesSubscription.unsubscribe();
-    messagesSubscription = null;
+/* ===============================
+   REFRESH
+================================ */
+async function refresh(){
+  const btn = el("refreshBtn");
+  btnLoading(btn, true, "تحديث");
+  try{
+    if(el("chatModal").style.display === "flex") await loadMsgs(true);
+    else await loadProducts();
+  }finally{
+    btnLoading(btn, false, "تحديث");
   }
 }
-
-function closeChatOnBackdrop(e) {
-  if (e.target.id === 'chatModal') closeChat();
-}
-
-function refreshChat() {
-  loadMessages();
-  showToast('تم التحديث');
-}
-
-// ==================== REALTIME SETUP ====================
-function setupRealtime() {
-  // Subscribe to new conversations
-  if (currentUser) {
-    conversationsSubscription = supabase
-      .channel('conversations')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'conversations',
-        filter: `buyer_pi_id=eq.${currentUser.pi_id}`
-      }, () => loadConversations())
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'conversations',
-        filter: `seller_pi_id=eq.${currentUser.pi_id}`
-      }, () => loadConversations())
-      .subscribe();
-  }
-}
-
-// ==================== UTILS ====================
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function formatDate(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now - date;
-  
-  if (diff < 60000) return 'الآن';
-  if (diff < 3600000) return `${Math.floor(diff / 60000)} دقيقة`;
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)} ساعة`;
-  
-  return date.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
-}
-
-function formatTime(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-}
-
-function showToast(message, type = 'success') {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.className = `toast ${type} show`;
-  
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3000);
-}
-
-function showPage(page) {
-  // For future multi-page support
-  if (page === 'home') {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-}
-
-// Close sidebar when clicking outside
-document.addEventListener('click', (e) => {
-  const sidebar = document.getElementById('conversationsSidebar');
-  const chatToggleBtn = document.getElementById('chatToggleBtn');
-  
-  if (sidebar.classList.contains('open') && 
-      !sidebar.contains(e.target) && 
-      !chatToggleBtn.contains(e.target)) {
-    sidebar.classList.remove('open');
-  }
-});
 </script>
-
 </body>
 </html>
