@@ -1,0 +1,9 @@
+{
+  "name": "pi-market",
+  "version": "1.0.0",
+  "description": "Pi Network Market with Supabase Backend",
+  "main": "index.html",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
