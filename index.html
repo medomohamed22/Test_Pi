@@ -52,7 +52,7 @@ body {
 .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
 .btn-gold { background: linear-gradient(135deg, var(--accent), #FBBF24); color: white; }
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-.btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; }
+.btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; pointer-events: none; }
 
 /* --- Header --- */
 .header {
@@ -146,7 +146,6 @@ body {
   display: inline-flex; align-items: center; gap: 4px;
 }
 .card-desc { font-size: 11px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; height: 32px; width: 100%; }
-.card-actions { width: 100%; display: flex; gap: 6px; margin-top: 4px; z-index: 2; position: relative; }
 .promo-badge {
   position: absolute; top: 8px; right: 8px; z-index: 10;
   background: var(--accent); color: white; padding: 4px 8px;
@@ -154,13 +153,28 @@ body {
 }
 .card.promoted { border: 2px solid var(--accent); }
 
-/* --- Product Detail View Styles --- */
-.detail-image-box {
+/* --- Slider & Details Styles (UPDATED) --- */
+.slider-container {
   width: 100%; aspect-ratio: 4/3; background: #f3f4f6;
   border-radius: 20px; overflow: hidden; margin-bottom: 16px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border); position: relative;
 }
-.detail-img { width: 100%; height: 100%; object-fit: contain; }
+.slider-wrapper {
+  display: flex; width: 100%; height: 100%;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.slider-wrapper::-webkit-scrollbar { display: none; }
+.slide { flex: 0 0 100%; scroll-snap-align: center; width: 100%; height: 100%; }
+.slide-img { width: 100%; height: 100%; object-fit: contain; }
+
+.slider-dots {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px;
+}
+.dot { width: 8px; height: 8px; background: rgba(0,0,0,0.3); border-radius: 50%; transition: 0.3s; }
+.dot.active { background: var(--primary); transform: scale(1.2); }
+
 .seller-card {
   background: white; border: 1px solid var(--border);
   padding: 16px; border-radius: 16px; margin-top: 20px;
@@ -170,6 +184,23 @@ body {
 .seller-info { flex: 1; }
 .seller-name { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
 .seller-stats { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
+
+/* --- Upload Styles --- */
+.previews-container {
+  display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto;
+  padding: 4px;
+}
+.preview-box {
+  width: 70px; height: 70px; border-radius: 12px; overflow: hidden;
+  position: relative; flex-shrink: 0; border: 1px solid var(--border);
+}
+.preview-box img { width: 100%; height: 100%; object-fit: cover; }
+.preview-remove {
+  position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8);
+  color: white; width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; cursor: pointer;
+}
 
 /* --- Categories --- */
 .categories-wrapper { position: sticky; top: 60px; z-index: 40; background: var(--bg-body); padding: 10px 0; margin-bottom: 10px; }
@@ -230,7 +261,6 @@ select.input-box {
 .file-upload-content { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted); }
 .file-upload-icon { font-size: 24px; color: var(--primary); }
 .file-upload-text { font-size: 12px; font-weight: 500; }
-#preview-img { display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 14px; }
 
 /* --- Toast --- */
 .toast-container {
@@ -265,16 +295,13 @@ select.input-box {
 
 <header class="header">
   <div class="brand"><i class="fa-solid fa-store"></i> <span data-i18n="brand_name">سوق باي</span></div>
-  
   <div class="header-actions">
     <button class="lang-btn" onclick="toggleLanguage()">
       <span id="langText">AR</span>
     </button>
-
     <button id="loginBtn" class="btn btn-gold">
       <i class="fa-solid fa-fingerprint"></i> <span data-i18n="login">دخول</span>
     </button>
-    
     <div id="headerUser" class="header-user hidden">
       <div id="userAvatar" class="header-avatar">?</div>
       <div id="userDispName" class="header-name">User</div>
@@ -301,8 +328,9 @@ select.input-box {
       </button>
     </div>
     
-    <div class="detail-image-box">
-      <img id="detail-img" class="detail-img" src="">
+    <div class="slider-container">
+      <div class="slider-wrapper" id="detail-slider"></div>
+      <div class="slider-dots" id="detail-dots"></div>
     </div>
 
     <h2 id="detail-title" style="margin:0 0 8px 0;line-height:1.3;font-size:20px"></h2>
@@ -378,12 +406,13 @@ select.input-box {
       <button onclick="closeAddModal()" style="background:none;border:none;font-size:18px;color:#666"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
+    <div id="image-previews" class="previews-container"></div>
+
     <label class="file-upload-wrapper">
-      <input id="addImg" type="file" accept="image/*" style="display:none" onchange="previewImage(this)">
-      <img id="preview-img">
+      <input id="addImg" type="file" accept="image/*" multiple style="display:none" onchange="handleFileSelect(this)">
       <div class="file-upload-content" id="upload-placeholder">
         <i class="fa-solid fa-cloud-arrow-up file-upload-icon"></i>
-        <div class="file-upload-text" data-i18n="upload_text">اضغط لاختيار صورة المنتج</div>
+        <div class="file-upload-text" data-i18n="upload_text">اضغط لاختيار صورة (بحد أقصى 3)</div>
       </div>
     </label>
 
@@ -436,6 +465,7 @@ const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
 let sb, user = null;
 let activeChat = null;
 let currentLang = localStorage.getItem('lang') || 'en'; 
+let selectedFiles = []; // To store selected images
 
 // --- TRANSLATIONS ---
 const translations = {
@@ -453,7 +483,7 @@ const translations = {
     nav_chats: "المحادثات",
     nav_profile: "حسابي",
     sell_new_item: "بيع منتج جديد",
-    upload_text: "اضغط لاختيار صورة المنتج",
+    upload_text: "اضغط لاختيار الصور (بحد أقصى 3)",
     label_prod_name: "اسم المنتج",
     label_category: "القسم",
     label_price: "السعر (Pi)",
@@ -473,6 +503,7 @@ const translations = {
     toast_upload_fail: "فشل رفع الصورة",
     toast_success_add: "تم نشر الإعلان بنجاح",
     toast_send_fail: "فشل الإرسال",
+    toast_max_images: "الحد الأقصى 3 صور",
     banned_title: "حساب محظور",
     banned_msg: "تم إيقاف حسابك لمخالفة شروط الاستخدام.",
     ph_prod_name: "مثال: آيفون 13 برو",
@@ -503,7 +534,7 @@ const translations = {
     nav_chats: "Chats",
     nav_profile: "Profile",
     sell_new_item: "Sell New Item",
-    upload_text: "Tap to upload image",
+    upload_text: "Tap to upload images (Max 3)",
     label_prod_name: "Product Name",
     label_category: "Category",
     label_price: "Price (Pi)",
@@ -523,6 +554,7 @@ const translations = {
     toast_upload_fail: "Image upload failed",
     toast_success_add: "Ad published successfully",
     toast_send_fail: "Failed to send",
+    toast_max_images: "Max 3 images allowed",
     banned_title: "Account Banned",
     banned_msg: "Your account is suspended due to violations.",
     ph_prod_name: "Ex: iPhone 13 Pro",
@@ -558,7 +590,7 @@ let activeCategory = 'all';
 // --- INIT ---
 document.addEventListener("DOMContentLoaded", async () => {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  updateLanguage();
+  updateLanguage(); 
   initPi();
   loadAllProducts();
 });
@@ -572,9 +604,7 @@ function toggleLanguage() {
   setTimeout(() => { updateLanguage(); langText.style.opacity = 1; }, 200);
 }
 
-function t(key) {
-  return translations[currentLang][key] || key;
-}
+function t(key) { return translations[currentLang][key] || key; }
 
 function updateLanguage() {
   document.getElementById('langText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
@@ -624,14 +654,11 @@ function filterByCategory(catId, element) {
 function nav(viewName) {
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  
   const view = document.getElementById(`view-${viewName}`);
   view.classList.remove('hidden');
   view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
-  
   const idx = viewName === 'home' ? 0 : viewName === 'chats' ? 1 : 2;
   document.querySelectorAll('.nav-item')[idx].classList.add('active');
-
   if(viewName === 'profile' && user) loadMyAds();
   if(viewName === 'chats' && user) loadInbox();
 }
@@ -691,7 +718,11 @@ function renderProducts() {
   }
   const now = new Date();
   filtered.forEach(p => {
-    const img = p.image_url || "https://placehold.co/400?text=No+Image";
+    // Show first image from array, or fallback to legacy image_url, or placeholder
+    let img = "https://placehold.co/400?text=No+Image";
+    if(p.images && p.images.length > 0) img = p.images[0];
+    else if(p.image_url) img = p.image_url;
+
     let isPromoted = false;
     if(p.promoted_until) {
       const until = new Date(p.promoted_until);
@@ -711,13 +742,28 @@ function renderProducts() {
   });
 }
 
-// --- PRODUCT DETAILS (New Feature) ---
+// --- PRODUCT DETAILS (Slider + Seller Stats) ---
 async function openProductDetails(pid) {
   const p = globalProducts.find(x => x.id == pid);
   if(!p) return;
 
-  // 1. Populate static data
-  document.getElementById('detail-img').src = p.image_url || "https://placehold.co/600?text=No+Image";
+  // 1. Prepare Images for Slider
+  const images = (p.images && p.images.length > 0) ? p.images : (p.image_url ? [p.image_url] : ["https://placehold.co/600?text=No+Image"]);
+  
+  const slider = document.getElementById('detail-slider');
+  const dots = document.getElementById('detail-dots');
+  
+  slider.innerHTML = images.map(src => `<div class="slide"><img src="${src}" class="slide-img"></div>`).join('');
+  dots.innerHTML = images.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
+
+  // Scroll listener for dots
+  slider.onscroll = () => {
+    const index = Math.round(slider.scrollLeft / slider.clientWidth); // Works for RTL if dir is handled by browser, mostly LTR logic applied for calc
+    // In RTL, scrollLeft might be negative or inverse. Simple active check:
+    const i = Math.round(Math.abs(slider.scrollLeft) / slider.offsetWidth);
+    document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === i));
+  };
+
   document.getElementById('detail-title').innerText = p.name;
   document.getElementById('detail-price').innerText = p.price;
   document.getElementById('detail-desc').innerText = p.description || "";
@@ -727,13 +773,22 @@ async function openProductDetails(pid) {
   document.getElementById('detail-join-date').innerText = "...";
   document.getElementById('detail-ad-count').innerText = "...";
 
-  // 2. Setup Actions Buttons
+  // Actions
   const actionsDiv = document.getElementById('detail-actions');
   const isOwner = user && p.seller_pi_id === user.uid;
+  const now = new Date();
   
   if(isOwner) {
+     let promoteBtn = "";
+     if(p.promoted_until && new Date(p.promoted_until) > now) {
+        const dateStr = new Date(p.promoted_until).toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
+        promoteBtn = `<button class="btn btn-disabled" style="width:100%" disabled><i class="fa-solid fa-clock"></i> ${t('promoted_until')} ${dateStr}</button>`;
+     } else {
+        promoteBtn = `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>`;
+     }
+
      actionsDiv.innerHTML = `
-       <button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>
+       ${promoteBtn}
        <button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="width:100%;color:red"><i class="fa-solid fa-trash"></i> ${t('delete_btn')}</button>
      `;
   } else {
@@ -744,26 +799,21 @@ async function openProductDetails(pid) {
      `;
   }
 
-  // 3. Switch View
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
   const view = document.getElementById('view-details');
   view.classList.remove('hidden');
   view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
 
-  // 4. Fetch Seller Extra Info (Join date & count)
+  // Fetch Seller Info
   try {
-    // Get Join Date from users table
     const { data: userData } = await sb.from('users').select('created_at').eq('pi_id', p.seller_pi_id).single();
     if(userData) {
        const date = new Date(userData.created_at);
        document.getElementById('detail-join-date').innerText = date.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
     }
-
-    // Get Ads Count
     const { count } = await sb.from('products').select('*', { count: 'exact', head: true }).eq('seller_pi_id', p.seller_pi_id);
     document.getElementById('detail-ad-count').innerText = count || 0;
-
-  } catch(e) { console.error("Details Fetch Error", e); }
+  } catch(e) { console.error(e); }
 }
 
 // --- PROFILE ---
@@ -784,10 +834,13 @@ async function loadMyAds() {
             promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); 
           }
        }
-       // Note: Buttons here still work, but clicking card body opens details
+       
+       // Use primary image
+       let img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || "");
+
        list.innerHTML += `
        <div class="card" onclick="openProductDetails(${p.id})">
-         <div class="card-img-wrap"><img src="${p.image_url || ''}" class="card-img"></div>
+         <div class="card-img-wrap"><img src="${img}" class="card-img"></div>
          <div class="card-body">
            <div class="card-title">${p.name}</div>
            <div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div>
@@ -797,62 +850,104 @@ async function loadMyAds() {
   }
 }
 
-// --- ADD PRODUCT LOGIC ---
-function openAddModal(){ document.getElementById("addModal").style.display="flex"; }
+// --- ADD PRODUCT LOGIC (Multi Image) ---
+function openAddModal(){ document.getElementById("addModal").style.display="flex"; selectedFiles = []; updateImagePreviews(); }
 function closeAddModal(){ document.getElementById("addModal").style.display="none"; resetForm(); }
-function previewImage(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('preview-img').src = e.target.result;
-      document.getElementById('preview-img').style.display = 'block';
-      document.getElementById('upload-placeholder').style.opacity = '0';
+
+function handleFileSelect(input) {
+  if (input.files) {
+    const files = Array.from(input.files);
+    if (selectedFiles.length + files.length > 3) {
+      showToast('toast_max_images', 'error');
+      return;
     }
-    reader.readAsDataURL(input.files[0]);
+    selectedFiles = [...selectedFiles, ...files];
+    updateImagePreviews();
   }
+  input.value = ""; // Reset to allow re-selecting same file
 }
+
+function updateImagePreviews() {
+  const container = document.getElementById('image-previews');
+  container.innerHTML = "";
+  selectedFiles.forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const div = document.createElement('div');
+      div.className = 'preview-box';
+      div.innerHTML = `
+        <img src="${e.target.result}">
+        <div class="preview-remove" onclick="removeFile(${index})"><i class="fa-solid fa-xmark"></i></div>
+      `;
+      container.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+  
+  // Hide placeholder if 3 images
+  document.getElementById('upload-placeholder').style.display = selectedFiles.length >= 3 ? 'none' : 'flex';
+}
+
+function removeFile(index) {
+  selectedFiles.splice(index, 1);
+  updateImagePreviews();
+}
+
 function resetForm() {
   document.getElementById("addName").value = "";
   document.getElementById("addPrice").value = "";
   document.getElementById("addDesc").value = "";
   document.getElementById("addCategory").value = "";
-  document.getElementById("addImg").value = "";
-  document.getElementById('preview-img').style.display = 'none';
-  document.getElementById('upload-placeholder').style.opacity = '1';
+  selectedFiles = [];
+  updateImagePreviews();
 }
+
 async function submitProduct(){
     const name = document.getElementById("addName").value;
     const price = document.getElementById("addPrice").value;
     const desc = document.getElementById("addDesc").value;
     const category = document.getElementById("addCategory").value;
-    const file = document.getElementById("addImg").files[0];
     const btn = document.getElementById("publishBtn");
+    
     if(!name || !price || !category) return showToast('toast_fill_data', 'error');
+    
     btn.innerText = t('loading'); btn.disabled=true;
-    let url = null;
-    if(file){
+    
+    let uploadedUrls = [];
+    
+    if(selectedFiles.length > 0){
         try {
           const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" };
-          const compressedFile = await imageCompression(file, options);
-          const path = `${user.uid}/${Date.now()}_img.jpg`;
-          const {error} = await sb.storage.from("images").upload(path, compressedFile);
-          if(!error) url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
-          else throw error;
+          
+          for(const file of selectedFiles) {
+             const compressedFile = await imageCompression(file, options);
+             const path = `${user.uid}/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`;
+             const {error} = await sb.storage.from("images").upload(path, compressedFile);
+             if(error) throw error;
+             
+             const url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
+             uploadedUrls.push(url);
+          }
         } catch (error) {
           console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return;
         }
     }
+    
+    // Save first image to image_url for legacy support, and all to images array
     await sb.from("products").insert({
-        name, price, description: desc, image_url: url, 
+        name, price, description: desc, 
+        image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null,
+        images: uploadedUrls, // Requires 'images' jsonb column
         seller_pi_id: user.uid, seller_username: user.username,
         category: category
     });
+    
     showToast('toast_success_add');
     closeAddModal(); loadAllProducts(); loadMyAds();
     btn.innerText = t('publish_btn'); btn.disabled=false;
 }
 
-// --- PAYMENTS & DELETE (Used in Details View) ---
+// --- PAYMENTS & DELETE ---
 async function promoteProduct(productId) {
   if(!window.Pi) return showToast("Pi Browser Required", 'error');
   const API_BASE = "/api"; 
@@ -860,13 +955,10 @@ async function promoteProduct(productId) {
     const paymentData = { amount: 3, memo: "Promote Ad: " + productId, metadata: { productId: productId, type: "promotion" } };
     const paymentCallbacks = {
       onReadyForServerApproval: async (paymentId) => {
-          try {
-            const res = await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) });
-            if(!res.ok) throw new Error("approve failed");
-          } catch (e) { showToast("Connection Error", 'error'); }
+          try { await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) }); } catch (e) { showToast("Connection Error", 'error'); }
       },
-      onServerApproval: (paymentId) => { console.log("Server approved", paymentId); },
-      onCancel: (paymentId) => { console.log("User cancelled", paymentId); },
+      onServerApproval: (paymentId) => {},
+      onCancel: (paymentId) => {},
       onError: (error, payment) => { showToast("Payment Failed", 'error'); },
       onReadyForServerCompletion: async (paymentId, txid) => {
           try {
@@ -897,21 +989,14 @@ function openChatRoom(pid, otherId, pName, uName) {
   document.getElementById("chatModal").style.display = "flex";
   document.getElementById("msgContainer").innerHTML = "";
   loadMessages();
-  sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
-    { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
-    payload => {
+  sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, payload => {
        const m = payload.new;
-       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid))
-         renderMsg(m);
-    }
-  ).subscribe();
+       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid)) renderMsg(m);
+  }).subscribe();
 }
 async function loadMessages() {
   const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
-  if(data) data.forEach(m => {
-      if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid))
-        renderMsg(m);
-  });
+  if(data) data.forEach(m => { if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid)) renderMsg(m); });
 }
 function renderMsg(m){
     const div = document.createElement("div");
@@ -923,25 +1008,16 @@ function renderMsg(m){
 async function sendMsg(){
     const inp = document.getElementById("msgInput");
     if(!inp.value.trim()) return;
-    const { error } = await sb.from("messages").insert({
-        product_id: activeChat.pid, sender_pi_id: user.uid, receiver_pi_id: activeChat.otherId, content: inp.value.trim()
-    });
+    const { error } = await sb.from("messages").insert({ product_id: activeChat.pid, sender_pi_id: user.uid, receiver_pi_id: activeChat.otherId, content: inp.value.trim() });
     if(error) showToast('toast_send_fail', 'error'); else inp.value = "";
 }
-function closeChat() { 
-  document.getElementById("chatModal").style.display = "none"; 
-  activeChat = null; 
-  sb.removeAllChannels(); 
-}
+function closeChat() { document.getElementById("chatModal").style.display = "none"; activeChat = null; sb.removeAllChannels(); }
 
 // --- INBOX ---
 async function loadInbox() {
   const list = document.getElementById("inbox-list");
   list.innerHTML = `<div style='text-align:center;padding:20px'>${t('loading')}</div>`;
-  const { data } = await sb.from("messages")
-    .select("*, products(name)")
-    .or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`)
-    .order("created_at", {ascending: false});
+  const { data } = await sb.from("messages").select("*, products(name)").or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`).order("created_at", {ascending: false});
   list.innerHTML = "";
   if(!data || !data.length) return list.innerHTML = `<div style='text-align:center;padding:40px;color:gray'>${t('no_products').replace('products','messages')}</div>`;
   const threads = new Map();
@@ -949,10 +1025,7 @@ async function loadInbox() {
   data.forEach(m => {
     const otherId = (m.sender_pi_id === user.uid) ? m.receiver_pi_id : m.sender_pi_id;
     const key = `${m.product_id}_${otherId}`;
-    if(!threads.has(key)){
-        otherIds.add(otherId);
-        threads.set(key, { pid: m.product_id, otherId: otherId, pName: m.products?.name || "Item", last: m.content, name: "User" });
-    }
+    if(!threads.has(key)){ otherIds.add(otherId); threads.set(key, { pid: m.product_id, otherId: otherId, pName: m.products?.name || "Item", last: m.content, name: "User" }); }
   });
   if(otherIds.size > 0){
       const { data: users } = await sb.from("users").select("pi_id,username").in("pi_id", Array.from(otherIds));
