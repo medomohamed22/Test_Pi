@@ -717,88 +717,107 @@ async function deleteProduct(id){
 }
 
 // --- CHAT ---
-// --- CHAT SYSTEM (UPDATED) ---
+// --- CHAT SYSTEM (FINAL FIX) ---
 
 // 1. فتح غرفة المحادثة
 function openChatRoom(pid, otherId, pName, uName) {
   if(!user) return showToast("سجل دخول أولاً", 'error');
   
-  activeChat = { pid, otherId };
+  // تحويل everything to String لضمان المقارنة الصحيحة
+  activeChat = { 
+    pid: String(pid), 
+    otherId: String(otherId) 
+  };
   
-  // تحديث واجهة المودال
   document.getElementById("chatTitle").innerText = pName;
   document.getElementById("chatPeer").innerText = uName;
   document.getElementById("chatModal").style.display = "flex";
-  document.getElementById("msgContainer").innerHTML = ""; // تنظيف القديم
+  document.getElementById("msgContainer").innerHTML = ""; 
   
-  loadMessages(); // تحميل الرسائل السابقة
+  loadMessages(); 
 
-  // إزالة أي اشتراك سابق لتجنب التكرار
+  // إلغاء القنوات القديمة
   sb.removeAllChannels();
 
-  // الاشتراك في الرسائل الجديدة (للطرف الآخر)
-  sb.channel(`room:${pid}:${otherId}`)
+  // ✅ التعديل الهام: اسم القناة موحد (يعتمد على رقم المنتج فقط)
+  // والفلتر يعتمد على رقم المنتج
+  const channel = sb.channel(`chat_product_${activeChat.pid}`)
     .on('postgres_changes', 
-      { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
+      { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages', 
+        filter: `product_id=eq.${activeChat.pid}` 
+      }, 
       payload => {
          const m = payload.new;
-         // عرض الرسالة فقط إذا كانت من الطرف الآخر (لأن رسائلي أعرضها فوراً)
-         if(m.sender_pi_id === otherId && m.receiver_pi_id === user.uid) {
+         // هل الرسالة تخصني؟ (أنا المستقبل والمرسل هو الطرف الآخر)
+         if(String(m.receiver_pi_id) === String(user.uid) && String(m.sender_pi_id) === activeChat.otherId) {
             renderMsg(m);
          }
       }
-    ).subscribe();
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log("Connected to chat room!");
+      }
+    });
 }
 
-// 2. تحميل الرسائل القديمة
+// 2. تحميل الرسائل السابقة
 async function loadMessages() {
-  const { data } = await sb.from("messages")
+  const { data, error } = await sb.from("messages")
     .select("*")
     .eq("product_id", activeChat.pid)
-    .order("created_at", {ascending: true}); // ترتيب من الأقدم للأحدث
+    .order("created_at", {ascending: true});
+
+  if(error) {
+    console.error("Chat Error:", error);
+    return;
+  }
 
   if(data) {
     data.forEach(m => {
-      // عرض الرسائل الخاصة بهذه المحادثة فقط
-      if((m.sender_pi_id == user.uid && m.receiver_pi_id == activeChat.otherId) || 
-         (m.sender_pi_id == activeChat.otherId && m.receiver_pi_id == user.uid)) {
+      // فلترة الرسائل الخاصة بي والطرف الآخر فقط
+      // (لأن الغرفة قد تحتوي رسائل لمستخدمين آخرين لنفس المنتج)
+      const s = String(m.sender_pi_id);
+      const r = String(m.receiver_pi_id);
+      const me = String(user.uid);
+      const other = activeChat.otherId;
+
+      if( (s === me && r === other) || (s === other && r === me) ) {
         renderMsg(m);
       }
     });
   }
 }
 
-// 3. رسم فقاعة الرسالة
+// 3. رسم الرسالة
 function renderMsg(m){
     const div = document.createElement("div");
-    // تحديد لون الفقاعة (أنا أم هو)
-    div.className = `bubble ${m.sender_pi_id == user.uid ? 'me' : 'other'}`;
+    // تحديد الكلاس بناءً على المُرسل
+    const isMe = String(m.sender_pi_id) === String(user.uid);
+    div.className = `bubble ${isMe ? 'me' : 'other'}`;
     div.innerText = m.content;
     
     const c = document.getElementById("msgContainer");
     c.appendChild(div);
-    
-    // النزول لآخر المحادثة تلقائياً
     setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
 }
 
-// 4. إرسال الرسالة (مع العرض الفوري)
+// 4. إرسال رسالة
 async function sendMsg(){
     const inp = document.getElementById("msgInput");
     const text = inp.value.trim();
     if(!text) return;
 
-    // 1. عرض الرسالة فوراً (Optimistic UI)
-    renderMsg({
-      sender_pi_id: user.uid,
-      content: text
-    });
+    // عرض فوري
+    renderMsg({ sender_pi_id: user.uid, content: text });
+    inp.value = ""; 
 
-    inp.value = ""; // مسح الحقل
-
-    // 2. الإرسال لقاعدة البيانات في الخلفية
+    // إرسال للقاعدة
     const { error } = await sb.from("messages").insert({
-        product_id: activeChat.pid, 
+        product_id: activeChat.pid,    // تأكد أن نوع العمود في القاعدة (text أو int8) يوافق القيمة
         sender_pi_id: user.uid, 
         receiver_pi_id: activeChat.otherId, 
         content: text
@@ -806,15 +825,15 @@ async function sendMsg(){
 
     if(error) {
       console.error(error);
-      showToast("فشل إرسال الرسالة", 'error');
+      showToast("لم يتم الإرسال، تحقق من الإنترنت", 'error');
     }
 }
 
-// 5. إغلاق المحادثة
+// 5. إغلاق
 function closeChat() { 
   document.getElementById("chatModal").style.display = "none"; 
   activeChat = null; 
-  sb.removeAllChannels(); // إيقاف الاستماع لتوفير الموارد
+  sb.removeAllChannels(); 
 }
 
 </script>
