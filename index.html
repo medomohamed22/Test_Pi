@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>سوق باي | Pi Market</title>
+<title>Pi Market | سوق باي</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
@@ -52,7 +52,6 @@ body {
 .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
 .btn-gold { background: linear-gradient(135deg, var(--accent), #FBBF24); color: white; }
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-.btn-whatsapp { background: #25D366; color: white; }
 .btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; }
 
 /* --- Header --- */
@@ -66,6 +65,22 @@ body {
   height: 60px;
 }
 .brand { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+
+/* Header Actions (User + Lang) */
+.header-actions { display: flex; align-items: center; gap: 8px; }
+
+/* Language Switcher Button */
+.lang-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: white; border: 1px solid var(--border);
+  color: var(--primary); font-weight: 800; font-size: 12px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  overflow: hidden; position: relative;
+}
+.lang-btn:active { transform: scale(0.9) rotate(10deg); }
+.lang-btn span { position: absolute; transition: all 0.3s; }
 
 /* User Profile in Header */
 .header-user {
@@ -110,7 +125,7 @@ body {
 .view-section { animation: fadeScale 0.4s ease-out; }
 @keyframes fadeScale { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-/* --- Product Cards (New Design) --- */
+/* --- Product Cards --- */
 .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .card {
   background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
@@ -140,7 +155,7 @@ body {
 }
 .card.promoted { border: 2px solid var(--accent); }
 
-/* --- Categories Bar --- */
+/* --- Categories --- */
 .categories-wrapper { position: sticky; top: 60px; z-index: 40; background: var(--bg-body); padding: 10px 0; margin-bottom: 10px; }
 .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
 .categories-scroll::-webkit-scrollbar { display: none; }
@@ -162,7 +177,7 @@ body {
 .bubble.me { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
 .bubble.other { background: white; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
 
-/* --- Modals & Inputs (Beautified) --- */
+/* --- Modals & Inputs --- */
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
 .sheet {
   background: white; width: 100%; max-width: 600px;
@@ -173,7 +188,6 @@ body {
 }
 @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
 
-/* تنسيق الحقول الموحد */
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-label { font-size: 12px; font-weight: 700; color: var(--text-main); margin-right: 4px; }
 .input-box {
@@ -184,15 +198,12 @@ body {
 }
 .input-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
 textarea.input-box { resize: none; height: 80px; }
-
-/* تنسيق Select ليكون مثل Input تماماً */
 select.input-box {
   appearance: none; 
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat; background-position: left 14px center; background-size: 16px;
 }
 
-/* تنسيق رفع الصورة الجديد */
 .file-upload-wrapper {
   border: 2px dashed var(--border); border-radius: 16px;
   padding: 20px; text-align: center; cursor: pointer;
@@ -205,7 +216,7 @@ select.input-box {
 .file-upload-text { font-size: 12px; font-weight: 500; }
 #preview-img { display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 14px; }
 
-/* --- Toast Notification --- */
+/* --- Toast --- */
 .toast-container {
   position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
   z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
@@ -229,21 +240,29 @@ select.input-box {
 
 <div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
   <i class="fa-solid fa-ban" style="font-size:80px;color:#EF4444;margin-bottom:20px;animation:pulse 2s infinite"></i>
-  <h1 style="color:#EF4444;font-size:32px;margin:0">حساب محظور</h1>
-  <p style="color:#6B7280;margin-top:10px;font-size:18px">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
+  <h1 data-i18n="banned_title">حساب محظور</h1>
+  <p data-i18n="banned_msg" style="color:#6B7280;margin-top:10px;font-size:18px">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
   <style>@keyframes pulse { 0% {transform:scale(1);} 50% {transform:scale(1.1);} 100% {transform:scale(1);} }</style>
 </div>
 
 <div id="toast-container" class="toast-container"></div>
 
 <header class="header">
-  <div class="brand"><i class="fa-solid fa-store"></i> سوق باي</div>
-  <button id="loginBtn" class="btn btn-gold">
-    <i class="fa-solid fa-fingerprint"></i> دخول
-  </button>
-  <div id="headerUser" class="header-user hidden">
-    <div id="userAvatar" class="header-avatar">?</div>
-    <div id="userDispName" class="header-name">المستخدم</div>
+  <div class="brand"><i class="fa-solid fa-store"></i> <span data-i18n="brand_name">سوق باي</span></div>
+  
+  <div class="header-actions">
+    <button class="lang-btn" onclick="toggleLanguage()">
+      <span id="langText">AR</span>
+    </button>
+
+    <button id="loginBtn" class="btn btn-gold">
+      <i class="fa-solid fa-fingerprint"></i> <span data-i18n="login">دخول</span>
+    </button>
+    
+    <div id="headerUser" class="header-user hidden">
+      <div id="userAvatar" class="header-avatar">?</div>
+      <div id="userDispName" class="header-name">User</div>
+    </div>
   </div>
 </header>
 
@@ -253,22 +272,22 @@ select.input-box {
       <div class="categories-scroll" id="cat-filters"></div>
     </div>
     <h3 style="margin-top:5px;display:flex;align-items:center;gap:8px">
-      <i class="fa-solid fa-fire" style="color:var(--accent)"></i> أحدث المعروضات
+      <i class="fa-solid fa-fire" style="color:var(--accent)"></i> <span data-i18n="latest_products">أحدث المعروضات</span>
     </h3>
     <div id="products-list" class="products-grid"></div>
-    <div id="loading" style="text-align:center;padding:20px;color:gray">جاري التحميل...</div>
+    <div id="loading" style="text-align:center;padding:20px;color:gray" data-i18n="loading">جاري التحميل...</div>
   </div>
 
   <div id="view-chats" class="view-section hidden">
-    <h3 style="margin-top:5px">الرسائل الواردة</h3>
+    <h3 style="margin-top:5px" data-i18n="inbox_title">الرسائل الواردة</h3>
     <div id="inbox-list"></div>
   </div>
 
   <div id="view-profile" class="view-section hidden">
     <div id="profile-guest" style="text-align:center;padding:50px 20px;">
       <i class="fa-solid fa-user-lock" style="font-size:50px;color:#d1d5db;margin-bottom:15px"></i>
-      <h3>أنت زائر</h3>
-      <p style="color:gray;font-size:14px">سجل الدخول لإدارة إعلاناتك.</p>
+      <h3 data-i18n="guest_title">أنت زائر</h3>
+      <p style="color:gray;font-size:14px" data-i18n="guest_msg">سجل الدخول لإدارة إعلاناتك.</p>
     </div>
 
     <div id="profile-user" class="hidden">
@@ -279,10 +298,10 @@ select.input-box {
         <h3 id="p-username" style="margin:0">...</h3>
         <p id="p-uid" style="font-size:12px;color:gray;margin:5px 0 15px">ID: ...</p>
         <button class="btn btn-primary" style="width:100%" onclick="openAddModal()">
-          <i class="fa-solid fa-plus"></i> إضافة إعلان جديد
+          <i class="fa-solid fa-plus"></i> <span data-i18n="add_ad_btn">إضافة إعلان جديد</span>
         </button>
       </div>
-      <h4 style="margin:20px 0 10px">إعلاناتي</h4>
+      <h4 style="margin:20px 0 10px" data-i18n="my_ads">إعلاناتي</h4>
       <div id="my-ads-list" class="products-grid"></div>
     </div>
   </div>
@@ -290,20 +309,20 @@ select.input-box {
 
 <nav class="bottom-nav">
   <button class="nav-item active" onclick="nav('home')">
-    <i class="fa-solid fa-house-chimney"></i> <span>الرئيسية</span>
+    <i class="fa-solid fa-house-chimney"></i> <span data-i18n="nav_home">الرئيسية</span>
   </button>
   <button class="nav-item" onclick="nav('chats')">
-    <i class="fa-solid fa-comment-dots"></i> <span>المحادثات</span>
+    <i class="fa-solid fa-comment-dots"></i> <span data-i18n="nav_chats">المحادثات</span>
   </button>
   <button class="nav-item" onclick="nav('profile')">
-    <i class="fa-solid fa-user-gear"></i> <span>حسابي</span>
+    <i class="fa-solid fa-user-gear"></i> <span data-i18n="nav_profile">حسابي</span>
   </button>
 </nav>
 
 <div id="addModal" class="modal" onclick="if(event.target==this) closeAddModal()">
   <div class="sheet">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0">بيع منتج جديد</h3>
+      <h3 style="margin:0" data-i18n="sell_new_item">بيع منتج جديد</h3>
       <button onclick="closeAddModal()" style="background:none;border:none;font-size:18px;color:#666"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
@@ -312,39 +331,31 @@ select.input-box {
       <img id="preview-img">
       <div class="file-upload-content" id="upload-placeholder">
         <i class="fa-solid fa-cloud-arrow-up file-upload-icon"></i>
-        <div class="file-upload-text">اضغط لاختيار صورة المنتج</div>
+        <div class="file-upload-text" data-i18n="upload_text">اضغط لاختيار صورة المنتج</div>
       </div>
     </label>
 
     <div class="form-group">
-      <label class="form-label">اسم المنتج</label>
-      <input id="addName" class="input-box" placeholder="مثال: آيفون 13 برو ماكس" />
+      <label class="form-label" data-i18n="label_prod_name">اسم المنتج</label>
+      <input id="addName" class="input-box" placeholder="" />
     </div>
 
     <div class="form-group">
-      <label class="form-label">القسم</label>
-      <select id="addCategory" class="input-box">
-        <option value="" disabled selected>اختر القسم المناسب</option>
-        <option value="cars">🚗 سيارات ومركبات</option>
-        <option value="electronics">💻 إلكترونيات</option>
-        <option value="phones">📱 هواتف</option>
-        <option value="fashion">👕 ملابس وموضة</option>
-        <option value="home">🏠 أثاث ومنزل</option>
-        <option value="other">📦 أخرى</option>
-      </select>
+      <label class="form-label" data-i18n="label_category">القسم</label>
+      <select id="addCategory" class="input-box"></select>
     </div>
 
     <div class="form-group">
-      <label class="form-label">السعر (Pi)</label>
+      <label class="form-label" data-i18n="label_price">السعر (Pi)</label>
       <input id="addPrice" type="number" class="input-box" placeholder="0.00" />
     </div>
 
     <div class="form-group">
-      <label class="form-label">الوصف</label>
-      <textarea id="addDesc" class="input-box" placeholder="اكتب تفاصيل المنتج وحالته..."></textarea>
+      <label class="form-label" data-i18n="label_desc">الوصف</label>
+      <textarea id="addDesc" class="input-box" placeholder=""></textarea>
     </div>
 
-    <button id="publishBtn" class="btn btn-primary" style="width:100%" onclick="submitProduct()">نشر الإعلان</button>
+    <button id="publishBtn" class="btn btn-primary" style="width:100%" onclick="submitProduct()" data-i18n="publish_btn">نشر الإعلان</button>
   </div>
 </div>
 
@@ -359,7 +370,7 @@ select.input-box {
     </div>
     <div id="msgContainer" class="chat-area" style="display:flex;flex-direction:column;"></div>
     <div style="display:flex;gap:8px;margin-top:auto">
-      <input id="msgInput" class="input-box" placeholder="اكتب رسالة..." style="margin:0;border-radius:25px" />
+      <input id="msgInput" class="input-box" placeholder="" style="margin:0;border-radius:25px" />
       <button class="btn btn-primary" style="border-radius:50%;width:48px;height:48px;padding:0" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
   </div>
@@ -372,39 +383,188 @@ const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
 
 let sb, user = null;
 let activeChat = null;
+let currentLang = localStorage.getItem('lang') || 'en'; // Default to English
 
-// --- Categories ---
-const CATEGORIES = [
-  { id: 'all', name: 'الكل', icon: 'fa-layer-group' },
-  { id: 'cars', name: 'سيارات', icon: 'fa-car' },
-  { id: 'electronics', name: 'إلكترونيات', icon: 'fa-laptop' },
-  { id: 'phones', name: 'هواتف', icon: 'fa-mobile-screen' },
-  { id: 'fashion', name: 'ملابس', icon: 'fa-shirt' },
-  { id: 'home', name: 'منزل', icon: 'fa-couch' },
-  { id: 'other', name: 'أخرى', icon: 'fa-box' },
+// --- TRANSLATIONS ---
+const translations = {
+  ar: {
+    brand_name: "سوق باي",
+    login: "دخول",
+    latest_products: "أحدث المعروضات",
+    loading: "جاري التحميل...",
+    inbox_title: "الرسائل الواردة",
+    guest_title: "أنت زائر",
+    guest_msg: "سجل الدخول لإدارة إعلاناتك.",
+    add_ad_btn: "إضافة إعلان جديد",
+    my_ads: "إعلاناتي",
+    nav_home: "الرئيسية",
+    nav_chats: "المحادثات",
+    nav_profile: "حسابي",
+    sell_new_item: "بيع منتج جديد",
+    upload_text: "اضغط لاختيار صورة المنتج",
+    label_prod_name: "اسم المنتج",
+    label_category: "القسم",
+    label_price: "السعر (Pi)",
+    label_desc: "الوصف",
+    publish_btn: "نشر الإعلان",
+    msg_placeholder: "اكتب رسالة...",
+    promoted_badge: "مميز",
+    message_seller: "مراسلة البائع",
+    your_ad: "إعلانك",
+    promote_ad_btn: "تمييز الإعلان (3 Pi)",
+    promoted_until: "مميز حتى",
+    delete_btn: "حذف",
+    confirm_delete: "هل أنت متأكد من الحذف؟",
+    no_products: "لا توجد منتجات",
+    toast_login_first: "يجب تسجيل الدخول أولاً",
+    toast_fill_data: "يرجى إكمال البيانات المطلوبة",
+    toast_upload_fail: "فشل رفع الصورة",
+    toast_success_add: "تم نشر الإعلان بنجاح",
+    toast_send_fail: "فشل الإرسال",
+    banned_title: "حساب محظور",
+    banned_msg: "تم إيقاف حسابك لمخالفة شروط الاستخدام.",
+    ph_prod_name: "مثال: آيفون 13 برو",
+    ph_desc: "اكتب تفاصيل المنتج وحالته...",
+    cat_all: "الكل",
+    cat_cars: "سيارات",
+    cat_electronics: "إلكترونيات",
+    cat_phones: "هواتف",
+    cat_fashion: "ملابس",
+    cat_home: "منزل",
+    cat_other: "أخرى",
+    select_cat: "اختر القسم المناسب"
+  },
+  en: {
+    brand_name: "Pi Market",
+    login: "Login",
+    latest_products: "Latest Products",
+    loading: "Loading...",
+    inbox_title: "Inbox",
+    guest_title: "Guest User",
+    guest_msg: "Login to manage your ads.",
+    add_ad_btn: "Post New Ad",
+    my_ads: "My Ads",
+    nav_home: "Home",
+    nav_chats: "Chats",
+    nav_profile: "Profile",
+    sell_new_item: "Sell New Item",
+    upload_text: "Tap to upload image",
+    label_prod_name: "Product Name",
+    label_category: "Category",
+    label_price: "Price (Pi)",
+    label_desc: "Description",
+    publish_btn: "Publish Ad",
+    msg_placeholder: "Type a message...",
+    promoted_badge: "Promoted",
+    message_seller: "Message Seller",
+    your_ad: "Your Ad",
+    promote_ad_btn: "Promote Ad (3 Pi)",
+    promoted_until: "Promoted until",
+    delete_btn: "Delete",
+    confirm_delete: "Are you sure to delete?",
+    no_products: "No products found",
+    toast_login_first: "Login required first",
+    toast_fill_data: "Please fill all required fields",
+    toast_upload_fail: "Image upload failed",
+    toast_success_add: "Ad published successfully",
+    toast_send_fail: "Failed to send",
+    banned_title: "Account Banned",
+    banned_msg: "Your account is suspended due to violations.",
+    ph_prod_name: "Ex: iPhone 13 Pro",
+    ph_desc: "Describe item details...",
+    cat_all: "All",
+    cat_cars: "Cars",
+    cat_electronics: "Electronics",
+    cat_phones: "Phones",
+    cat_fashion: "Fashion",
+    cat_home: "Home",
+    cat_other: "Other",
+    select_cat: "Select Category"
+  }
+};
+
+// --- Categories Config ---
+const CATEGORIES_CONFIG = [
+  { id: 'all', key: 'cat_all', icon: 'fa-layer-group' },
+  { id: 'cars', key: 'cat_cars', icon: 'fa-car' },
+  { id: 'electronics', key: 'cat_electronics', icon: 'fa-laptop' },
+  { id: 'phones', key: 'cat_phones', icon: 'fa-mobile-screen' },
+  { id: 'fashion', key: 'cat_fashion', icon: 'fa-shirt' },
+  { id: 'home', key: 'cat_home', icon: 'fa-couch' },
+  { id: 'other', key: 'cat_other', icon: 'fa-box' },
 ];
+
 let globalProducts = [];
 let activeCategory = 'all';
 
 // --- INIT ---
 document.addEventListener("DOMContentLoaded", async () => {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  updateLanguage(); // Apply language immediately
   initPi();
-  initCategories();
   loadAllProducts();
 });
 
+// --- Language Logic ---
+function toggleLanguage() {
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('lang', currentLang);
+  
+  // Animation for text change
+  const langText = document.getElementById('langText');
+  langText.style.opacity = 0;
+  setTimeout(() => {
+    updateLanguage();
+    langText.style.opacity = 1;
+  }, 200);
+}
+
+function t(key) {
+  return translations[currentLang][key] || key;
+}
+
+function updateLanguage() {
+  // Update Button Text (Show the *other* language option)
+  document.getElementById('langText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
+
+  // Update static elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[currentLang][key]) {
+      el.innerText = translations[currentLang][key];
+    }
+  });
+
+  // Update Placeholders
+  document.getElementById('addName').placeholder = t('ph_prod_name');
+  document.getElementById('addDesc').placeholder = t('ph_desc');
+  document.getElementById('msgInput').placeholder = t('msg_placeholder');
+
+  // Re-render Categories
+  initCategories();
+  
+  // Refresh content if loaded
+  if(globalProducts.length > 0) renderProducts();
+  if(user) {
+    // If in profile, refresh ads list titles
+    if(!document.getElementById('view-profile').classList.contains('hidden')) loadMyAds();
+  }
+}
+
 // --- Toast System ---
-function showToast(message, type = 'success') {
+function showToast(messageKey, type = 'success') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
   const color = type === 'success' ? '#10B981' : '#EF4444';
   
+  // Translate message if it's a key, else show as is
+  const msg = translations[currentLang][messageKey] || messageKey;
+
   toast.innerHTML = `
     <i class="fa-solid ${icon} toast-icon" style="color:${color}"></i>
-    <span class="toast-msg">${message}</span>
+    <span class="toast-msg">${msg}</span>
   `;
   container.appendChild(toast);
   setTimeout(() => {
@@ -415,12 +575,20 @@ function showToast(message, type = 'success') {
 }
 
 function initCategories() {
+  // 1. Filter Bar
   const container = document.getElementById('cat-filters');
-  container.innerHTML = CATEGORIES.map(c => `
-    <div class="cat-chip ${c.id === 'all' ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)">
-      <i class="fa-solid ${c.icon}"></i> ${c.name}
+  container.innerHTML = CATEGORIES_CONFIG.map(c => `
+    <div class="cat-chip ${c.id === activeCategory ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)">
+      <i class="fa-solid ${c.icon}"></i> ${t(c.key)}
     </div>
   `).join('');
+
+  // 2. Add Modal Select
+  const select = document.getElementById('addCategory');
+  select.innerHTML = `<option value="" disabled selected>${t('select_cat')}</option>` + 
+    CATEGORIES_CONFIG.filter(c => c.id !== 'all').map(c => 
+      `<option value="${c.id}">${t(c.key)}</option>`
+    ).join('');
 }
 
 function filterByCategory(catId, element) {
@@ -451,7 +619,7 @@ function initPi(){
   const onIncompletePaymentFound = (payment) => { console.log("Incomplete:", payment); };
 
   if(!window.Pi){
-    btn.onclick = () => handleLogin("test_" + Math.floor(Math.random()*1000), "زائر_تجريبي");
+    btn.onclick = () => handleLogin("test_" + Math.floor(Math.random()*1000), "Guest_" + Math.floor(Math.random()*100));
     return;
   }
 
@@ -462,7 +630,6 @@ function initPi(){
       const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
       handleLogin(auth.user.uid, auth.user.username);
     } catch(e) { 
-      showToast("فشل تسجيل الدخول", 'error');
       console.error(e);
     }
   };
@@ -508,7 +675,7 @@ async function loadAllProducts() {
     globalProducts = data;
     renderProducts();
   } else {
-    document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>خطأ في التحميل</div>";
+    document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>Error Loading</div>";
   }
 }
 
@@ -521,7 +688,7 @@ function renderProducts() {
     : globalProducts.filter(p => p.category === activeCategory);
 
   if(!filtered.length) {
-    list.innerHTML = "<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>لا توجد منتجات</div>";
+    list.innerHTML = `<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>${t('no_products')}</div>`;
     return;
   }
 
@@ -542,21 +709,21 @@ function renderProducts() {
        actions = `
          <div style="width:100%">
            <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%;font-size:12px;padding:8px;border-radius:10px">
-             <i class="fa-solid fa-comment-dots"></i> مراسلة البائع
+             <i class="fa-solid fa-comment-dots"></i> ${t('message_seller')}
            </button>
          </div>`;
     } else {
-       actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px;width:100%">إعلانك</div>`;
+       actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px;width:100%">${t('your_ad')}</div>`;
     }
 
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}">
-        ${isPromoted ? '<div class="promo-badge"><i class="fa-solid fa-star"></i> مميز</div>' : ''}
+        ${isPromoted ? `<div class="promo-badge"><i class="fa-solid fa-star"></i> ${t('promoted_badge')}</div>` : ''}
         <div class="card-img-wrap"><img src="${img}" class="card-img" loading="lazy"></div>
         <div class="card-body">
           <h4 class="card-title">${p.name}</h4>
           <div class="price-pill"><span>${p.price}</span> <span>Pi</span></div>
-          <div class="card-desc">${p.description || 'لا يوجد وصف'}</div>
+          <div class="card-desc">${p.description || ''}</div>
           <div class="card-actions">${actions}</div>
         </div>
       </div>
@@ -568,7 +735,7 @@ function renderProducts() {
 // --- PROFILE ---
 async function loadMyAds() {
   const list = document.getElementById("my-ads-list");
-  list.innerHTML = "تحميل...";
+  list.innerHTML = t('loading');
   const { data } = await sb.from("products").select("*").eq("seller_pi_id", user.uid).order("created_at", {ascending:false});
   list.innerHTML = "";
   const now = new Date();
@@ -579,12 +746,15 @@ async function loadMyAds() {
        let promoDateStr = "";
        if(p.promoted_until) {
           const until = new Date(p.promoted_until);
-          if(until > now) { isPromoted = true; promoDateStr = until.toLocaleDateString("ar-EG"); }
+          if(until > now) { 
+            isPromoted = true; 
+            promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); 
+          }
        }
 
        const promoteBtn = isPromoted 
-        ? `<button class="btn btn-disabled" style="width:100%;font-size:12px;margin-bottom:6px" disabled><i class="fa-solid fa-clock"></i> مميز حتى ${promoDateStr}</button>`
-        : `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E;font-size:12px;margin-bottom:6px"><i class="fa-solid fa-arrow-up"></i> تمييز الإعلان (3 Pi)</button>`;
+        ? `<button class="btn btn-disabled" style="width:100%;font-size:12px;margin-bottom:6px" disabled><i class="fa-solid fa-clock"></i> ${t('promoted_until')} ${promoDateStr}</button>`
+        : `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E;font-size:12px;margin-bottom:6px"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>`;
 
        list.innerHTML += `
        <div class="card">
@@ -592,7 +762,7 @@ async function loadMyAds() {
          <div class="card-body">
            <div class="card-title">${p.name}</div>
            ${promoteBtn}
-           <button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="color:red;font-size:12px;width:100%"><i class="fa-solid fa-trash"></i> حذف</button>
+           <button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="color:red;font-size:12px;width:100%"><i class="fa-solid fa-trash"></i> ${t('delete_btn')}</button>
          </div>
        </div>`;
     });
@@ -633,23 +803,23 @@ async function submitProduct(){
     const file = document.getElementById("addImg").files[0];
     const btn = document.getElementById("publishBtn");
     
-    if(!name || !price || !category) return showToast("يرجى إكمال البيانات المطلوبة", 'error');
+    if(!name || !price || !category) return showToast('toast_fill_data', 'error');
     
-    btn.innerText="جاري..."; btn.disabled=true;
+    btn.innerText = t('loading'); btn.disabled=true;
     
     let url = null;
     if(file){
         try {
           const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" };
-          btn.innerText="ضغط الصورة...";
+          btn.innerText="Compressing...";
           const compressedFile = await imageCompression(file, options);
-          btn.innerText="رفع...";
+          btn.innerText="Uploading...";
           const path = `${user.uid}/${Date.now()}_img.jpg`;
           const {error} = await sb.storage.from("images").upload(path, compressedFile);
           if(!error) url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
           else throw error;
         } catch (error) {
-          console.error(error); showToast("فشل رفع الصورة", 'error'); btn.innerText="نشر"; btn.disabled=false; return;
+          console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return;
         }
     }
     
@@ -659,53 +829,53 @@ async function submitProduct(){
         category: category
     });
     
-    showToast("تم نشر الإعلان بنجاح");
+    showToast('toast_success_add');
     closeAddModal(); 
     loadAllProducts(); 
     loadMyAds();
-    btn.innerText="نشر الإعلان"; btn.disabled=false;
+    btn.innerText = t('publish_btn'); btn.disabled=false;
 }
 
 // --- PAYMENTS ---
 async function promoteProduct(productId) {
-  if(!window.Pi) return showToast("يعمل فقط داخل متصفح Pi", 'error');
+  if(!window.Pi) return showToast("Pi Browser Required", 'error');
   const API_BASE = "/api"; 
 
   try {
-    const paymentData = { amount: 3, memo: "تمييز إعلان: " + productId, metadata: { productId: productId, type: "promotion" } };
+    const paymentData = { amount: 3, memo: "Promote Ad: " + productId, metadata: { productId: productId, type: "promotion" } };
     const paymentCallbacks = {
       onReadyForServerApproval: async (paymentId) => {
           try {
             const res = await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) });
             if(!res.ok) throw new Error("approve failed");
-          } catch (e) { showToast("خطأ اتصال", 'error'); }
+          } catch (e) { showToast("Connection Error", 'error'); }
       },
       onServerApproval: (paymentId) => { console.log("Server approved", paymentId); },
       onCancel: (paymentId) => { console.log("User cancelled", paymentId); },
-      onError: (error, payment) => { showToast("فشل الدفع", 'error'); },
+      onError: (error, payment) => { showToast("Payment Failed", 'error'); },
       onReadyForServerCompletion: async (paymentId, txid) => {
           try {
              const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) });
-             if(res.ok) { showToast("تم التمييز بنجاح!"); loadMyAds(); } 
-             else { showToast("خطأ في التفعيل", 'error'); }
-          } catch (err) { showToast("خطأ اتصال", 'error'); }
+             if(res.ok) { showToast("Promotion Active!"); loadMyAds(); } 
+             else { showToast("Activation Error", 'error'); }
+          } catch (err) { showToast("Connection Error", 'error'); }
       }
     };
     Pi.createPayment(paymentData, paymentCallbacks);
-  } catch(err) { showToast("خطأ في الدفع", 'error'); }
+  } catch(err) { showToast("Payment Error", 'error'); }
 }
 
 async function deleteProduct(id){
-    if(confirm("حذف؟")) { 
+    if(confirm(t('confirm_delete'))) { 
       await sb.from("products").delete().eq("id",id); 
       loadAllProducts(); loadMyAds(); 
-      showToast("تم الحذف");
+      showToast(t('delete_btn')); // Just showing "Delete" as success message logic
     }
 }
 
-// --- CHAT SYSTEM (Restored Old Version) ---
+// --- CHAT SYSTEM ---
 function openChatRoom(pid, otherId, pName, uName) {
-  if(!user) return showToast("يجب تسجيل الدخول أولاً", 'error');
+  if(!user) return showToast('toast_login_first', 'error');
   
   activeChat = { pid, otherId };
   
@@ -755,7 +925,7 @@ async function sendMsg(){
         content: inp.value.trim()
     });
     
-    if(error) showToast("فشل الإرسال", 'error');
+    if(error) showToast('toast_send_fail', 'error');
     else inp.value = "";
 }
 
@@ -765,10 +935,10 @@ function closeChat() {
   sb.removeAllChannels(); 
 }
 
-// --- INBOX (Real Usernames) ---
+// --- INBOX ---
 async function loadInbox() {
   const list = document.getElementById("inbox-list");
-  list.innerHTML = "<div style='text-align:center;padding:20px'>جاري التحديث...</div>";
+  list.innerHTML = `<div style='text-align:center;padding:20px'>${t('loading')}</div>`;
 
   const { data } = await sb.from("messages")
     .select("*, products(name)")
@@ -776,7 +946,7 @@ async function loadInbox() {
     .order("created_at", {ascending: false});
 
   list.innerHTML = "";
-  if(!data || !data.length) return list.innerHTML = "<div style='text-align:center;padding:40px;color:gray'>لا توجد رسائل</div>";
+  if(!data || !data.length) return list.innerHTML = `<div style='text-align:center;padding:40px;color:gray'>${t('no_products').replace('products','messages')}</div>`;
 
   const threads = new Map();
   const otherIds = new Set();
@@ -789,9 +959,9 @@ async function loadInbox() {
         threads.set(key, {
             pid: m.product_id,
             otherId: otherId,
-            pName: m.products?.name || "منتج",
+            pName: m.products?.name || "Item",
             last: m.content,
-            name: "مستخدم"
+            name: "User"
         });
     }
   });
