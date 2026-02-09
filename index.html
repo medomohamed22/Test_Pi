@@ -357,8 +357,19 @@ function initPi(){
 }
 
 async function handleLogin(uid, username) {
+  // 1. التحقق من الحظر أولاً
+  const { data: userData } = await sb.from("users").select("is_banned").eq("pi_id", uid).single();
+  
+  if (userData && userData.is_banned) {
+    alert("⛔ تم حظر حسابك من قبل الإدارة لمخالفة القوانين.");
+    return; // إيقاف الدخول
+  }
+
+  // ... باقي كود تسجيل الدخول كما هو ...
   user = { uid, username };
   await sb.from("users").upsert({ pi_id: uid, username: username });
+  // ...
+
   
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
