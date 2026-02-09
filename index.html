@@ -717,144 +717,72 @@ async function deleteProduct(id){
 }
 
 // --- CHAT ---
-// --- نظام المحادثة (النسخة النهائية والمصححة) ---
+// --- CHAT SYSTEM (Restored Old Version) ---
 
-let chatSubscription = null; // متغير لحفظ الاشتراك
-
-// 1. فتح غرفة المحادثة
 function openChatRoom(pid, otherId, pName, uName) {
-  if(!user) return showToast("سجل دخول أولاً", 'error');
+  if(!user) return showToast("يجب تسجيل الدخول أولاً", 'error'); // تعديل بسيط ليتوافق مع التصميم الجديد
   
-  // حفظ بيانات المحادثة الحالية
-  activeChat = { 
-    pid: pid,       // رقم المنتج
-    otherId: otherId // معرف الطرف الآخر
-  };
+  activeChat = { pid, otherId };
   
-  // تحديث شكل المودال
   document.getElementById("chatTitle").innerText = pName;
   document.getElementById("chatPeer").innerText = uName;
   document.getElementById("chatModal").style.display = "flex";
-  document.getElementById("msgContainer").innerHTML = "<div style='text-align:center;color:gray;font-size:12px;padding:10px'>جاري التحميل...</div>";
+  document.getElementById("msgContainer").innerHTML = "";
   
-  // تحميل الرسائل القديمة
-  loadMessages(); 
-
-  // إلغاء أي اشتراك سابق (لتجنب تكرار الرسائل)
-  if(chatSubscription) sb.removeChannel(chatSubscription);
-
-  // الاشتراك في القناة (Realtime)
-  // نستمع لأي رسالة جديدة تخص هذا المنتج
-  chatSubscription = sb.channel(`product-${pid}`)
-    .on('postgres_changes', 
-      { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'messages', 
-        filter: `product_id=eq.${pid}` 
-      }, 
-      (payload) => {
-         const m = payload.new;
-         // تصفية: هل الرسالة لي؟ وهل هي من الشخص الذي أحادثه؟
-         // (أو هل هي رسالتي أنا التي أرسلتها من جهاز آخر؟)
-         const isRelevant = 
-            (m.sender_pi_id == activeChat.otherId && m.receiver_pi_id == user.uid) ||
-            (m.sender_pi_id == user.uid && m.receiver_pi_id == activeChat.otherId);
-
-         if(isRelevant) {
-            // إذا كانت الرسالة مني، لا تعرضها مرة أخرى لأنني عرضتها فوراً عند الإرسال
-            if(m.sender_pi_id != user.uid) {
-                renderMsg(m);
-            }
-         }
-      }
-    )
-    .subscribe();
+  loadMessages();
+  
+  // نفس القناة القديمة التي كانت تعمل معك
+  sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
+    { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
+    payload => {
+       const m = payload.new;
+       // شرط الفلترة القديم
+       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid))
+         renderMsg(m);
+    }
+  ).subscribe();
 }
 
-// 2. تحميل الرسائل السابقة
 async function loadMessages() {
-  const container = document.getElementById("msgContainer");
+  const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
   
-  const { data, error } = await sb.from("messages")
-    .select("*")
-    .eq("product_id", activeChat.pid)
-    .order("created_at", {ascending: true});
-
-  if(error) {
-    container.innerHTML = "<div style='text-align:center;color:red'>فشل تحميل الرسائل</div>";
-    return;
-  }
-
-  container.innerHTML = ""; // مسح رسالة التحميل
-
-  if(data && data.length > 0) {
-    data.forEach(m => {
-      // عرض الرسائل الخاصة بي والطرف الآخر فقط
-      if((m.sender_pi_id == user.uid && m.receiver_pi_id == activeChat.otherId) || 
-         (m.sender_pi_id == activeChat.otherId && m.receiver_pi_id == user.uid)) {
+  if(data) data.forEach(m => {
+      // نفس شرط الفلترة القديم
+      if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid))
         renderMsg(m);
-      }
-    });
-    // النزول لآخر المحادثة
-    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
-  } else {
-    container.innerHTML = "<div style='text-align:center;color:gray;padding:20px'>ابدأ المحادثة...</div>";
-  }
+  });
 }
 
-// 3. رسم الرسالة في الشاشة
 function renderMsg(m){
-    // إزالة رسالة "ابدأ المحادثة" إذا كانت موجودة
-    const container = document.getElementById("msgContainer");
-    if(container.innerText.includes("ابدأ المحادثة")) container.innerHTML = "";
-
     const div = document.createElement("div");
-    // هل أنا المرسل؟
-    const isMe = (m.sender_pi_id == user.uid);
-    
-    div.className = `bubble ${isMe ? 'me' : 'other'}`;
+    // استخدام === للمقارنة كما في الكود القديم
+    div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`;
     div.innerText = m.content;
-    
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight; // سكرول للأسفل
+    const c = document.getElementById("msgContainer");
+    c.appendChild(div); 
+    c.scrollTop = c.scrollHeight;
 }
 
-// 4. إرسال الرسالة
 async function sendMsg(){
     const inp = document.getElementById("msgInput");
-    const text = inp.value.trim();
-    if(!text) return;
-
-    // 1. عرض الرسالة فوراً (عشان المستخدم يحس بالسرعة)
-    renderMsg({
-      sender_pi_id: user.uid,
-      content: text
-    });
-
-    const msgContent = inp.value; // نسخة من النص للإرسال
-    inp.value = ""; // تفريغ الحقل
-
-    // 2. الإرسال لقاعدة البيانات
+    if(!inp.value.trim()) return;
+    
+    // الإرسال كما كان
     const { error } = await sb.from("messages").insert({
-        product_id: activeChat.pid,
-        sender_pi_id: user.uid,
-        receiver_pi_id: activeChat.otherId,
-        content: text
+        product_id: activeChat.pid, 
+        sender_pi_id: user.uid, 
+        receiver_pi_id: activeChat.otherId, 
+        content: inp.value.trim()
     });
-
-    if(error) {
-      console.error("Send Error:", error);
-      showToast("فشل الإرسال، تحقق من النت", 'error');
-      // ممكن هنا نضيف علامة تعجب حمراء جنب الرسالة
-    }
+    
+    if(error) showToast("فشل الإرسال", 'error');
+    else inp.value = "";
 }
 
-// 5. إغلاق المحادثة
 function closeChat() { 
   document.getElementById("chatModal").style.display = "none"; 
   activeChat = null; 
-  if(chatSubscription) sb.removeChannel(chatSubscription); // إيقاف الاستماع
+  sb.removeAllChannels(); 
 }
 
 </script>
