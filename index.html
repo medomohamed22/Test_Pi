@@ -52,7 +52,7 @@ body {
 .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
 .btn-gold { background: linear-gradient(135deg, var(--accent), #FBBF24); color: white; }
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-.btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; }
+.btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; pointer-events: none; }
 
 /* --- Header --- */
 .header {
@@ -88,6 +88,28 @@ body {
 }
 .header-name { font-size: 13px; font-weight: 700; color: var(--text-main); }
 
+/* --- Search Bar & Filter --- */
+.search-container {
+  display: flex; gap: 8px; margin-bottom: 12px;
+}
+.search-input-wrap {
+  flex: 2; position: relative;
+}
+.search-input {
+  width: 100%; padding: 10px 36px 10px 12px;
+  border: 1px solid var(--border); border-radius: 12px;
+  font-family: inherit; font-size: 14px; outline: none;
+}
+.search-icon {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); pointer-events: none;
+}
+.filter-select {
+  flex: 1; padding: 0 8px; border: 1px solid var(--border); border-radius: 12px;
+  background: white; font-family: inherit; font-size: 13px; outline: none;
+  max-width: 40%;
+}
+
 /* --- Bottom Navigation --- */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
@@ -104,7 +126,7 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: 5px;
   color: var(--text-muted); font-size: 11px; font-weight: 600;
   background: none; border: none; cursor: pointer; padding: 8px; width: 60px;
-  position: relative; /* المهم للبادج */
+  position: relative;
   transition: color 0.3s;
 }
 .nav-item i { font-size: 22px; transition: transform 0.4s; }
@@ -115,7 +137,6 @@ body {
   width: 5px; height: 5px; background: var(--primary); border-radius: 50%;
 }
 
-/* 🔥 تنسيق دائرة الإشعارات الحمراء 🔥 */
 .nav-badge {
   position: absolute; top: 2px; right: 12px;
   background-color: var(--danger); color: white;
@@ -123,7 +144,7 @@ body {
   font-size: 10px; font-weight: bold;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transform: scale(1); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: scale(1); transition: transform 0.2s;
 }
 .nav-badge.hidden { transform: scale(0); opacity: 0; }
 
@@ -155,6 +176,11 @@ body {
   border-radius: 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 .card.promoted { border: 2px solid var(--accent); }
+.location-tag {
+  position: absolute; bottom: 8px; left: 8px; z-index: 10;
+  background: rgba(0,0,0,0.6); color: white; padding: 2px 8px;
+  border-radius: 4px; font-size: 10px; backdrop-filter: blur(2px);
+}
 
 /* Slider */
 .slider-container {
@@ -199,7 +225,7 @@ body {
 
 /* Inbox */
 .inbox-item { background: white; padding: 14px; margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; }
-.inbox-item.unread { border-right: 4px solid var(--primary); background: #F5F3FF; } /* تمييز غير المقروء */
+.inbox-item.unread { border-right: 4px solid var(--primary); background: #F5F3FF; }
 .inbox-avatar { width: 45px; height: 45px; border-radius: 50%; background: #f3f4f6; color: var(--primary); display: grid; place-items: center; font-size: 18px; font-weight: bold; }
 .inbox-info { flex: 1; overflow: hidden; }
 .inbox-name { font-weight: 800; font-size: 14px; }
@@ -272,6 +298,16 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 
 <div class="container">
   <div id="view-home" class="view-section">
+    <div class="search-container">
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" class="search-input" onkeyup="filterProducts()" placeholder="ابحث عن منتج...">
+        <i class="fa-solid fa-search search-icon"></i>
+      </div>
+      <select id="cityFilter" class="filter-select" onchange="filterProducts()">
+        <option value="all" selected>كل مصر</option>
+        </select>
+    </div>
+
     <div class="categories-wrapper">
       <div class="categories-scroll" id="cat-filters"></div>
     </div>
@@ -293,9 +329,16 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
       <div class="slider-dots" id="detail-dots"></div>
     </div>
     <h2 id="detail-title" style="margin:0 0 8px 0;line-height:1.3;font-size:20px"></h2>
-    <div class="price-pill" style="font-size:16px;padding:6px 16px;margin-bottom:16px">
-      <span id="detail-price"></span> <span>Pi</span>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div class="price-pill" style="font-size:16px;padding:6px 16px;">
+          <span id="detail-price"></span> <span>Pi</span>
+        </div>
+        <div id="detail-location" style="background:#E5E7EB;padding:4px 10px;border-radius:8px;font-size:12px;color:#374151;">
+            <i class="fa-solid fa-location-dot"></i> <span id="detail-loc-text"></span>
+        </div>
     </div>
+
     <div style="background:white;padding:16px;border-radius:16px;border:1px solid var(--border);margin-bottom:16px">
       <h4 style="margin:0 0 8px 0" data-i18n="label_desc">الوصف</h4>
       <p id="detail-desc" style="color:#4B5563;font-size:14px;line-height:1.6;margin:0;white-space:pre-wrap;"></p>
@@ -370,6 +413,9 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
     </label>
     <div class="form-group"><label class="form-label" data-i18n="label_prod_name">اسم المنتج</label><input id="addName" class="input-box" placeholder="" /></div>
     <div class="form-group"><label class="form-label" data-i18n="label_category">القسم</label><select id="addCategory" class="input-box"></select></div>
+    
+    <div class="form-group"><label class="form-label" data-i18n="label_location">المحافظة</label><select id="addLocation" class="input-box"></select></div>
+
     <div class="form-group"><label class="form-label" data-i18n="label_price">السعر (Pi)</label><input id="addPrice" type="number" class="input-box" placeholder="0.00" /></div>
     <div class="form-group"><label class="form-label" data-i18n="label_desc">الوصف</label><textarea id="addDesc" class="input-box" placeholder=""></textarea></div>
     <button id="publishBtn" class="btn btn-primary" style="width:100%" onclick="submitProduct()" data-i18n="publish_btn">نشر الإعلان</button>
@@ -403,9 +449,40 @@ let activeChat = null;
 let currentLang = localStorage.getItem('lang') || 'en'; 
 let selectedFiles = [];
 
+// --- LOCATIONS (Governorates) ---
+const GOVERNORATES = [
+  { ar: "القاهرة", en: "Cairo" },
+  { ar: "الجيزة", en: "Giza" },
+  { ar: "الإسكندرية", en: "Alexandria" },
+  { ar: "الدقهلية", en: "Dakahlia" },
+  { ar: "البحر الأحمر", en: "Red Sea" },
+  { ar: "البحيرة", en: "Beheira" },
+  { ar: "الفيوم", en: "Fayoum" },
+  { ar: "الغربية", en: "Gharbiya" },
+  { ar: "الإسماعيلية", en: "Ismailia" },
+  { ar: "المنوفية", en: "Menofia" },
+  { ar: "المنيا", en: "Minya" },
+  { ar: "القليوبية", en: "Qalyubia" },
+  { ar: "الوادي الجديد", en: "New Valley" },
+  { ar: "السويس", en: "Suez" },
+  { ar: "أسوان", en: "Aswan" },
+  { ar: "أسيوط", en: "Assiut" },
+  { ar: "بني سويف", en: "Beni Suef" },
+  { ar: "بورسعيد", en: "Port Said" },
+  { ar: "دمياط", en: "Damietta" },
+  { ar: "الشرقية", en: "Sharkia" },
+  { ar: "جنوب سيناء", en: "South Sinai" },
+  { ar: "كفر الشيخ", en: "Kafr El Sheikh" },
+  { ar: "مطروح", en: "Matrouh" },
+  { ar: "الأقصر", en: "Luxor" },
+  { ar: "قنا", en: "Qena" },
+  { ar: "شمال سيناء", en: "North Sinai" },
+  { ar: "سوهاج", en: "Sohag" }
+];
+
 const translations = {
-  ar: { brand_name: "سوق باي", login: "دخول", latest_products: "أحدث المعروضات", loading: "جاري التحميل...", inbox_title: "الرسائل الواردة", guest_title: "أنت زائر", guest_msg: "سجل الدخول لإدارة إعلاناتك.", add_ad_btn: "إضافة إعلان جديد", my_ads: "إعلاناتي", nav_home: "الرئيسية", nav_chats: "المحادثات", nav_profile: "حسابي", sell_new_item: "بيع منتج جديد", upload_text: "اضغط لاختيار الصور (بحد أقصى 3)", label_prod_name: "اسم المنتج", label_category: "القسم", label_price: "السعر (Pi)", label_desc: "الوصف", publish_btn: "نشر الإعلان", msg_placeholder: "اكتب رسالة...", promoted_badge: "مميز", message_seller: "مراسلة البائع", your_ad: "إعلانك", promote_ad_btn: "تمييز الإعلان (3 Pi)", promoted_until: "مميز حتى", delete_btn: "حذف", confirm_delete: "هل أنت متأكد من الحذف؟", no_products: "لا توجد منتجات", toast_login_first: "يجب تسجيل الدخول أولاً", toast_fill_data: "يرجى إكمال البيانات المطلوبة", toast_upload_fail: "فشل رفع الصورة", toast_success_add: "تم نشر الإعلان بنجاح", toast_send_fail: "فشل الإرسال", toast_max_images: "الحد الأقصى 3 صور", banned_title: "حساب محظور", banned_msg: "تم إيقاف حسابك لمخالفة شروط الاستخدام.", ph_prod_name: "مثال: آيفون 13 برو", ph_desc: "اكتب تفاصيل المنتج وحالته...", cat_all: "الكل", cat_cars: "سيارات", cat_electronics: "إلكترونيات", cat_phones: "هواتف", cat_fashion: "ملابس", cat_home: "منزل", cat_other: "أخرى", select_cat: "اختر القسم المناسب", btn_back: "رجوع", label_joined: "انضم:", label_total_ads: "إعلانات:" },
-  en: { brand_name: "Pi Market", login: "Login", latest_products: "Latest Products", loading: "Loading...", inbox_title: "Inbox", guest_title: "Guest User", guest_msg: "Login to manage your ads.", add_ad_btn: "Post New Ad", my_ads: "My Ads", nav_home: "Home", nav_chats: "Chats", nav_profile: "Profile", sell_new_item: "Sell New Item", upload_text: "Tap to upload images (Max 3)", label_prod_name: "Product Name", label_category: "Category", label_price: "Price (Pi)", label_desc: "Description", publish_btn: "Publish Ad", msg_placeholder: "Type a message...", promoted_badge: "Promoted", message_seller: "Message Seller", your_ad: "Your Ad", promote_ad_btn: "Promote Ad (3 Pi)", promoted_until: "Promoted until", delete_btn: "Delete", confirm_delete: "Are you sure to delete?", no_products: "No products found", toast_login_first: "Login required first", toast_fill_data: "Please fill all required fields", toast_upload_fail: "Image upload failed", toast_success_add: "Ad published successfully", toast_send_fail: "Failed to send", toast_max_images: "Max 3 images allowed", banned_title: "Account Banned", banned_msg: "Your account is suspended due to violations.", ph_prod_name: "Ex: iPhone 13 Pro", ph_desc: "Describe item details...", cat_all: "All", cat_cars: "Cars", cat_electronics: "Electronics", cat_phones: "Phones", cat_fashion: "Fashion", cat_home: "Home", cat_other: "Other", select_cat: "Select Category", btn_back: "Back", label_joined: "Joined:", label_total_ads: "Total Ads:" }
+  ar: { brand_name: "سوق باي", login: "دخول", latest_products: "أحدث المعروضات", loading: "جاري التحميل...", inbox_title: "الرسائل الواردة", guest_title: "أنت زائر", guest_msg: "سجل الدخول لإدارة إعلاناتك.", add_ad_btn: "إضافة إعلان جديد", my_ads: "إعلاناتي", nav_home: "الرئيسية", nav_chats: "المحادثات", nav_profile: "حسابي", sell_new_item: "بيع منتج جديد", upload_text: "اضغط لاختيار الصور (بحد أقصى 3)", label_prod_name: "اسم المنتج", label_category: "القسم", label_price: "السعر (Pi)", label_desc: "الوصف", publish_btn: "نشر الإعلان", msg_placeholder: "اكتب رسالة...", promoted_badge: "مميز", message_seller: "مراسلة البائع", your_ad: "إعلانك", promote_ad_btn: "تمييز الإعلان (3 Pi)", promoted_until: "مميز حتى", delete_btn: "حذف", confirm_delete: "هل أنت متأكد من الحذف؟", no_products: "لا توجد منتجات", toast_login_first: "يجب تسجيل الدخول أولاً", toast_fill_data: "يرجى إكمال البيانات المطلوبة", toast_upload_fail: "فشل رفع الصورة", toast_success_add: "تم نشر الإعلان بنجاح", toast_send_fail: "فشل الإرسال", toast_max_images: "الحد الأقصى 3 صور", banned_title: "حساب محظور", banned_msg: "تم إيقاف حسابك لمخالفة شروط الاستخدام.", ph_prod_name: "مثال: آيفون 13 برو", ph_desc: "اكتب تفاصيل المنتج وحالته...", cat_all: "الكل", cat_cars: "سيارات", cat_electronics: "إلكترونيات", cat_phones: "هواتف", cat_fashion: "ملابس", cat_home: "منزل", cat_other: "أخرى", select_cat: "اختر القسم المناسب", btn_back: "رجوع", label_joined: "انضم:", label_total_ads: "إعلانات:", ph_search: "ابحث عن منتج...", label_location: "المحافظة", all_egypt: "كل مصر", select_gov: "اختر المحافظة" },
+  en: { brand_name: "Pi Market", login: "Login", latest_products: "Latest Products", loading: "Loading...", inbox_title: "Inbox", guest_title: "Guest User", guest_msg: "Login to manage your ads.", add_ad_btn: "Post New Ad", my_ads: "My Ads", nav_home: "Home", nav_chats: "Chats", nav_profile: "Profile", sell_new_item: "Sell New Item", upload_text: "Tap to upload images (Max 3)", label_prod_name: "Product Name", label_category: "Category", label_price: "Price (Pi)", label_desc: "Description", publish_btn: "Publish Ad", msg_placeholder: "Type a message...", promoted_badge: "Promoted", message_seller: "Message Seller", your_ad: "Your Ad", promote_ad_btn: "Promote Ad (3 Pi)", promoted_until: "Promoted until", delete_btn: "Delete", confirm_delete: "Are you sure to delete?", no_products: "No products found", toast_login_first: "Login required first", toast_fill_data: "Please fill all required fields", toast_upload_fail: "Image upload failed", toast_success_add: "Ad published successfully", toast_send_fail: "Failed to send", toast_max_images: "Max 3 images allowed", banned_title: "Account Banned", banned_msg: "Your account is suspended due to violations.", ph_prod_name: "Ex: iPhone 13 Pro", ph_desc: "Describe item details...", cat_all: "All", cat_cars: "Cars", cat_electronics: "Electronics", cat_phones: "Phones", cat_fashion: "Fashion", cat_home: "Home", cat_other: "Other", select_cat: "Select Category", btn_back: "Back", label_joined: "Joined:", label_total_ads: "Total Ads:", ph_search: "Search products...", label_location: "Location", all_egypt: "All Egypt", select_gov: "Select Governorate" }
 };
 
 const CATEGORIES_CONFIG = [
@@ -427,16 +504,25 @@ function toggleLanguage() {
   langText.style.opacity = 0; setTimeout(() => { updateLanguage(); langText.style.opacity = 1; }, 200);
 }
 function t(key) { return translations[currentLang][key] || key; }
+
 function updateLanguage() {
   document.getElementById('langText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
   document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (translations[currentLang][key]) el.innerText = translations[currentLang][key]; });
+  
+  // Placeholders
   document.getElementById('addName').placeholder = t('ph_prod_name');
   document.getElementById('addDesc').placeholder = t('ph_desc');
   document.getElementById('msgInput').placeholder = t('msg_placeholder');
+  document.getElementById('searchInput').placeholder = t('ph_search');
+
+  // Fill Filters
   initCategories();
+  initLocations();
+
   if(globalProducts.length > 0) renderProducts();
   if(user && !document.getElementById('view-profile').classList.contains('hidden')) loadMyAds();
 }
+
 function showToast(messageKey, type = 'success') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
@@ -448,14 +534,34 @@ function showToast(messageKey, type = 'success') {
   container.appendChild(toast);
   setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
 }
+
+// --- INIT LISTS ---
 function initCategories() {
   const container = document.getElementById('cat-filters');
   container.innerHTML = CATEGORIES_CONFIG.map(c => `<div class="cat-chip ${c.id === activeCategory ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)"><i class="fa-solid ${c.icon}"></i> ${t(c.key)}</div>`).join('');
   document.getElementById('addCategory').innerHTML = `<option value="" disabled selected>${t('select_cat')}</option>` + CATEGORIES_CONFIG.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${t(c.key)}</option>`).join('');
 }
-function filterByCategory(catId, element) {
-  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active')); element.classList.add('active'); activeCategory = catId; renderProducts();
+
+function initLocations() {
+  // 1. Add Modal Dropdown
+  const addLocSelect = document.getElementById('addLocation');
+  addLocSelect.innerHTML = `<option value="" disabled selected>${t('select_gov')}</option>` + 
+    GOVERNORATES.map(gov => `<option value="${gov.en}">${currentLang==='ar'?gov.ar:gov.en}</option>`).join('');
+
+  // 2. Filter Dropdown (Home)
+  const filterLocSelect = document.getElementById('cityFilter');
+  // Keep the current selection if rebuilding
+  const currentVal = filterLocSelect.value;
+  filterLocSelect.innerHTML = `<option value="all">${t('all_egypt')}</option>` + 
+    GOVERNORATES.map(gov => `<option value="${gov.en}">${currentLang==='ar'?gov.ar:gov.en}</option>`).join('');
+  filterLocSelect.value = currentVal || 'all';
 }
+
+function filterByCategory(catId, element) {
+  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active')); element.classList.add('active'); activeCategory = catId; 
+  filterProducts(); // Use generic filter function
+}
+
 function nav(viewName) {
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const view = document.getElementById(`view-${viewName}`); view.classList.remove('hidden'); view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
@@ -489,49 +595,67 @@ async function handleLogin(uid, username) {
   document.getElementById("p-username").innerText = username;
   document.getElementById("p-uid").innerText = "ID: " + uid.slice(0,6) + "...";
   loadMyAds(); loadInbox();
-  
-  // 🔥 Start checking for unread messages 🔥
   checkUnreadMessages();
-  setInterval(checkUnreadMessages, 10000); // Refresh every 10 seconds
+  setInterval(checkUnreadMessages, 10000); 
 }
 
-// --- BADGE LOGIC (New) ---
 async function checkUnreadMessages() {
   if(!user) return;
-  const { count, error } = await sb
-    .from('messages')
-    .select('*', { count: 'exact', head: true })
-    .eq('receiver_pi_id', user.uid)
-    .eq('is_read', false); // Check the boolean we added
-
+  const { count, error } = await sb.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_pi_id', user.uid).eq('is_read', false);
   const badge = document.getElementById('chat-badge');
-  if(count && count > 0) {
-    badge.innerText = count > 9 ? '+9' : count;
-    badge.classList.remove('hidden');
-  } else {
-    badge.classList.add('hidden');
-  }
+  if(count && count > 0) { badge.innerText = count > 9 ? '+9' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
 }
 
-// --- PRODUCTS ---
+// --- PRODUCTS & FILTER LOGIC ---
 async function loadAllProducts() {
   const { data } = await sb.from("products").select("*").order("promoted_until", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
   document.getElementById("loading").style.display = "none";
   if(data) { globalProducts = data; renderProducts(); } else { document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>Error Loading</div>"; }
 }
+
+function filterProducts() {
+  renderProducts();
+}
+
 function renderProducts() {
-  const list = document.getElementById("products-list"); list.innerHTML = "";
-  const filtered = activeCategory === 'all' ? globalProducts : globalProducts.filter(p => p.category === activeCategory);
+  const list = document.getElementById("products-list"); 
+  list.innerHTML = "";
+  
+  const searchText = document.getElementById('searchInput').value.toLowerCase();
+  const locationFilter = document.getElementById('cityFilter').value;
+
+  const filtered = globalProducts.filter(p => {
+    // 1. Category Filter
+    if (activeCategory !== 'all' && p.category !== activeCategory) return false;
+    
+    // 2. Search Filter (Name)
+    if (searchText && !p.name.toLowerCase().includes(searchText)) return false;
+
+    // 3. Location Filter
+    if (locationFilter !== 'all' && p.location !== locationFilter) return false;
+
+    return true;
+  });
+
   if(!filtered.length) { list.innerHTML = `<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>${t('no_products')}</div>`; return; }
+  
   const now = new Date();
   filtered.forEach(p => {
     let img = "https://placehold.co/400?text=No+Image";
     if(p.images && p.images.length > 0) img = p.images[0]; else if(p.image_url) img = p.image_url;
     let isPromoted = false; if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) isPromoted = true; }
+    
+    // Get Translated Location
+    const locObj = GOVERNORATES.find(g => g.en === p.location);
+    const locText = locObj ? (currentLang==='ar'?locObj.ar:locObj.en) : p.location;
+
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}" onclick="openProductDetails(${p.id})">
         ${isPromoted ? `<div class="promo-badge"><i class="fa-solid fa-star"></i> ${t('promoted_badge')}</div>` : ''}
-        <div class="card-img-wrap"><img src="${img}" class="card-img" loading="lazy"></div>
+        <div class="card-img-wrap">
+          <img src="${img}" class="card-img" loading="lazy">
+          ${p.location ? `<div class="location-tag"><i class="fa-solid fa-location-dot"></i> ${locText}</div>` : ''}
+        </div>
         <div class="card-body">
           <h4 class="card-title">${p.name}</h4>
           <div class="price-pill"><span>${p.price}</span> <span>Pi</span></div>
@@ -550,9 +674,19 @@ async function openProductDetails(pid) {
   slider.innerHTML = images.map(src => `<div class="slide"><img src="${src}" class="slide-img"></div>`).join('');
   dots.innerHTML = images.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
   slider.onscroll = () => { const i = Math.round(Math.abs(slider.scrollLeft) / slider.offsetWidth); document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === i)); };
-  document.getElementById('detail-title').innerText = p.name; document.getElementById('detail-price').innerText = p.price; document.getElementById('detail-desc').innerText = p.description || "";
-  document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; document.getElementById('detail-seller-avatar').innerText = (p.seller_username || "U").charAt(0).toUpperCase();
-  document.getElementById('detail-join-date').innerText = "..."; document.getElementById('detail-ad-count').innerText = "...";
+  
+  document.getElementById('detail-title').innerText = p.name; 
+  document.getElementById('detail-price').innerText = p.price; 
+  document.getElementById('detail-desc').innerText = p.description || "";
+  
+  // Location in details
+  const locObj = GOVERNORATES.find(g => g.en === p.location);
+  document.getElementById('detail-loc-text').innerText = locObj ? (currentLang==='ar'?locObj.ar:locObj.en) : (p.location || "N/A");
+
+  document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; 
+  document.getElementById('detail-seller-avatar').innerText = (p.seller_username || "U").charAt(0).toUpperCase();
+  document.getElementById('detail-join-date').innerText = "..."; 
+  document.getElementById('detail-ad-count').innerText = "...";
   
   const actionsDiv = document.getElementById('detail-actions'); const isOwner = user && p.seller_pi_id === user.uid; const now = new Date();
   if(isOwner) {
@@ -594,13 +728,24 @@ function closeAddModal(){ document.getElementById("addModal").style.display="non
 function handleFileSelect(input) { if (input.files) { const files = Array.from(input.files); if (selectedFiles.length + files.length > 3) { showToast('toast_max_images', 'error'); return; } selectedFiles = [...selectedFiles, ...files]; updateImagePreviews(); } input.value = ""; }
 function updateImagePreviews() { const container = document.getElementById('image-previews'); container.innerHTML = ""; selectedFiles.forEach((file, index) => { const reader = new FileReader(); reader.onload = (e) => { const div = document.createElement('div'); div.className = 'preview-box'; div.innerHTML = `<img src="${e.target.result}"><div class="preview-remove" onclick="removeFile(${index})"><i class="fa-solid fa-xmark"></i></div>`; container.appendChild(div); }; reader.readAsDataURL(file); }); document.getElementById('upload-placeholder').style.display = selectedFiles.length >= 3 ? 'none' : 'flex'; }
 function removeFile(index) { selectedFiles.splice(index, 1); updateImagePreviews(); }
-function resetForm() { document.getElementById("addName").value = ""; document.getElementById("addPrice").value = ""; document.getElementById("addDesc").value = ""; document.getElementById("addCategory").value = ""; selectedFiles = []; updateImagePreviews(); }
+function resetForm() { document.getElementById("addName").value = ""; document.getElementById("addPrice").value = ""; document.getElementById("addDesc").value = ""; document.getElementById("addCategory").value = ""; document.getElementById("addLocation").value = ""; selectedFiles = []; updateImagePreviews(); }
+
 async function submitProduct(){
-    const name = document.getElementById("addName").value; const price = document.getElementById("addPrice").value; const desc = document.getElementById("addDesc").value; const category = document.getElementById("addCategory").value; const btn = document.getElementById("publishBtn");
-    if(!name || !price || !category) return showToast('toast_fill_data', 'error');
+    const name = document.getElementById("addName").value; 
+    const price = document.getElementById("addPrice").value; 
+    const desc = document.getElementById("addDesc").value; 
+    const category = document.getElementById("addCategory").value; 
+    const location = document.getElementById("addLocation").value; // Get Location
+    const btn = document.getElementById("publishBtn");
+    
+    if(!name || !price || !category || !location) return showToast('toast_fill_data', 'error');
+    
     btn.innerText = t('loading'); btn.disabled=true; let uploadedUrls = [];
     if(selectedFiles.length > 0){ try { const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" }; for(const file of selectedFiles) { const compressedFile = await imageCompression(file, options); const path = `${user.uid}/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`; const {error} = await sb.storage.from("images").upload(path, compressedFile); if(error) throw error; const url = sb.storage.from("images").getPublicUrl(path).data.publicUrl; uploadedUrls.push(url); } } catch (error) { console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return; } }
-    await sb.from("products").insert({ name, price, description: desc, image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null, images: uploadedUrls, seller_pi_id: user.uid, seller_username: user.username, category: category });
+    
+    // Include location in insert
+    await sb.from("products").insert({ name, price, description: desc, image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null, images: uploadedUrls, seller_pi_id: user.uid, seller_username: user.username, category: category, location: location });
+    
     showToast('toast_success_add'); closeAddModal(); loadAllProducts(); loadMyAds(); btn.innerText = t('publish_btn'); btn.disabled=false;
 }
 
@@ -615,18 +760,12 @@ function openChatRoom(pid, otherId, pName, uName) {
   document.getElementById("chatModal").style.display = "flex";
   document.getElementById("msgContainer").innerHTML = "";
   loadMessages();
-  
-  // 🔥 Mark read when opening 🔥
-  sb.from('messages').update({ is_read: true })
-    .eq('product_id', pid).eq('receiver_pi_id', user.uid).eq('sender_pi_id', otherId)
-    .then(() => checkUnreadMessages()); // Refresh badge
-
+  sb.from('messages').update({ is_read: true }).eq('product_id', pid).eq('receiver_pi_id', user.uid).eq('sender_pi_id', otherId).then(() => checkUnreadMessages()); 
   sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, payload => {
        const m = payload.new;
        if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid)) renderMsg(m);
   }).subscribe();
 }
-
 async function loadMessages() {
   const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
   if(data) data.forEach(m => { if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid)) renderMsg(m); });
@@ -642,7 +781,6 @@ async function sendMsg(){
 }
 function closeChat() { document.getElementById("chatModal").style.display = "none"; activeChat = null; sb.removeAllChannels(); checkUnreadMessages(); }
 
-// --- INBOX (Modified to show unread) ---
 async function loadInbox() {
   const list = document.getElementById("inbox-list"); list.innerHTML = `<div style='text-align:center;padding:20px'>${t('loading')}</div>`;
   const { data } = await sb.from("messages").select("*, products(name)").or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`).order("created_at", {ascending: false});
@@ -651,17 +789,13 @@ async function loadInbox() {
   data.forEach(m => {
     const otherId = (m.sender_pi_id === user.uid) ? m.receiver_pi_id : m.sender_pi_id;
     const key = `${m.product_id}_${otherId}`;
-    // Check if unread logic needs better aggregation, but simple check:
     if(!threads.has(key)){ threads.set(key, { pid: m.product_id, otherId: otherId, pName: m.products?.name || "Item", last: m.content, name: "User", unread: (!m.is_read && m.receiver_pi_id === user.uid) }); }
   });
-  
-  // Get Usernames
   const otherIds = Array.from(threads.values()).map(t => t.otherId);
   if(otherIds.length > 0){
       const { data: users } = await sb.from("users").select("pi_id,username").in("pi_id", otherIds);
       if(users) { users.forEach(u => { threads.forEach(t => { if(t.otherId === u.pi_id) t.name = u.username; }); }); }
   }
-
   threads.forEach(t => {
       list.innerHTML += `
       <div class="inbox-item ${t.unread ? 'unread' : ''}" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.pName}', '${t.name}')">
@@ -672,7 +806,7 @@ async function loadInbox() {
         </div>
       </div>`;
   });
-  checkUnreadMessages(); // Sync badge on open
+  checkUnreadMessages();
 }
 </script>
 </body>
