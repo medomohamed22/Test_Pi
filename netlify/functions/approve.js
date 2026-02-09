@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY; // ✅ نستخدم المفتاح القوي مباشرة
+const SUPABASE_KEY = process.env.SUPABASE_KEY; // المفتاح القوي
 const PI_API_KEY = process.env.PI_API_KEY;
 const PI_API_BASE = 'https://api.minepi.com/v2';
 
@@ -13,51 +13,66 @@ exports.handler = async (event, context) => {
     return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' }, body: '' };
   }
 
+  const { paymentId } = JSON.parse(event.body);
+  console.log(`🚀 Starting Approve for: ${paymentId}`);
+
   try {
-    const { paymentId } = JSON.parse(event.body);
-    console.log(`Starting Approve for: ${paymentId}`);
+    // 1. تحقق أولاً: هل هذا الدفع مسجل عندنا بالفعل؟ (لمنع الأخطاء عند التكرار)
+    const { data: existingPayment } = await supabase
+      .from('payments')
+      .select('payment_id, status')
+      .eq('payment_id', paymentId)
+      .single();
 
-    // 1. جلب بيانات الدفع من سيرفرات Pi
-    const paymentInfoRes = await fetch(`${PI_API_BASE}/payments/${paymentId}`, {
-      method: 'GET',
-      headers: { 'Authorization': `Key ${PI_API_KEY}` }
-    });
+    // إذا كان مسجلاً مسبقاً، لا داعي لجلب البيانات من Pi مرة أخرى، انتقل للموافقة فوراً
+    let amount, productId, userId;
 
-    if (!paymentInfoRes.ok) throw new Error('Failed to verify payment with Pi');
-    
-    const paymentData = await paymentInfoRes.json();
-    const amount = parseFloat(paymentData.amount);
-    const productId = paymentData.metadata?.productId;
+    if (!existingPayment) {
+        console.log("Creating new DB record...");
+        
+        // جلب البيانات من Pi فقط إذا لم يكن مسجلاً
+        const paymentInfoRes = await fetch(`${PI_API_BASE}/payments/${paymentId}`, {
+          method: 'GET',
+          headers: { 'Authorization': `Key ${PI_API_KEY}` }
+        });
 
-    // 2. التحقق من المبلغ (3 أو 5)
-    // نستخدم Math.round للتأكد من الرقم (مثلاً 2.99999 يصبح 3)
-    const cleanAmount = Math.round(amount);
-    
-    if (cleanAmount !== 3 && cleanAmount !== 5) {
-      console.error(`Invalid Amount: ${amount}`);
-      return { statusCode: 400, body: JSON.stringify({ error: 'Amount must be 3 or 5 Pi' }) };
+        if (!paymentInfoRes.ok) {
+            const errText = await paymentInfoRes.text();
+            console.error(`❌ Pi API Fetch Error: ${errText}`);
+            throw new Error(`Pi API Error: ${errText}`);
+        }
+        
+        const paymentData = await paymentInfoRes.json();
+        amount = parseFloat(paymentData.amount);
+        productId = paymentData.metadata?.productId;
+        userId = paymentData.user_uid;
+
+        // التحقق من المبلغ (3 أو 5)
+        const cleanAmount = Math.round(amount);
+        if (cleanAmount !== 3 && cleanAmount !== 5) {
+          console.error(`❌ Invalid Amount: ${amount}`);
+          return { statusCode: 400, body: JSON.stringify({ error: 'Invalid amount' }) };
+        }
+
+        // تسجيل الدفع (Upsert لمنع مشاكل التكرار في اللحظة الأخيرة)
+        const { error: dbError } = await supabase.from('payments').upsert({
+          payment_id: paymentId,
+          user_id: userId,
+          product_id: productId,
+          amount: amount,
+          status: 'approved' // الحالة المبدئية
+        }, { onConflict: 'payment_id' });
+
+        if (dbError) {
+            console.error("❌ DB Insert Error:", dbError);
+            // لن نوقف العملية، سنحاول إكمال الموافقة في Pi لحفظ حق المستخدم
+        }
+    } else {
+        console.log("✅ Record already exists in DB, proceeding to approve...");
     }
 
-    if (!productId) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing Product ID' }) };
-    }
-
-    // 3. تسجيل الدفع في قاعدة البيانات
-    // بما أنك تستخدم المفتاح القوي، لن تواجه مشاكل صلاحيات (RLS)
-    const { error: dbError } = await supabase.from('payments').insert({
-      payment_id: paymentId,
-      user_id: paymentData.user_uid,
-      product_id: productId,
-      amount: amount,
-      status: 'approved'
-    });
-
-    if (dbError) {
-        console.error("Database Insert Error:", dbError);
-        // ملحوظة: لن نوقف العملية هنا حتى لو فشل التسجيل، لنضمن إتمام الدفع للمستخدم في Pi
-    }
-
-    // 4. إرسال الموافقة النهائية لـ Pi
+    // 2. إرسال الموافقة النهائية لـ Pi (أهم خطوة لإنهاء العداد)
+    console.log("Sending Approve to Pi...");
     const approveRes = await fetch(`${PI_API_BASE}/payments/${paymentId}/approve`, {
       method: 'POST',
       headers: { 'Authorization': `Key ${PI_API_KEY}`, 'Content-Type': 'application/json' },
@@ -65,11 +80,15 @@ exports.handler = async (event, context) => {
     });
 
     if (!approveRes.ok) {
-        const errText = await approveRes.text();
-        console.error("Pi Approve API Error:", errText);
-        throw new Error('Pi Approve Failed');
+        const approveErr = await approveRes.text();
+        console.error(`❌ Pi Approve Failed: ${approveErr}`);
+        // ملاحظة: إذا كان الخطأ أن الدفع "تمت الموافقة عليه مسبقاً"، نعتبره نجاحاً
+        if (!approveErr.includes("already approved")) {
+             throw new Error(`Pi Approve Failed: ${approveErr}`);
+        }
     }
 
+    console.log("🎉 Approve Successful!");
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
@@ -77,7 +96,8 @@ exports.handler = async (event, context) => {
     };
 
   } catch (err) {
-    console.error("Handler Error:", err);
+    console.error("💥 Handler Crash:", err);
+    // في حالة الخطأ القاتل، نرجع 500 ليعرف Pi أن هناك مشكلة
     return {
       statusCode: 500,
       headers: { 'Access-Control-Allow-Origin': '*' },
