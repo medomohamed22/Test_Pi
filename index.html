@@ -52,7 +52,7 @@ body {
 .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
 .btn-gold { background: linear-gradient(135deg, var(--accent), #FBBF24); color: white; }
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-.btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; pointer-events: none; }
+.btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; }
 
 /* --- Header --- */
 .header {
@@ -65,11 +65,8 @@ body {
   height: 60px;
 }
 .brand { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
-
-/* Header Actions */
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
-/* Language Switcher */
 .lang-btn {
   width: 36px; height: 36px; border-radius: 50%;
   background: white; border: 1px solid var(--border);
@@ -80,7 +77,6 @@ body {
 }
 .lang-btn:active { transform: scale(0.9) rotate(10deg); }
 
-/* User Profile in Header */
 .header-user {
   display: flex; align-items: center; gap: 10px;
   background: #f9fafb; padding: 4px 12px 4px 4px;
@@ -108,7 +104,7 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: 5px;
   color: var(--text-muted); font-size: 11px; font-weight: 600;
   background: none; border: none; cursor: pointer; padding: 8px; width: 60px;
-  position: relative;
+  position: relative; /* المهم للبادج */
   transition: color 0.3s;
 }
 .nav-item i { font-size: 22px; transition: transform 0.4s; }
@@ -119,33 +115,40 @@ body {
   width: 5px; height: 5px; background: var(--primary); border-radius: 50%;
 }
 
-/* --- Layout Animations --- */
+/* 🔥 تنسيق دائرة الإشعارات الحمراء 🔥 */
+.nav-badge {
+  position: absolute; top: 2px; right: 12px;
+  background-color: var(--danger); color: white;
+  width: 18px; height: 18px; border-radius: 50%;
+  font-size: 10px; font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transform: scale(1); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.nav-badge.hidden { transform: scale(0); opacity: 0; }
+
+/* --- Other Styles --- */
 .view-section { animation: fadeScale 0.4s ease-out; }
 @keyframes fadeScale { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-/* --- Product Cards --- */
 .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .card {
   background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
   overflow: hidden; display: flex; flex-direction: column;
   position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
+  transition: transform 0.2s; cursor: pointer;
 }
 .card:active { transform: scale(0.98); }
 .card-img-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: #f9fafb; overflow: hidden; }
 .card-img { width: 100%; height: 100%; object-fit: cover; }
 .card-body { padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-.card-title { 
-  font-size: 14px; margin: 0; line-height: 1.3; font-weight: 800; color: var(--text-main);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 38px;
-}
+.card-title { font-size: 14px; margin: 0; line-height: 1.3; font-weight: 800; height: 38px; overflow: hidden; }
 .price-pill {
   background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;
   padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 800;
   display: inline-flex; align-items: center; gap: 4px;
 }
-.card-desc { font-size: 11px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; height: 32px; width: 100%; }
+.card-desc { font-size: 11px; color: var(--text-muted); height: 32px; overflow: hidden; }
 .promo-badge {
   position: absolute; top: 8px; right: 8px; z-index: 10;
   background: var(--accent); color: white; padding: 4px 8px;
@@ -153,7 +156,7 @@ body {
 }
 .card.promoted { border: 2px solid var(--accent); }
 
-/* --- Slider & Details Styles (UPDATED) --- */
+/* Slider */
 .slider-container {
   width: 100%; aspect-ratio: 4/3; background: #f3f4f6;
   border-radius: 20px; overflow: hidden; margin-bottom: 16px;
@@ -162,12 +165,11 @@ body {
 .slider-wrapper {
   display: flex; width: 100%; height: 100%;
   overflow-x: auto; scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  scrollbar-width: none;
 }
 .slider-wrapper::-webkit-scrollbar { display: none; }
 .slide { flex: 0 0 100%; scroll-snap-align: center; width: 100%; height: 100%; }
 .slide-img { width: 100%; height: 100%; object-fit: contain; }
-
 .slider-dots {
   position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
   display: flex; gap: 6px;
@@ -179,32 +181,14 @@ body {
   background: white; border: 1px solid var(--border);
   padding: 16px; border-radius: 16px; margin-top: 20px;
   display: flex; align-items: center; gap: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
 }
 .seller-info { flex: 1; }
 .seller-name { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
 .seller-stats { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
 
-/* --- Upload Styles --- */
-.previews-container {
-  display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto;
-  padding: 4px;
-}
-.preview-box {
-  width: 70px; height: 70px; border-radius: 12px; overflow: hidden;
-  position: relative; flex-shrink: 0; border: 1px solid var(--border);
-}
-.preview-box img { width: 100%; height: 100%; object-fit: cover; }
-.preview-remove {
-  position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8);
-  color: white; width: 18px; height: 18px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; cursor: pointer;
-}
-
-/* --- Categories --- */
+/* Categories */
 .categories-wrapper { position: sticky; top: 60px; z-index: 40; background: var(--bg-body); padding: 10px 0; margin-bottom: 10px; }
-.categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+.categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 4px; }
 .categories-scroll::-webkit-scrollbar { display: none; }
 .cat-chip {
   background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px;
@@ -213,8 +197,9 @@ body {
 }
 .cat-chip.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3); }
 
-/* --- Inbox & Chat --- */
+/* Inbox */
 .inbox-item { background: white; padding: 14px; margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.inbox-item.unread { border-right: 4px solid var(--primary); background: #F5F3FF; } /* تمييز غير المقروء */
 .inbox-avatar { width: 45px; height: 45px; border-radius: 50%; background: #f3f4f6; color: var(--primary); display: grid; place-items: center; font-size: 18px; font-weight: bold; }
 .inbox-info { flex: 1; overflow: hidden; }
 .inbox-name { font-weight: 800; font-size: 14px; }
@@ -224,7 +209,7 @@ body {
 .bubble.me { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
 .bubble.other { background: white; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
 
-/* --- Modals & Inputs --- */
+/* Modals */
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
 .sheet {
   background: white; width: 100%; max-width: 600px;
@@ -237,49 +222,25 @@ body {
 
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-label { font-size: 12px; font-weight: 700; color: var(--text-main); margin-right: 4px; }
-.input-box {
-  width: 100%; padding: 14px;
-  border: 1px solid var(--border); border-radius: 12px;
-  font-family: inherit; font-size: 14px; outline: none; background: #fff;
-  transition: border-color 0.2s;
-}
+.input-box { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 14px; outline: none; background: #fff; }
 .input-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
 textarea.input-box { resize: none; height: 80px; }
-select.input-box {
-  appearance: none; 
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat; background-position: left 14px center; background-size: 16px;
-}
+select.input-box { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: left 14px center; background-size: 16px; }
 
-.file-upload-wrapper {
-  border: 2px dashed var(--border); border-radius: 16px;
-  padding: 20px; text-align: center; cursor: pointer;
-  background: #F9FAFB; transition: all 0.2s;
-  position: relative; overflow: hidden;
-}
-.file-upload-wrapper:hover { border-color: var(--primary); background: #F3F0FF; }
+.file-upload-wrapper { border: 2px dashed var(--border); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; background: #F9FAFB; position: relative; overflow: hidden; }
 .file-upload-content { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted); }
 .file-upload-icon { font-size: 24px; color: var(--primary); }
-.file-upload-text { font-size: 12px; font-weight: 500; }
+.previews-container { display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto; padding: 4px; }
+.preview-box { width: 70px; height: 70px; border-radius: 12px; overflow: hidden; position: relative; flex-shrink: 0; border: 1px solid var(--border); }
+.preview-box img { width: 100%; height: 100%; object-fit: cover; }
+.preview-remove { position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
 
-/* --- Toast --- */
-.toast-container {
-  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-  z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
-}
-.toast {
-  background: white; padding: 12px 20px; border-radius: 99px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-  animation: toastSlide 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  pointer-events: auto; min-width: 250px; justify-content: center;
-}
-.toast.success { border-right: 4px solid var(--success); }
-.toast.error { border-right: 4px solid var(--danger); }
-.toast-icon { font-size: 18px; }
-.toast-msg { font-size: 13px; font-weight: 700; color: var(--text-main); }
+/* Toast */
+.toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.toast { background: white; padding: 12px 20px; border-radius: 99px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; animation: toastSlide 0.3s; pointer-events: auto; min-width: 250px; justify-content: center; }
+.toast.success { border-right: 4px solid var(--success); } .toast.error { border-right: 4px solid var(--danger); }
+.toast-icon { font-size: 18px; } .toast-msg { font-size: 13px; font-weight: 700; color: var(--text-main); }
 @keyframes toastSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
 </style>
 </head>
 <body>
@@ -327,23 +288,18 @@ select.input-box {
         <i class="fa-solid fa-arrow-right"></i> <span data-i18n="btn_back">رجوع</span>
       </button>
     </div>
-    
     <div class="slider-container">
       <div class="slider-wrapper" id="detail-slider"></div>
       <div class="slider-dots" id="detail-dots"></div>
     </div>
-
     <h2 id="detail-title" style="margin:0 0 8px 0;line-height:1.3;font-size:20px"></h2>
-    
     <div class="price-pill" style="font-size:16px;padding:6px 16px;margin-bottom:16px">
       <span id="detail-price"></span> <span>Pi</span>
     </div>
-
     <div style="background:white;padding:16px;border-radius:16px;border:1px solid var(--border);margin-bottom:16px">
       <h4 style="margin:0 0 8px 0" data-i18n="label_desc">الوصف</h4>
       <p id="detail-desc" style="color:#4B5563;font-size:14px;line-height:1.6;margin:0;white-space:pre-wrap;"></p>
     </div>
-
     <div class="seller-card">
       <div style="width:50px;height:50px;background:#F3F4F6;border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--primary);font-weight:bold" id="detail-seller-avatar"></div>
       <div class="seller-info">
@@ -354,7 +310,6 @@ select.input-box {
         </div>
       </div>
     </div>
-
     <div id="detail-actions" style="margin-top:20px;display:flex;gap:10px;flex-direction:column"></div>
   </div>
 
@@ -369,7 +324,6 @@ select.input-box {
       <h3 data-i18n="guest_title">أنت زائر</h3>
       <p style="color:gray;font-size:14px" data-i18n="guest_msg">سجل الدخول لإدارة إعلاناتك.</p>
     </div>
-
     <div id="profile-user" class="hidden">
       <div style="background:white;padding:20px;border-radius:20px;text-align:center;border:1px solid var(--border)">
         <div style="width:80px;height:80px;background:var(--primary);color:white;border-radius:50%;display:grid;place-items:center;font-size:30px;margin:0 auto 10px;">
@@ -393,6 +347,7 @@ select.input-box {
   </button>
   <button class="nav-item" onclick="nav('chats')">
     <i class="fa-solid fa-comment-dots"></i> <span data-i18n="nav_chats">المحادثات</span>
+    <span id="chat-badge" class="nav-badge hidden">0</span>
   </button>
   <button class="nav-item" onclick="nav('profile')">
     <i class="fa-solid fa-user-gear"></i> <span data-i18n="nav_profile">حسابي</span>
@@ -405,37 +360,18 @@ select.input-box {
       <h3 style="margin:0" data-i18n="sell_new_item">بيع منتج جديد</h3>
       <button onclick="closeAddModal()" style="background:none;border:none;font-size:18px;color:#666"><i class="fa-solid fa-xmark"></i></button>
     </div>
-
     <div id="image-previews" class="previews-container"></div>
-
     <label class="file-upload-wrapper">
       <input id="addImg" type="file" accept="image/*" multiple style="display:none" onchange="handleFileSelect(this)">
       <div class="file-upload-content" id="upload-placeholder">
         <i class="fa-solid fa-cloud-arrow-up file-upload-icon"></i>
-        <div class="file-upload-text" data-i18n="upload_text">اضغط لاختيار صورة (بحد أقصى 3)</div>
+        <div class="file-upload-text" data-i18n="upload_text">اضغط لاختيار الصور (بحد أقصى 3)</div>
       </div>
     </label>
-
-    <div class="form-group">
-      <label class="form-label" data-i18n="label_prod_name">اسم المنتج</label>
-      <input id="addName" class="input-box" placeholder="" />
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" data-i18n="label_category">القسم</label>
-      <select id="addCategory" class="input-box"></select>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" data-i18n="label_price">السعر (Pi)</label>
-      <input id="addPrice" type="number" class="input-box" placeholder="0.00" />
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" data-i18n="label_desc">الوصف</label>
-      <textarea id="addDesc" class="input-box" placeholder=""></textarea>
-    </div>
-
+    <div class="form-group"><label class="form-label" data-i18n="label_prod_name">اسم المنتج</label><input id="addName" class="input-box" placeholder="" /></div>
+    <div class="form-group"><label class="form-label" data-i18n="label_category">القسم</label><select id="addCategory" class="input-box"></select></div>
+    <div class="form-group"><label class="form-label" data-i18n="label_price">السعر (Pi)</label><input id="addPrice" type="number" class="input-box" placeholder="0.00" /></div>
+    <div class="form-group"><label class="form-label" data-i18n="label_desc">الوصف</label><textarea id="addDesc" class="input-box" placeholder=""></textarea></div>
     <button id="publishBtn" class="btn btn-primary" style="width:100%" onclick="submitProduct()" data-i18n="publish_btn">نشر الإعلان</button>
   </div>
 </div>
@@ -465,153 +401,35 @@ const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
 let sb, user = null;
 let activeChat = null;
 let currentLang = localStorage.getItem('lang') || 'en'; 
-let selectedFiles = []; // To store selected images
+let selectedFiles = [];
 
-// --- TRANSLATIONS ---
 const translations = {
-  ar: {
-    brand_name: "سوق باي",
-    login: "دخول",
-    latest_products: "أحدث المعروضات",
-    loading: "جاري التحميل...",
-    inbox_title: "الرسائل الواردة",
-    guest_title: "أنت زائر",
-    guest_msg: "سجل الدخول لإدارة إعلاناتك.",
-    add_ad_btn: "إضافة إعلان جديد",
-    my_ads: "إعلاناتي",
-    nav_home: "الرئيسية",
-    nav_chats: "المحادثات",
-    nav_profile: "حسابي",
-    sell_new_item: "بيع منتج جديد",
-    upload_text: "اضغط لاختيار الصور (بحد أقصى 3)",
-    label_prod_name: "اسم المنتج",
-    label_category: "القسم",
-    label_price: "السعر (Pi)",
-    label_desc: "الوصف",
-    publish_btn: "نشر الإعلان",
-    msg_placeholder: "اكتب رسالة...",
-    promoted_badge: "مميز",
-    message_seller: "مراسلة البائع",
-    your_ad: "إعلانك",
-    promote_ad_btn: "تمييز الإعلان (3 Pi)",
-    promoted_until: "مميز حتى",
-    delete_btn: "حذف",
-    confirm_delete: "هل أنت متأكد من الحذف؟",
-    no_products: "لا توجد منتجات",
-    toast_login_first: "يجب تسجيل الدخول أولاً",
-    toast_fill_data: "يرجى إكمال البيانات المطلوبة",
-    toast_upload_fail: "فشل رفع الصورة",
-    toast_success_add: "تم نشر الإعلان بنجاح",
-    toast_send_fail: "فشل الإرسال",
-    toast_max_images: "الحد الأقصى 3 صور",
-    banned_title: "حساب محظور",
-    banned_msg: "تم إيقاف حسابك لمخالفة شروط الاستخدام.",
-    ph_prod_name: "مثال: آيفون 13 برو",
-    ph_desc: "اكتب تفاصيل المنتج وحالته...",
-    cat_all: "الكل",
-    cat_cars: "سيارات",
-    cat_electronics: "إلكترونيات",
-    cat_phones: "هواتف",
-    cat_fashion: "ملابس",
-    cat_home: "منزل",
-    cat_other: "أخرى",
-    select_cat: "اختر القسم المناسب",
-    btn_back: "رجوع",
-    label_joined: "انضم:",
-    label_total_ads: "إعلانات:"
-  },
-  en: {
-    brand_name: "Pi Market",
-    login: "Login",
-    latest_products: "Latest Products",
-    loading: "Loading...",
-    inbox_title: "Inbox",
-    guest_title: "Guest User",
-    guest_msg: "Login to manage your ads.",
-    add_ad_btn: "Post New Ad",
-    my_ads: "My Ads",
-    nav_home: "Home",
-    nav_chats: "Chats",
-    nav_profile: "Profile",
-    sell_new_item: "Sell New Item",
-    upload_text: "Tap to upload images (Max 3)",
-    label_prod_name: "Product Name",
-    label_category: "Category",
-    label_price: "Price (Pi)",
-    label_desc: "Description",
-    publish_btn: "Publish Ad",
-    msg_placeholder: "Type a message...",
-    promoted_badge: "Promoted",
-    message_seller: "Message Seller",
-    your_ad: "Your Ad",
-    promote_ad_btn: "Promote Ad (3 Pi)",
-    promoted_until: "Promoted until",
-    delete_btn: "Delete",
-    confirm_delete: "Are you sure to delete?",
-    no_products: "No products found",
-    toast_login_first: "Login required first",
-    toast_fill_data: "Please fill all required fields",
-    toast_upload_fail: "Image upload failed",
-    toast_success_add: "Ad published successfully",
-    toast_send_fail: "Failed to send",
-    toast_max_images: "Max 3 images allowed",
-    banned_title: "Account Banned",
-    banned_msg: "Your account is suspended due to violations.",
-    ph_prod_name: "Ex: iPhone 13 Pro",
-    ph_desc: "Describe item details...",
-    cat_all: "All",
-    cat_cars: "Cars",
-    cat_electronics: "Electronics",
-    cat_phones: "Phones",
-    cat_fashion: "Fashion",
-    cat_home: "Home",
-    cat_other: "Other",
-    select_cat: "Select Category",
-    btn_back: "Back",
-    label_joined: "Joined:",
-    label_total_ads: "Total Ads:"
-  }
+  ar: { brand_name: "سوق باي", login: "دخول", latest_products: "أحدث المعروضات", loading: "جاري التحميل...", inbox_title: "الرسائل الواردة", guest_title: "أنت زائر", guest_msg: "سجل الدخول لإدارة إعلاناتك.", add_ad_btn: "إضافة إعلان جديد", my_ads: "إعلاناتي", nav_home: "الرئيسية", nav_chats: "المحادثات", nav_profile: "حسابي", sell_new_item: "بيع منتج جديد", upload_text: "اضغط لاختيار الصور (بحد أقصى 3)", label_prod_name: "اسم المنتج", label_category: "القسم", label_price: "السعر (Pi)", label_desc: "الوصف", publish_btn: "نشر الإعلان", msg_placeholder: "اكتب رسالة...", promoted_badge: "مميز", message_seller: "مراسلة البائع", your_ad: "إعلانك", promote_ad_btn: "تمييز الإعلان (3 Pi)", promoted_until: "مميز حتى", delete_btn: "حذف", confirm_delete: "هل أنت متأكد من الحذف؟", no_products: "لا توجد منتجات", toast_login_first: "يجب تسجيل الدخول أولاً", toast_fill_data: "يرجى إكمال البيانات المطلوبة", toast_upload_fail: "فشل رفع الصورة", toast_success_add: "تم نشر الإعلان بنجاح", toast_send_fail: "فشل الإرسال", toast_max_images: "الحد الأقصى 3 صور", banned_title: "حساب محظور", banned_msg: "تم إيقاف حسابك لمخالفة شروط الاستخدام.", ph_prod_name: "مثال: آيفون 13 برو", ph_desc: "اكتب تفاصيل المنتج وحالته...", cat_all: "الكل", cat_cars: "سيارات", cat_electronics: "إلكترونيات", cat_phones: "هواتف", cat_fashion: "ملابس", cat_home: "منزل", cat_other: "أخرى", select_cat: "اختر القسم المناسب", btn_back: "رجوع", label_joined: "انضم:", label_total_ads: "إعلانات:" },
+  en: { brand_name: "Pi Market", login: "Login", latest_products: "Latest Products", loading: "Loading...", inbox_title: "Inbox", guest_title: "Guest User", guest_msg: "Login to manage your ads.", add_ad_btn: "Post New Ad", my_ads: "My Ads", nav_home: "Home", nav_chats: "Chats", nav_profile: "Profile", sell_new_item: "Sell New Item", upload_text: "Tap to upload images (Max 3)", label_prod_name: "Product Name", label_category: "Category", label_price: "Price (Pi)", label_desc: "Description", publish_btn: "Publish Ad", msg_placeholder: "Type a message...", promoted_badge: "Promoted", message_seller: "Message Seller", your_ad: "Your Ad", promote_ad_btn: "Promote Ad (3 Pi)", promoted_until: "Promoted until", delete_btn: "Delete", confirm_delete: "Are you sure to delete?", no_products: "No products found", toast_login_first: "Login required first", toast_fill_data: "Please fill all required fields", toast_upload_fail: "Image upload failed", toast_success_add: "Ad published successfully", toast_send_fail: "Failed to send", toast_max_images: "Max 3 images allowed", banned_title: "Account Banned", banned_msg: "Your account is suspended due to violations.", ph_prod_name: "Ex: iPhone 13 Pro", ph_desc: "Describe item details...", cat_all: "All", cat_cars: "Cars", cat_electronics: "Electronics", cat_phones: "Phones", cat_fashion: "Fashion", cat_home: "Home", cat_other: "Other", select_cat: "Select Category", btn_back: "Back", label_joined: "Joined:", label_total_ads: "Total Ads:" }
 };
 
-// --- Categories Config ---
 const CATEGORIES_CONFIG = [
-  { id: 'all', key: 'cat_all', icon: 'fa-layer-group' },
-  { id: 'cars', key: 'cat_cars', icon: 'fa-car' },
-  { id: 'electronics', key: 'cat_electronics', icon: 'fa-laptop' },
-  { id: 'phones', key: 'cat_phones', icon: 'fa-mobile-screen' },
-  { id: 'fashion', key: 'cat_fashion', icon: 'fa-shirt' },
-  { id: 'home', key: 'cat_home', icon: 'fa-couch' },
-  { id: 'other', key: 'cat_other', icon: 'fa-box' },
+  { id: 'all', key: 'cat_all', icon: 'fa-layer-group' }, { id: 'cars', key: 'cat_cars', icon: 'fa-car' }, { id: 'electronics', key: 'cat_electronics', icon: 'fa-laptop' }, { id: 'phones', key: 'cat_phones', icon: 'fa-mobile-screen' }, { id: 'fashion', key: 'cat_fashion', icon: 'fa-shirt' }, { id: 'home', key: 'cat_home', icon: 'fa-couch' }, { id: 'other', key: 'cat_other', icon: 'fa-box' }
 ];
 
 let globalProducts = [];
 let activeCategory = 'all';
 
-// --- INIT ---
 document.addEventListener("DOMContentLoaded", async () => {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  updateLanguage(); 
-  initPi();
-  loadAllProducts();
+  updateLanguage(); initPi(); loadAllProducts();
 });
 
-// --- Language Logic ---
 function toggleLanguage() {
   currentLang = currentLang === 'ar' ? 'en' : 'ar';
   localStorage.setItem('lang', currentLang);
   const langText = document.getElementById('langText');
-  langText.style.opacity = 0;
-  setTimeout(() => { updateLanguage(); langText.style.opacity = 1; }, 200);
+  langText.style.opacity = 0; setTimeout(() => { updateLanguage(); langText.style.opacity = 1; }, 200);
 }
-
 function t(key) { return translations[currentLang][key] || key; }
-
 function updateLanguage() {
   document.getElementById('langText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
-  });
+  document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (translations[currentLang][key]) el.innerText = translations[currentLang][key]; });
   document.getElementById('addName').placeholder = t('ph_prod_name');
   document.getElementById('addDesc').placeholder = t('ph_desc');
   document.getElementById('msgInput').placeholder = t('msg_placeholder');
@@ -619,8 +437,6 @@ function updateLanguage() {
   if(globalProducts.length > 0) renderProducts();
   if(user && !document.getElementById('view-profile').classList.contains('hidden')) loadMyAds();
 }
-
-// --- Toast System ---
 function showToast(messageKey, type = 'success') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
@@ -632,38 +448,22 @@ function showToast(messageKey, type = 'success') {
   container.appendChild(toast);
   setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
 }
-
 function initCategories() {
   const container = document.getElementById('cat-filters');
-  container.innerHTML = CATEGORIES_CONFIG.map(c => `
-    <div class="cat-chip ${c.id === activeCategory ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)">
-      <i class="fa-solid ${c.icon}"></i> ${t(c.key)}
-    </div>`).join('');
-  const select = document.getElementById('addCategory');
-  select.innerHTML = `<option value="" disabled selected>${t('select_cat')}</option>` + 
-    CATEGORIES_CONFIG.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${t(c.key)}</option>`).join('');
+  container.innerHTML = CATEGORIES_CONFIG.map(c => `<div class="cat-chip ${c.id === activeCategory ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)"><i class="fa-solid ${c.icon}"></i> ${t(c.key)}</div>`).join('');
+  document.getElementById('addCategory').innerHTML = `<option value="" disabled selected>${t('select_cat')}</option>` + CATEGORIES_CONFIG.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${t(c.key)}</option>`).join('');
 }
-
 function filterByCategory(catId, element) {
-  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active'));
-  element.classList.add('active');
-  activeCategory = catId;
-  renderProducts();
+  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active')); element.classList.add('active'); activeCategory = catId; renderProducts();
 }
-
 function nav(viewName) {
-  document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const view = document.getElementById(`view-${viewName}`);
-  view.classList.remove('hidden');
-  view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
-  const idx = viewName === 'home' ? 0 : viewName === 'chats' ? 1 : 2;
-  document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const view = document.getElementById(`view-${viewName}`); view.classList.remove('hidden'); view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
+  const idx = viewName === 'home' ? 0 : viewName === 'chats' ? 1 : 2; document.querySelectorAll('.nav-item')[idx].classList.add('active');
   if(viewName === 'profile' && user) loadMyAds();
   if(viewName === 'chats' && user) loadInbox();
 }
 
-// --- PI SYSTEM ---
 function initPi(){
   const btn = document.getElementById("loginBtn");
   const onIncompletePaymentFound = (payment) => { console.log("Incomplete:", payment); };
@@ -672,21 +472,12 @@ function initPi(){
     return;
   }
   Pi.init({ version: "2.0", sandbox: false });
-  btn.onclick = async () => {
-    try {
-      const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
-      handleLogin(auth.user.uid, auth.user.username);
-    } catch(e) { console.error(e); }
-  };
+  btn.onclick = async () => { try { const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound); handleLogin(auth.user.uid, auth.user.username); } catch(e) { console.error(e); } };
 }
 
 async function handleLogin(uid, username) {
   const { data: userData } = await sb.from("users").select("is_banned").eq("pi_id", uid).single();
-  if (userData && userData.is_banned === true) {
-    document.getElementById("banned-screen").classList.remove("hidden");
-    document.getElementById("banned-screen").style.display = "flex";
-    return; 
-  }
+  if (userData && userData.is_banned === true) { document.getElementById("banned-screen").classList.remove("hidden"); document.getElementById("banned-screen").style.display = "flex"; return; }
   user = { uid, username };
   await sb.from("users").upsert({ pi_id: uid, username: username }, { onConflict: 'pi_id' });
   document.getElementById("loginBtn").classList.add("hidden");
@@ -698,36 +489,45 @@ async function handleLogin(uid, username) {
   document.getElementById("p-username").innerText = username;
   document.getElementById("p-uid").innerText = "ID: " + uid.slice(0,6) + "...";
   loadMyAds(); loadInbox();
+  
+  // 🔥 Start checking for unread messages 🔥
+  checkUnreadMessages();
+  setInterval(checkUnreadMessages, 10000); // Refresh every 10 seconds
+}
+
+// --- BADGE LOGIC (New) ---
+async function checkUnreadMessages() {
+  if(!user) return;
+  const { count, error } = await sb
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('receiver_pi_id', user.uid)
+    .eq('is_read', false); // Check the boolean we added
+
+  const badge = document.getElementById('chat-badge');
+  if(count && count > 0) {
+    badge.innerText = count > 9 ? '+9' : count;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
 }
 
 // --- PRODUCTS ---
 async function loadAllProducts() {
   const { data } = await sb.from("products").select("*").order("promoted_until", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
   document.getElementById("loading").style.display = "none";
-  if(data) { globalProducts = data; renderProducts(); } 
-  else { document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>Error Loading</div>"; }
+  if(data) { globalProducts = data; renderProducts(); } else { document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>Error Loading</div>"; }
 }
-
 function renderProducts() {
-  const list = document.getElementById("products-list");
-  list.innerHTML = "";
+  const list = document.getElementById("products-list"); list.innerHTML = "";
   const filtered = activeCategory === 'all' ? globalProducts : globalProducts.filter(p => p.category === activeCategory);
-  if(!filtered.length) {
-    list.innerHTML = `<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>${t('no_products')}</div>`;
-    return;
-  }
+  if(!filtered.length) { list.innerHTML = `<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>${t('no_products')}</div>`; return; }
   const now = new Date();
   filtered.forEach(p => {
-    // Show first image from array, or fallback to legacy image_url, or placeholder
     let img = "https://placehold.co/400?text=No+Image";
-    if(p.images && p.images.length > 0) img = p.images[0];
-    else if(p.image_url) img = p.image_url;
-
-    let isPromoted = false;
-    if(p.promoted_until) {
-      const until = new Date(p.promoted_until);
-      if(until > now) isPromoted = true;
-    }
+    if(p.images && p.images.length > 0) img = p.images[0]; else if(p.image_url) img = p.image_url;
+    let isPromoted = false; if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) isPromoted = true; }
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}" onclick="openProductDetails(${p.id})">
         ${isPromoted ? `<div class="promo-badge"><i class="fa-solid fa-star"></i> ${t('promoted_badge')}</div>` : ''}
@@ -742,245 +542,71 @@ function renderProducts() {
   });
 }
 
-// --- PRODUCT DETAILS (Slider + Seller Stats) ---
+// --- DETAILS ---
 async function openProductDetails(pid) {
-  const p = globalProducts.find(x => x.id == pid);
-  if(!p) return;
-
-  // 1. Prepare Images for Slider
+  const p = globalProducts.find(x => x.id == pid); if(!p) return;
   const images = (p.images && p.images.length > 0) ? p.images : (p.image_url ? [p.image_url] : ["https://placehold.co/600?text=No+Image"]);
-  
-  const slider = document.getElementById('detail-slider');
-  const dots = document.getElementById('detail-dots');
-  
+  const slider = document.getElementById('detail-slider'); const dots = document.getElementById('detail-dots');
   slider.innerHTML = images.map(src => `<div class="slide"><img src="${src}" class="slide-img"></div>`).join('');
   dots.innerHTML = images.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
-
-  // Scroll listener for dots
-  slider.onscroll = () => {
-    const index = Math.round(slider.scrollLeft / slider.clientWidth); // Works for RTL if dir is handled by browser, mostly LTR logic applied for calc
-    // In RTL, scrollLeft might be negative or inverse. Simple active check:
-    const i = Math.round(Math.abs(slider.scrollLeft) / slider.offsetWidth);
-    document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === i));
-  };
-
-  document.getElementById('detail-title').innerText = p.name;
-  document.getElementById('detail-price').innerText = p.price;
-  document.getElementById('detail-desc').innerText = p.description || "";
+  slider.onscroll = () => { const i = Math.round(Math.abs(slider.scrollLeft) / slider.offsetWidth); document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === i)); };
+  document.getElementById('detail-title').innerText = p.name; document.getElementById('detail-price').innerText = p.price; document.getElementById('detail-desc').innerText = p.description || "";
+  document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; document.getElementById('detail-seller-avatar').innerText = (p.seller_username || "U").charAt(0).toUpperCase();
+  document.getElementById('detail-join-date').innerText = "..."; document.getElementById('detail-ad-count').innerText = "...";
   
-  document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown";
-  document.getElementById('detail-seller-avatar').innerText = (p.seller_username || "U").charAt(0).toUpperCase();
-  document.getElementById('detail-join-date').innerText = "...";
-  document.getElementById('detail-ad-count').innerText = "...";
-
-  // Actions
-  const actionsDiv = document.getElementById('detail-actions');
-  const isOwner = user && p.seller_pi_id === user.uid;
-  const now = new Date();
-  
+  const actionsDiv = document.getElementById('detail-actions'); const isOwner = user && p.seller_pi_id === user.uid; const now = new Date();
   if(isOwner) {
      let promoteBtn = "";
      if(p.promoted_until && new Date(p.promoted_until) > now) {
         const dateStr = new Date(p.promoted_until).toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
         promoteBtn = `<button class="btn btn-disabled" style="width:100%" disabled><i class="fa-solid fa-clock"></i> ${t('promoted_until')} ${dateStr}</button>`;
-     } else {
-        promoteBtn = `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>`;
-     }
-
-     actionsDiv.innerHTML = `
-       ${promoteBtn}
-       <button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="width:100%;color:red"><i class="fa-solid fa-trash"></i> ${t('delete_btn')}</button>
-     `;
+     } else { promoteBtn = `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>`; }
+     actionsDiv.innerHTML = `${promoteBtn}<button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="width:100%;color:red"><i class="fa-solid fa-trash"></i> ${t('delete_btn')}</button>`;
   } else {
-     actionsDiv.innerHTML = `
-       <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%">
-         <i class="fa-solid fa-comment-dots"></i> ${t('message_seller')}
-       </button>
-     `;
+     actionsDiv.innerHTML = `<button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%"><i class="fa-solid fa-comment-dots"></i> ${t('message_seller')}</button>`;
   }
-
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-  const view = document.getElementById('view-details');
-  view.classList.remove('hidden');
-  view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
-
-  // Fetch Seller Info
+  const view = document.getElementById('view-details'); view.classList.remove('hidden'); view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
   try {
     const { data: userData } = await sb.from('users').select('created_at').eq('pi_id', p.seller_pi_id).single();
-    if(userData) {
-       const date = new Date(userData.created_at);
-       document.getElementById('detail-join-date').innerText = date.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
-    }
+    if(userData) { const date = new Date(userData.created_at); document.getElementById('detail-join-date').innerText = date.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); }
     const { count } = await sb.from('products').select('*', { count: 'exact', head: true }).eq('seller_pi_id', p.seller_pi_id);
     document.getElementById('detail-ad-count').innerText = count || 0;
   } catch(e) { console.error(e); }
 }
 
-// --- PROFILE ---
 async function loadMyAds() {
-  const list = document.getElementById("my-ads-list");
-  list.innerHTML = t('loading');
+  const list = document.getElementById("my-ads-list"); list.innerHTML = t('loading');
   const { data } = await sb.from("products").select("*").eq("seller_pi_id", user.uid).order("created_at", {ascending:false});
-  list.innerHTML = "";
-  const now = new Date();
+  list.innerHTML = ""; const now = new Date();
   if(data) {
     data.forEach(p => {
-       let isPromoted = false;
-       let promoDateStr = "";
-       if(p.promoted_until) {
-          const until = new Date(p.promoted_until);
-          if(until > now) { 
-            isPromoted = true; 
-            promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); 
-          }
-       }
-       
-       // Use primary image
+       let isPromoted = false; let promoDateStr = "";
+       if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) { isPromoted = true; promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); } }
        let img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || "");
-
-       list.innerHTML += `
-       <div class="card" onclick="openProductDetails(${p.id})">
-         <div class="card-img-wrap"><img src="${img}" class="card-img"></div>
-         <div class="card-body">
-           <div class="card-title">${p.name}</div>
-           <div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div>
-         </div>
-       </div>`;
+       list.innerHTML += `<div class="card" onclick="openProductDetails(${p.id})"><div class="card-img-wrap"><img src="${img}" class="card-img"></div><div class="card-body"><div class="card-title">${p.name}</div><div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div></div></div>`;
     });
   }
 }
 
-// --- ADD PRODUCT LOGIC (Multi Image) ---
 function openAddModal(){ document.getElementById("addModal").style.display="flex"; selectedFiles = []; updateImagePreviews(); }
 function closeAddModal(){ document.getElementById("addModal").style.display="none"; resetForm(); }
-
-function handleFileSelect(input) {
-  if (input.files) {
-    const files = Array.from(input.files);
-    if (selectedFiles.length + files.length > 3) {
-      showToast('toast_max_images', 'error');
-      return;
-    }
-    selectedFiles = [...selectedFiles, ...files];
-    updateImagePreviews();
-  }
-  input.value = ""; // Reset to allow re-selecting same file
-}
-
-function updateImagePreviews() {
-  const container = document.getElementById('image-previews');
-  container.innerHTML = "";
-  selectedFiles.forEach((file, index) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const div = document.createElement('div');
-      div.className = 'preview-box';
-      div.innerHTML = `
-        <img src="${e.target.result}">
-        <div class="preview-remove" onclick="removeFile(${index})"><i class="fa-solid fa-xmark"></i></div>
-      `;
-      container.appendChild(div);
-    };
-    reader.readAsDataURL(file);
-  });
-  
-  // Hide placeholder if 3 images
-  document.getElementById('upload-placeholder').style.display = selectedFiles.length >= 3 ? 'none' : 'flex';
-}
-
-function removeFile(index) {
-  selectedFiles.splice(index, 1);
-  updateImagePreviews();
-}
-
-function resetForm() {
-  document.getElementById("addName").value = "";
-  document.getElementById("addPrice").value = "";
-  document.getElementById("addDesc").value = "";
-  document.getElementById("addCategory").value = "";
-  selectedFiles = [];
-  updateImagePreviews();
-}
-
+function handleFileSelect(input) { if (input.files) { const files = Array.from(input.files); if (selectedFiles.length + files.length > 3) { showToast('toast_max_images', 'error'); return; } selectedFiles = [...selectedFiles, ...files]; updateImagePreviews(); } input.value = ""; }
+function updateImagePreviews() { const container = document.getElementById('image-previews'); container.innerHTML = ""; selectedFiles.forEach((file, index) => { const reader = new FileReader(); reader.onload = (e) => { const div = document.createElement('div'); div.className = 'preview-box'; div.innerHTML = `<img src="${e.target.result}"><div class="preview-remove" onclick="removeFile(${index})"><i class="fa-solid fa-xmark"></i></div>`; container.appendChild(div); }; reader.readAsDataURL(file); }); document.getElementById('upload-placeholder').style.display = selectedFiles.length >= 3 ? 'none' : 'flex'; }
+function removeFile(index) { selectedFiles.splice(index, 1); updateImagePreviews(); }
+function resetForm() { document.getElementById("addName").value = ""; document.getElementById("addPrice").value = ""; document.getElementById("addDesc").value = ""; document.getElementById("addCategory").value = ""; selectedFiles = []; updateImagePreviews(); }
 async function submitProduct(){
-    const name = document.getElementById("addName").value;
-    const price = document.getElementById("addPrice").value;
-    const desc = document.getElementById("addDesc").value;
-    const category = document.getElementById("addCategory").value;
-    const btn = document.getElementById("publishBtn");
-    
+    const name = document.getElementById("addName").value; const price = document.getElementById("addPrice").value; const desc = document.getElementById("addDesc").value; const category = document.getElementById("addCategory").value; const btn = document.getElementById("publishBtn");
     if(!name || !price || !category) return showToast('toast_fill_data', 'error');
-    
-    btn.innerText = t('loading'); btn.disabled=true;
-    
-    let uploadedUrls = [];
-    
-    if(selectedFiles.length > 0){
-        try {
-          const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" };
-          
-          for(const file of selectedFiles) {
-             const compressedFile = await imageCompression(file, options);
-             const path = `${user.uid}/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`;
-             const {error} = await sb.storage.from("images").upload(path, compressedFile);
-             if(error) throw error;
-             
-             const url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
-             uploadedUrls.push(url);
-          }
-        } catch (error) {
-          console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return;
-        }
-    }
-    
-    // Save first image to image_url for legacy support, and all to images array
-    await sb.from("products").insert({
-        name, price, description: desc, 
-        image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null,
-        images: uploadedUrls, // Requires 'images' jsonb column
-        seller_pi_id: user.uid, seller_username: user.username,
-        category: category
-    });
-    
-    showToast('toast_success_add');
-    closeAddModal(); loadAllProducts(); loadMyAds();
-    btn.innerText = t('publish_btn'); btn.disabled=false;
+    btn.innerText = t('loading'); btn.disabled=true; let uploadedUrls = [];
+    if(selectedFiles.length > 0){ try { const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" }; for(const file of selectedFiles) { const compressedFile = await imageCompression(file, options); const path = `${user.uid}/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`; const {error} = await sb.storage.from("images").upload(path, compressedFile); if(error) throw error; const url = sb.storage.from("images").getPublicUrl(path).data.publicUrl; uploadedUrls.push(url); } } catch (error) { console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return; } }
+    await sb.from("products").insert({ name, price, description: desc, image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null, images: uploadedUrls, seller_pi_id: user.uid, seller_username: user.username, category: category });
+    showToast('toast_success_add'); closeAddModal(); loadAllProducts(); loadMyAds(); btn.innerText = t('publish_btn'); btn.disabled=false;
 }
 
-// --- PAYMENTS & DELETE ---
-async function promoteProduct(productId) {
-  if(!window.Pi) return showToast("Pi Browser Required", 'error');
-  const API_BASE = "/api"; 
-  try {
-    const paymentData = { amount: 3, memo: "Promote Ad: " + productId, metadata: { productId: productId, type: "promotion" } };
-    const paymentCallbacks = {
-      onReadyForServerApproval: async (paymentId) => {
-          try { await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) }); } catch (e) { showToast("Connection Error", 'error'); }
-      },
-      onServerApproval: (paymentId) => {},
-      onCancel: (paymentId) => {},
-      onError: (error, payment) => { showToast("Payment Failed", 'error'); },
-      onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-             const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) });
-             if(res.ok) { showToast("Promotion Active!"); loadMyAds(); openProductDetails(productId); } 
-             else { showToast("Activation Error", 'error'); }
-          } catch (err) { showToast("Connection Error", 'error'); }
-      }
-    };
-    Pi.createPayment(paymentData, paymentCallbacks);
-  } catch(err) { showToast("Payment Error", 'error'); }
-}
+async function promoteProduct(productId) { if(!window.Pi) return showToast("Pi Browser Required", 'error'); const API_BASE = "/api"; try { const paymentData = { amount: 3, memo: "Promote Ad: " + productId, metadata: { productId: productId, type: "promotion" } }; const paymentCallbacks = { onReadyForServerApproval: async (paymentId) => { try { await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) }); } catch (e) { showToast("Connection Error", 'error'); } }, onServerApproval: () => {}, onCancel: () => {}, onError: () => { showToast("Payment Failed", 'error'); }, onReadyForServerCompletion: async (paymentId, txid) => { try { const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) }); if(res.ok) { showToast("Promotion Active!"); loadMyAds(); openProductDetails(productId); } else { showToast("Activation Error", 'error'); } } catch (err) { showToast("Connection Error", 'error'); } } }; Pi.createPayment(paymentData, paymentCallbacks); } catch(err) { showToast("Payment Error", 'error'); } }
+async function deleteProduct(id){ if(confirm(t('confirm_delete'))) { await sb.from("products").delete().eq("id",id); loadAllProducts(); loadMyAds(); nav('home'); showToast(t('delete_btn')); } }
 
-async function deleteProduct(id){
-    if(confirm(t('confirm_delete'))) { 
-      await sb.from("products").delete().eq("id",id); 
-      loadAllProducts(); loadMyAds(); nav('home');
-      showToast(t('delete_btn')); 
-    }
-}
-
-// --- CHAT SYSTEM ---
 function openChatRoom(pid, otherId, pName, uName) {
   if(!user) return showToast('toast_login_first', 'error');
   activeChat = { pid, otherId };
@@ -989,51 +615,56 @@ function openChatRoom(pid, otherId, pName, uName) {
   document.getElementById("chatModal").style.display = "flex";
   document.getElementById("msgContainer").innerHTML = "";
   loadMessages();
+  
+  // 🔥 Mark read when opening 🔥
+  sb.from('messages').update({ is_read: true })
+    .eq('product_id', pid).eq('receiver_pi_id', user.uid).eq('sender_pi_id', otherId)
+    .then(() => checkUnreadMessages()); // Refresh badge
+
   sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, payload => {
        const m = payload.new;
        if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid)) renderMsg(m);
   }).subscribe();
 }
+
 async function loadMessages() {
   const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
   if(data) data.forEach(m => { if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid)) renderMsg(m); });
 }
 function renderMsg(m){
-    const div = document.createElement("div");
-    div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`;
-    div.innerText = m.content;
-    const c = document.getElementById("msgContainer");
-    c.appendChild(div); c.scrollTop = c.scrollHeight;
+    const div = document.createElement("div"); div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`; div.innerText = m.content;
+    const c = document.getElementById("msgContainer"); c.appendChild(div); c.scrollTop = c.scrollHeight;
 }
 async function sendMsg(){
-    const inp = document.getElementById("msgInput");
-    if(!inp.value.trim()) return;
+    const inp = document.getElementById("msgInput"); if(!inp.value.trim()) return;
     const { error } = await sb.from("messages").insert({ product_id: activeChat.pid, sender_pi_id: user.uid, receiver_pi_id: activeChat.otherId, content: inp.value.trim() });
     if(error) showToast('toast_send_fail', 'error'); else inp.value = "";
 }
-function closeChat() { document.getElementById("chatModal").style.display = "none"; activeChat = null; sb.removeAllChannels(); }
+function closeChat() { document.getElementById("chatModal").style.display = "none"; activeChat = null; sb.removeAllChannels(); checkUnreadMessages(); }
 
-// --- INBOX ---
+// --- INBOX (Modified to show unread) ---
 async function loadInbox() {
-  const list = document.getElementById("inbox-list");
-  list.innerHTML = `<div style='text-align:center;padding:20px'>${t('loading')}</div>`;
+  const list = document.getElementById("inbox-list"); list.innerHTML = `<div style='text-align:center;padding:20px'>${t('loading')}</div>`;
   const { data } = await sb.from("messages").select("*, products(name)").or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`).order("created_at", {ascending: false});
-  list.innerHTML = "";
-  if(!data || !data.length) return list.innerHTML = `<div style='text-align:center;padding:40px;color:gray'>${t('no_products').replace('products','messages')}</div>`;
+  list.innerHTML = ""; if(!data || !data.length) return list.innerHTML = `<div style='text-align:center;padding:40px;color:gray'>${t('no_products').replace('products','messages')}</div>`;
   const threads = new Map();
-  const otherIds = new Set();
   data.forEach(m => {
     const otherId = (m.sender_pi_id === user.uid) ? m.receiver_pi_id : m.sender_pi_id;
     const key = `${m.product_id}_${otherId}`;
-    if(!threads.has(key)){ otherIds.add(otherId); threads.set(key, { pid: m.product_id, otherId: otherId, pName: m.products?.name || "Item", last: m.content, name: "User" }); }
+    // Check if unread logic needs better aggregation, but simple check:
+    if(!threads.has(key)){ threads.set(key, { pid: m.product_id, otherId: otherId, pName: m.products?.name || "Item", last: m.content, name: "User", unread: (!m.is_read && m.receiver_pi_id === user.uid) }); }
   });
-  if(otherIds.size > 0){
-      const { data: users } = await sb.from("users").select("pi_id,username").in("pi_id", Array.from(otherIds));
+  
+  // Get Usernames
+  const otherIds = Array.from(threads.values()).map(t => t.otherId);
+  if(otherIds.length > 0){
+      const { data: users } = await sb.from("users").select("pi_id,username").in("pi_id", otherIds);
       if(users) { users.forEach(u => { threads.forEach(t => { if(t.otherId === u.pi_id) t.name = u.username; }); }); }
   }
+
   threads.forEach(t => {
       list.innerHTML += `
-      <div class="inbox-item" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.pName}', '${t.name}')">
+      <div class="inbox-item ${t.unread ? 'unread' : ''}" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.pName}', '${t.name}')">
         <div class="inbox-avatar">${t.name.charAt(0)}</div>
         <div class="inbox-info">
           <div class="inbox-name">${t.name} <span style="font-weight:400;color:gray;font-size:11px">(${t.pName})</span></div>
@@ -1041,6 +672,7 @@ async function loadInbox() {
         </div>
       </div>`;
   });
+  checkUnreadMessages(); // Sync badge on open
 }
 </script>
 </body>
