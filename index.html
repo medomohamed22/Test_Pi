@@ -16,13 +16,13 @@
 :root {
   --primary: #7C3AED;
   --primary-dark: #5B21B6;
-  --accent: #F59E0B;        /* ذهبي */
+  --accent: #F59E0B;
   --bg-body: #F3F4F6;
   --surface: #FFFFFF;
   --text-main: #111827;
   --text-muted: #6B7280;
   --danger: #EF4444;
-  --whatsapp: #25D366;
+  --success: #10B981;
   --border: #E5E7EB;
   --nav-height: 70px;
 }
@@ -43,16 +43,16 @@ body {
 .container { width: min(100%, 800px); margin: 0 auto; padding: 16px; }
 .hidden { display: none !important; }
 .btn {
-  border: none; cursor: pointer; border-radius: 14px;
-  padding: 10px 16px; font-weight: 700; font-family: inherit;
+  border: none; cursor: pointer; border-radius: 12px;
+  padding: 12px 16px; font-weight: 700; font-family: inherit;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   transition: transform 0.1s ease; font-size: 14px;
 }
-.btn:active { transform: scale(0.95); }
-.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2); }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
 .btn-gold { background: linear-gradient(135deg, var(--accent), #FBBF24); color: white; }
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-.btn-whatsapp { background: var(--whatsapp); color: white; }
+.btn-whatsapp { background: #25D366; color: white; }
 .btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; }
 
 /* --- Header --- */
@@ -106,17 +106,12 @@ body {
   width: 5px; height: 5px; background: var(--primary); border-radius: 50%;
 }
 
-/* --- Views Layout --- */
+/* --- Layout Animations --- */
 .view-section { animation: fadeScale 0.4s ease-out; }
-@keyframes fadeScale {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
+@keyframes fadeScale { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-/* --- Product Cards --- */
-/* --- Product Cards Updated Style --- */
+/* --- Product Cards (New Design) --- */
 .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-
 .card {
   background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
   overflow: hidden; display: flex; flex-direction: column;
@@ -124,160 +119,122 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .card:active { transform: scale(0.98); }
-
-/* صورة المنتج */
-.card-img-wrap {
-  position: relative; width: 100%; 
-  aspect-ratio: 1 / 1; /* مربع */
-  background: #f9fafb;
-  overflow: hidden;
-}
+.card-img-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: #f9fafb; overflow: hidden; }
 .card-img { width: 100%; height: 100%; object-fit: cover; }
-
-/* جسم الكارت */
-.card-body { 
-  padding: 12px; 
-  display: flex; flex-direction: column; 
-  align-items: center; /* توسيط المحتوى */
-  gap: 8px; 
-  text-align: center;
-}
-
-/* اسم المنتج */
+.card-body { padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
 .card-title { 
-  font-size: 14px; margin: 0; line-height: 1.3; 
-  font-weight: 800; color: var(--text-main);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  height: 38px; /* ارتفاع ثابت لسطرين */
+  font-size: 14px; margin: 0; line-height: 1.3; font-weight: 800; color: var(--text-main);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 38px;
 }
-
-/* السعر (الشكل البيضاوي الأصفر) */
 .price-pill {
-  background: #FEF3C7; color: #92400E; /* خلفية صفراء فاتحة ونص بني */
-  border: 1px solid #FCD34D;
-  padding: 4px 12px; border-radius: 99px;
-  font-size: 12px; font-weight: 800;
+  background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;
+  padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 800;
   display: inline-flex; align-items: center; gap: 4px;
 }
-
-/* الوصف المختصر */
-.card-desc {
-  font-size: 11px; color: var(--text-muted);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  line-height: 1.4; height: 32px; width: 100%;
-}
-
-/* الأزرار في الأسفل */
-.card-actions {
-  width: 100%; display: flex; gap: 6px; margin-top: 4px;
-}
-
-/* بادج المميز */
+.card-desc { font-size: 11px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; height: 32px; width: 100%; }
+.card-actions { width: 100%; display: flex; gap: 6px; margin-top: 4px; }
 .promo-badge {
   position: absolute; top: 8px; right: 8px; z-index: 10;
   background: var(--accent); color: white; padding: 4px 8px;
-  border-radius: 6px; font-size: 10px; font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  border-radius: 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 .card.promoted { border: 2px solid var(--accent); }
 
+/* --- Categories Bar --- */
+.categories-wrapper { position: sticky; top: 60px; z-index: 40; background: var(--bg-body); padding: 10px 0; margin-bottom: 10px; }
+.categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+.categories-scroll::-webkit-scrollbar { display: none; }
+.cat-chip {
+  background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; color: var(--text-muted); white-space: nowrap; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;
+}
+.cat-chip.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3); }
+
 /* --- Inbox & Chat --- */
-.inbox-item {
-  background: white; padding: 14px; margin-bottom: 10px;
-  border-radius: 16px; border: 1px solid var(--border);
-  display: flex; align-items: center; gap: 12px; cursor: pointer;
-}
-.inbox-avatar {
-  width: 45px; height: 45px; border-radius: 50%;
-  background: #f3f4f6; color: var(--primary);
-  display: grid; place-items: center; font-size: 18px; font-weight: bold;
-}
+.inbox-item { background: white; padding: 14px; margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.inbox-avatar { width: 45px; height: 45px; border-radius: 50%; background: #f3f4f6; color: var(--primary); display: grid; place-items: center; font-size: 18px; font-weight: bold; }
 .inbox-info { flex: 1; overflow: hidden; }
 .inbox-name { font-weight: 800; font-size: 14px; }
 .inbox-msg { font-size: 12px; color: var(--text-muted); }
-
-/* --- Modals --- */
-.modal {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-  z-index: 2000; display: none; align-items: flex-end; justify-content: center;
-}
-.sheet {
-  background: white; width: 100%; max-width: 600px;
-  border-radius: 24px 24px 0 0; padding: 20px;
-  max-height: 90vh; overflow-y: auto;
-  animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  display: flex; flex-direction: column;
-}
-@keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
-
-/* --- Inputs --- */
-input, textarea {
-  width: 100%; padding: 14px; margin-bottom: 12px;
-  border: 1px solid var(--border); border-radius: 12px;
-  font-family: inherit; font-size: 14px; outline: none; background: #fdfdfd;
-}
-input:focus, textarea:focus { border-color: var(--primary); background: white; }
-
-/* Chat Bubbles */
 .chat-area { flex: 1; overflow-y: auto; background: #f9fafb; padding: 10px; border-radius: 12px; margin-bottom: 10px; min-height: 300px; }
 .bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; margin-bottom: 8px; font-size: 13px; }
 .bubble.me { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
 .bubble.other { background: white; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
 
-/* --- شريط الأقسام (Categories Bar) --- */
-.categories-wrapper {
-  position: sticky; top: 60px; z-index: 40; /* تثبيت الشريط أسفل الهيدر */
-  background: var(--bg-body);
-  padding: 10px 0;
-  margin-bottom: 10px;
+/* --- Modals & Inputs (Beautified) --- */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
+.sheet {
+  background: white; width: 100%; max-width: 600px;
+  border-radius: 24px 24px 0 0; padding: 24px;
+  max-height: 90vh; overflow-y: auto;
+  animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex; flex-direction: column; gap: 16px;
 }
+@keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
 
-.categories-scroll {
-  display: flex; gap: 10px; overflow-x: auto; 
-  padding: 0 4px; scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch; /* نعومة التمرير في الموبايل */
-}
-
-/* إخفاء شريط التمرير للشكل الجمالي */
-.categories-scroll::-webkit-scrollbar { display: none; }
-
-.cat-chip {
-  background: white; border: 1px solid var(--border);
-  padding: 8px 16px; border-radius: 20px;
-  font-size: 13px; font-weight: 700; color: var(--text-muted);
-  white-space: nowrap; cursor: pointer;
-  display: flex; align-items: center; gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.cat-chip i { font-size: 14px; }
-
-.cat-chip.active {
-  background: var(--primary); color: white; border-color: var(--primary);
-  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
-}
-
-/* --- تنسيق قائمة الاختيار في المودال --- */
-select.input-box {
-  width: 100%; padding: 14px; margin-bottom: 12px;
+/* تنسيق الحقول الموحد */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--text-main); margin-right: 4px; }
+.input-box {
+  width: 100%; padding: 14px;
   border: 1px solid var(--border); border-radius: 12px;
   font-family: inherit; font-size: 14px; outline: none; background: #fff;
-  appearance: none; /* إخفاء السهم الافتراضي */
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat; background-position: left 10px center; background-size: 16px;
+  transition: border-color 0.2s;
+}
+.input-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
+textarea.input-box { resize: none; height: 80px; }
+
+/* تنسيق Select ليكون مثل Input تماماً */
+select.input-box {
+  appearance: none; 
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: left 14px center; background-size: 16px;
 }
 
+/* تنسيق رفع الصورة الجديد */
+.file-upload-wrapper {
+  border: 2px dashed var(--border); border-radius: 16px;
+  padding: 20px; text-align: center; cursor: pointer;
+  background: #F9FAFB; transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.file-upload-wrapper:hover { border-color: var(--primary); background: #F3F0FF; }
+.file-upload-content { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted); }
+.file-upload-icon { font-size: 24px; color: var(--primary); }
+.file-upload-text { font-size: 12px; font-weight: 500; }
+#preview-img { display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 14px; }
+
+/* --- Toast Notification (بديل الـ Alert) --- */
+.toast-container {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+}
+.toast {
+  background: white; padding: 12px 20px; border-radius: 99px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  animation: toastSlide 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: auto; min-width: 250px; justify-content: center;
+}
+.toast.success { border-right: 4px solid var(--success); }
+.toast.error { border-right: 4px solid var(--danger); }
+.toast-icon { font-size: 18px; }
+.toast-msg { font-size: 13px; font-weight: 700; color: var(--text-main); }
+@keyframes toastSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 </style>
 </head>
 <body>
-  <div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+
+<div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
   <i class="fa-solid fa-ban" style="font-size:80px;color:#EF4444;margin-bottom:20px;animation:pulse 2s infinite"></i>
   <h1 style="color:#EF4444;font-size:32px;margin:0">حساب محظور</h1>
   <p style="color:#6B7280;margin-top:10px;font-size:18px">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
   <style>@keyframes pulse { 0% {transform:scale(1);} 50% {transform:scale(1.1);} 100% {transform:scale(1);} }</style>
 </div>
 
+<div id="toast-container" class="toast-container"></div>
 
 <header class="header">
   <div class="brand"><i class="fa-solid fa-store"></i> سوق باي</div>
@@ -291,10 +248,10 @@ select.input-box {
 </header>
 
 <div class="container">
-  <div id="view-home" class="view-section"><div class="categories-wrapper">
-  <div class="categories-scroll" id="cat-filters">
-  </div>
-</div>
+  <div id="view-home" class="view-section">
+    <div class="categories-wrapper">
+      <div class="categories-scroll" id="cat-filters"></div>
+    </div>
     <h3 style="margin-top:5px;display:flex;align-items:center;gap:8px">
       <i class="fa-solid fa-fire" style="color:var(--accent)"></i> أحدث المعروضات
     </h3>
@@ -345,25 +302,54 @@ select.input-box {
 
 <div id="addModal" class="modal" onclick="if(event.target==this) closeAddModal()">
   <div class="sheet">
-    <h3 style="margin-top:0">بيع منتج جديد</h3>
-    <input id="addName" placeholder="اسم المنتج" />
-    <div style="display:flex;gap:10px">
-      <select id="addCategory" class="input-box">
-  <option value="" disabled selected>اختر القسم</option>
-  <option value="cars">🚗 سيارات ومركبات</option>
-  <option value="electronics">💻 إلكترونيات</option>
-  <option value="phones">📱 هواتف</option>
-  <option value="fashion">👕 ملابس وموضة</option>
-  <option value="home">🏠 أثاث ومنزل</option>
-  <option value="other">📦 أخرى</option>
-</select>
-<div style="display:flex;gap:10px">
-      <input id="addPrice" type="number" placeholder="السعر (Pi)" />
-      <input id="addPhone" type="tel" placeholder="رقم الموبايل (واتساب)" />
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0">بيع منتج جديد</h3>
+      <button onclick="closeAddModal()" style="background:none;border:none;font-size:18px;color:#666"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <textarea id="addDesc" placeholder="الوصف..."></textarea>
-    <label style="font-size:12px;font-weight:bold;margin-bottom:8px;display:block">صورة المنتج</label>
-    <input id="addImg" type="file" accept="image/*" />
+
+    <label class="file-upload-wrapper">
+      <input id="addImg" type="file" accept="image/*" style="display:none" onchange="previewImage(this)">
+      <img id="preview-img">
+      <div class="file-upload-content" id="upload-placeholder">
+        <i class="fa-solid fa-cloud-arrow-up file-upload-icon"></i>
+        <div class="file-upload-text">اضغط لاختيار صورة المنتج</div>
+      </div>
+    </label>
+
+    <div class="form-group">
+      <label class="form-label">اسم المنتج</label>
+      <input id="addName" class="input-box" placeholder="مثال: آيفون 13 برو ماكس" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">القسم</label>
+      <select id="addCategory" class="input-box">
+        <option value="" disabled selected>اختر القسم المناسب</option>
+        <option value="cars">🚗 سيارات ومركبات</option>
+        <option value="electronics">💻 إلكترونيات</option>
+        <option value="phones">📱 هواتف</option>
+        <option value="fashion">👕 ملابس وموضة</option>
+        <option value="home">🏠 أثاث ومنزل</option>
+        <option value="other">📦 أخرى</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <div class="form-group" style="flex:1">
+        <label class="form-label">السعر (Pi)</label>
+        <input id="addPrice" type="number" class="input-box" placeholder="0.00" />
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">رقم واتساب</label>
+        <input id="addPhone" type="tel" class="input-box" placeholder="مثال: 010xxxx" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">الوصف</label>
+      <textarea id="addDesc" class="input-box" placeholder="اكتب تفاصيل المنتج وحالته..."></textarea>
+    </div>
+
     <button id="publishBtn" class="btn btn-primary" style="width:100%" onclick="submitProduct()">نشر الإعلان</button>
   </div>
 </div>
@@ -379,7 +365,7 @@ select.input-box {
     </div>
     <div id="msgContainer" class="chat-area" style="display:flex;flex-direction:column;"></div>
     <div style="display:flex;gap:8px;margin-top:auto">
-      <input id="msgInput" placeholder="اكتب رسالة..." style="margin:0;border-radius:25px" />
+      <input id="msgInput" class="input-box" placeholder="اكتب رسالة..." style="margin:0;border-radius:25px" />
       <button class="btn btn-primary" style="border-radius:50%;width:48px;height:48px;padding:0" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
   </div>
@@ -393,12 +379,62 @@ const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
 let sb, user = null;
 let activeChat = null;
 
+// --- Categories ---
+const CATEGORIES = [
+  { id: 'all', name: 'الكل', icon: 'fa-layer-group' },
+  { id: 'cars', name: 'سيارات', icon: 'fa-car' },
+  { id: 'electronics', name: 'إلكترونيات', icon: 'fa-laptop' },
+  { id: 'phones', name: 'هواتف', icon: 'fa-mobile-screen' },
+  { id: 'fashion', name: 'ملابس', icon: 'fa-shirt' },
+  { id: 'home', name: 'منزل', icon: 'fa-couch' },
+  { id: 'other', name: 'أخرى', icon: 'fa-box' },
+];
+let globalProducts = [];
+let activeCategory = 'all';
+
 // --- INIT ---
 document.addEventListener("DOMContentLoaded", async () => {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   initPi();
+  initCategories();
   loadAllProducts();
 });
+
+// --- Toast System ---
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
+  const color = type === 'success' ? '#10B981' : '#EF4444';
+  
+  toast.innerHTML = `
+    <i class="fa-solid ${icon} toast-icon" style="color:${color}"></i>
+    <span class="toast-msg">${message}</span>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-20px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+function initCategories() {
+  const container = document.getElementById('cat-filters');
+  container.innerHTML = CATEGORIES.map(c => `
+    <div class="cat-chip ${c.id === 'all' ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)">
+      <i class="fa-solid ${c.icon}"></i> ${c.name}
+    </div>
+  `).join('');
+}
+
+function filterByCategory(catId, element) {
+  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active'));
+  element.classList.add('active');
+  activeCategory = catId;
+  renderProducts();
+}
 
 function nav(viewName) {
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
@@ -418,10 +454,7 @@ function nav(viewName) {
 // --- PI SYSTEM ---
 function initPi(){
   const btn = document.getElementById("loginBtn");
-  
-  const onIncompletePaymentFound = (payment) => {
-    console.log("Found incomplete payment:", payment);
-  };
+  const onIncompletePaymentFound = (payment) => { console.log("Incomplete:", payment); };
 
   if(!window.Pi){
     btn.onclick = () => handleLogin("test_" + Math.floor(Math.random()*1000), "زائر_تجريبي");
@@ -435,39 +468,24 @@ function initPi(){
       const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
       handleLogin(auth.user.uid, auth.user.username);
     } catch(e) { 
-      alert("حدث خطأ في تسجيل الدخول: " + e);
+      showToast("فشل تسجيل الدخول", 'error');
       console.error(e);
     }
   };
 }
 
 async function handleLogin(uid, username) {
-  // 1. التحقق هل المستخدم محظور؟
-  const { data: userData, error } = await sb
-    .from("users")
-    .select("is_banned")
-    .eq("pi_id", uid)
-    .single();
+  const { data: userData, error } = await sb.from("users").select("is_banned").eq("pi_id", uid).single();
 
-  // إذا وجدنا المستخدم وكان محظوراً
   if (userData && userData.is_banned === true) {
-    // إظهار شاشة الحظر الحمراء
     document.getElementById("banned-screen").classList.remove("hidden");
-    document.getElementById("banned-screen").style.display = "flex"; // تأكيد العرض
-    return; // ⛔ توقف هنا ولا تكمل تسجيل الدخول
+    document.getElementById("banned-screen").style.display = "flex";
+    return; 
   }
 
-  // 2. إذا لم يكن محظوراً، أكمل الدخول بشكل طبيعي
   user = { uid, username };
+  await sb.from("users").upsert({ pi_id: uid, username: username }, { onConflict: 'pi_id' });
   
-  // تحديث البيانات أو إنشاؤها (مع الحفاظ على حالة الحظر كما هي)
-  await sb.from("users").upsert({ 
-    pi_id: uid, 
-    username: username 
-    // لا نرسل is_banned هنا لكي لا نلغي الحظر بالخطأ
-  }, { onConflict: 'pi_id' });
-  
-  // تحديث واجهة الموقع
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
   document.getElementById("userDispName").innerText = username;
@@ -478,12 +496,11 @@ async function handleLogin(uid, username) {
   document.getElementById("p-username").innerText = username;
   document.getElementById("p-uid").innerText = "ID: " + uid.slice(0,6) + "...";
   
-  // تحميل بيانات المستخدم
   loadMyAds();
   loadInbox();
 }
 
-// --- PRODUCTS & HOME (With Promotion Logic) ---
+// --- PRODUCTS ---
 async function loadAllProducts() {
   const { data } = await sb
     .from("products")
@@ -492,28 +509,40 @@ async function loadAllProducts() {
     .order("created_at", { ascending: false });
 
   document.getElementById("loading").style.display = "none";
+  
+  if(data) {
+    globalProducts = data;
+    renderProducts();
+  } else {
+    document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>خطأ في التحميل</div>";
+  }
+}
+
+function renderProducts() {
   const list = document.getElementById("products-list");
   list.innerHTML = "";
 
-  if(!data || !data.length) {
-    list.innerHTML = "<div style='grid-column:1/-1;text-align:center'>لا توجد إعلانات</div>";
+  const filtered = activeCategory === 'all' 
+    ? globalProducts 
+    : globalProducts.filter(p => p.category === activeCategory);
+
+  if(!filtered.length) {
+    list.innerHTML = "<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>لا توجد منتجات</div>";
     return;
   }
 
   const now = new Date();
 
-  data.forEach(p => {
+  filtered.forEach(p => {
     const isOwner = user && p.seller_pi_id === user.uid;
     const img = p.image_url || "https://placehold.co/400?text=No+Image";
     
-    // فحص التمييز (Promotion Check)
     let isPromoted = false;
     if(p.promoted_until) {
       const until = new Date(p.promoted_until);
       if(until > now) isPromoted = true;
     }
 
-    // تجهيز الأزرار (Actions)
     let actions = "";
     if(!isOwner) {
        let waBtn = "";
@@ -522,7 +551,6 @@ async function loadAllProducts() {
           if(ph.startsWith('0')) ph = '2' + ph; 
           waBtn = `<a href="https://wa.me/${ph}" target="_blank" class="btn btn-whatsapp" style="padding:8px;border-radius:10px"><i class="fa-brands fa-whatsapp"></i></a>`;
        }
-
        actions = `
          <div style="display:flex;gap:6px;width:100%">
            ${waBtn}
@@ -532,27 +560,15 @@ async function loadAllProducts() {
        actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px;width:100%">إعلانك</div>`;
     }
 
-    // ✅ بناء كود HTML الجديد للكارد (التصميم الجديد)
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}">
         ${isPromoted ? '<div class="promo-badge"><i class="fa-solid fa-star"></i> مميز</div>' : ''}
-        
-        <div class="card-img-wrap">
-          <img src="${img}" class="card-img" loading="lazy">
-        </div>
-        
+        <div class="card-img-wrap"><img src="${img}" class="card-img" loading="lazy"></div>
         <div class="card-body">
           <h4 class="card-title">${p.name}</h4>
-          
-          <div class="price-pill">
-            <span>${p.price}</span> <span>Pi</span>
-          </div>
-
+          <div class="price-pill"><span>${p.price}</span> <span>Pi</span></div>
           <div class="card-desc">${p.description || 'لا يوجد وصف'}</div>
-
-          <div class="card-actions">
-             ${actions}
-          </div>
+          <div class="card-actions">${actions}</div>
         </div>
       </div>
     `;
@@ -560,42 +576,30 @@ async function loadAllProducts() {
   });
 }
 
-
-// --- PROFILE & ADS (With Disabled Promote Button) ---
+// --- PROFILE ---
 async function loadMyAds() {
   const list = document.getElementById("my-ads-list");
   list.innerHTML = "تحميل...";
   const { data } = await sb.from("products").select("*").eq("seller_pi_id", user.uid).order("created_at", {ascending:false});
   list.innerHTML = "";
-  
   const now = new Date();
 
   if(data) {
     data.forEach(p => {
-       // Check if already promoted
        let isPromoted = false;
        let promoDateStr = "";
        if(p.promoted_until) {
           const until = new Date(p.promoted_until);
-          if(until > now) {
-            isPromoted = true;
-            promoDateStr = until.toLocaleDateString("ar-EG");
-          }
+          if(until > now) { isPromoted = true; promoDateStr = until.toLocaleDateString("ar-EG"); }
        }
 
        const promoteBtn = isPromoted 
-        ? `<button class="btn btn-disabled" style="width:100%;font-size:12px;margin-bottom:6px" disabled>
-             <i class="fa-solid fa-clock"></i> مميز حتى ${promoDateStr}
-           </button>`
-        : `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E;font-size:12px;margin-bottom:6px">
-             <i class="fa-solid fa-arrow-up"></i> تمييز الإعلان (3 Pi)
-           </button>`;
+        ? `<button class="btn btn-disabled" style="width:100%;font-size:12px;margin-bottom:6px" disabled><i class="fa-solid fa-clock"></i> مميز حتى ${promoDateStr}</button>`
+        : `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E;font-size:12px;margin-bottom:6px"><i class="fa-solid fa-arrow-up"></i> تمييز الإعلان (3 Pi)</button>`;
 
        list.innerHTML += `
        <div class="card">
-         <div class="card-img-wrap">
-            <img src="${p.image_url || ''}" class="card-img">
-         </div>
+         <div class="card-img-wrap"><img src="${p.image_url || ''}" class="card-img"></div>
          <div class="card-body">
            <div class="card-title">${p.name}</div>
            ${promoteBtn}
@@ -606,152 +610,126 @@ async function loadMyAds() {
   }
 }
 
-// --- PAYMENTS (Pi Logic - With Netlify Rewrite) ---
-async function promoteProduct(productId) {
-  if(!window.Pi) return alert("هذه الميزة تعمل داخل متصفح Pi فقط");
+// --- ADD PRODUCT LOGIC ---
+function openAddModal(){ document.getElementById("addModal").style.display="flex"; }
+function closeAddModal(){ document.getElementById("addModal").style.display="none"; resetForm(); }
 
+function previewImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('preview-img').src = e.target.result;
+      document.getElementById('preview-img').style.display = 'block';
+      document.getElementById('upload-placeholder').style.opacity = '0';
+    }
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function resetForm() {
+  document.getElementById("addName").value = "";
+  document.getElementById("addPrice").value = "";
+  document.getElementById("addPhone").value = "";
+  document.getElementById("addDesc").value = "";
+  document.getElementById("addCategory").value = "";
+  document.getElementById("addImg").value = "";
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('upload-placeholder').style.opacity = '1';
+}
+
+async function submitProduct(){
+    const name = document.getElementById("addName").value;
+    const price = document.getElementById("addPrice").value;
+    const phone = document.getElementById("addPhone").value;
+    const desc = document.getElementById("addDesc").value;
+    const category = document.getElementById("addCategory").value;
+    const file = document.getElementById("addImg").files[0];
+    const btn = document.getElementById("publishBtn");
+    
+    if(!name || !price || !category) return showToast("يرجى إكمال البيانات المطلوبة", 'error');
+    
+    btn.innerText="جاري..."; btn.disabled=true;
+    
+    let url = null;
+    if(file){
+        try {
+          const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" };
+          btn.innerText="ضغط الصورة...";
+          const compressedFile = await imageCompression(file, options);
+          btn.innerText="رفع...";
+          const path = `${user.uid}/${Date.now()}_img.jpg`;
+          const {error} = await sb.storage.from("images").upload(path, compressedFile);
+          if(!error) url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
+          else throw error;
+        } catch (error) {
+          console.error(error); showToast("فشل رفع الصورة", 'error'); btn.innerText="نشر"; btn.disabled=false; return;
+        }
+    }
+    
+    await sb.from("products").insert({
+        name, price, phone, description: desc, image_url: url, 
+        seller_pi_id: user.uid, seller_username: user.username,
+        category: category
+    });
+    
+    showToast("تم نشر الإعلان بنجاح");
+    closeAddModal(); 
+    loadAllProducts(); 
+    loadMyAds();
+    btn.innerText="نشر الإعلان"; btn.disabled=false;
+}
+
+// --- PAYMENTS ---
+async function promoteProduct(productId) {
+  if(!window.Pi) return showToast("يعمل فقط داخل متصفح Pi", 'error');
   const API_BASE = "/api"; 
 
   try {
-    const paymentData = {
-      amount: 3, 
-      memo: "تمييز إعلان: " + productId, 
-      metadata: { productId: productId, type: "promotion" } 
-    };
-
+    const paymentData = { amount: 3, memo: "تمييز إعلان: " + productId, metadata: { productId: productId, type: "promotion" } };
     const paymentCallbacks = {
       onReadyForServerApproval: async (paymentId) => {
           try {
-            const res = await fetch(`${API_BASE}/approve`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ paymentId })
-            });
-
-            const txt = await res.text().catch(()=> "");
-            console.log("approve =>", res.status, txt);
-
-            if(!res.ok) throw new Error("approve failed: " + res.status);
-
-          } catch (e) { 
-            console.error(e);
-            alert("فشل الاتصال بالخادم. تأكد من الإنترنت.");
-          }
+            const res = await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) });
+            if(!res.ok) throw new Error("approve failed");
+          } catch (e) { showToast("خطأ اتصال", 'error'); }
       },
-      
-      onServerApproval: (paymentId) => { 
-        console.log("Server approved", paymentId); 
-      },
-      
-      onCancel: (paymentId) => { 
-        console.log("User cancelled", paymentId); 
-      },
-      
-      onError: (error, payment) => { 
-        console.error("Payment error", error); 
-        alert("فشل الدفع: " + error); 
-      },
-      
+      onServerApproval: (paymentId) => { console.log("Server approved", paymentId); },
+      onCancel: (paymentId) => { console.log("User cancelled", paymentId); },
+      onError: (error, payment) => { showToast("فشل الدفع", 'error'); },
       onReadyForServerCompletion: async (paymentId, txid) => {
-          console.log("Completing payment...", paymentId, txid);
           try {
-             const res = await fetch(`${API_BASE}/complete`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ paymentId, txid })
-              });
-
-             const txt = await res.text().catch(()=> "");
-             console.log("complete =>", res.status, txt);
-             
-             if(res.ok) {
-               alert("تم الدفع بنجاح! إعلانك الآن مميز.");
-               loadMyAds(); // تحديث الزر ليصبح رمادي
-             } else {
-               alert("حدث خطأ أثناء تفعيل الميزة، تواصل مع الدعم.");
-             }
-          } catch (err) {
-             console.error(err);
-             alert("خطأ في الاتصال");
-          }
+             const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) });
+             if(res.ok) { showToast("تم التمييز بنجاح!"); loadMyAds(); } 
+             else { showToast("خطأ في التفعيل", 'error'); }
+          } catch (err) { showToast("خطأ اتصال", 'error'); }
       }
     };
-
     Pi.createPayment(paymentData, paymentCallbacks);
-
-  } catch(err) {
-    alert("خطأ في إنشاء الدفع: " + err);
-  }
+  } catch(err) { showToast("خطأ في الدفع", 'error'); }
 }
 
-// --- INBOX (Real Usernames) ---
-async function loadInbox() {
-  const list = document.getElementById("inbox-list");
-  list.innerHTML = "<div style='text-align:center;padding:20px'>جاري التحديث...</div>";
-
-  const { data } = await sb.from("messages")
-    .select("*, products(name)")
-    .or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`)
-    .order("created_at", {ascending: false});
-
-  list.innerHTML = "";
-  if(!data || !data.length) return list.innerHTML = "<div style='text-align:center;padding:40px;color:gray'>لا توجد رسائل</div>";
-
-  const threads = new Map();
-  const otherIds = new Set();
-
-  data.forEach(m => {
-    const otherId = (m.sender_pi_id === user.uid) ? m.receiver_pi_id : m.sender_pi_id;
-    const key = `${m.product_id}_${otherId}`;
-    if(!threads.has(key)){
-        otherIds.add(otherId);
-        threads.set(key, {
-            pid: m.product_id,
-            otherId: otherId,
-            pName: m.products?.name || "منتج",
-            last: m.content,
-            name: "مستخدم"
-        });
+async function deleteProduct(id){
+    if(confirm("حذف؟")) { 
+      await sb.from("products").delete().eq("id",id); 
+      loadAllProducts(); loadMyAds(); 
+      showToast("تم الحذف");
     }
-  });
-
-  if(otherIds.size > 0){
-      const { data: users } = await sb.from("users").select("pi_id,username").in("pi_id", Array.from(otherIds));
-      if(users) {
-          users.forEach(u => {
-             threads.forEach(t => { if(t.otherId === u.pi_id) t.name = u.username; });
-          });
-      }
-  }
-
-  threads.forEach(t => {
-      list.innerHTML += `
-      <div class="inbox-item" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.pName}', '${t.name}')">
-        <div class="inbox-avatar">${t.name.charAt(0)}</div>
-        <div class="inbox-info">
-          <div class="inbox-name">${t.name} <span style="font-weight:400;color:gray;font-size:11px">(${t.pName})</span></div>
-          <div class="inbox-msg">${t.last}</div>
-        </div>
-      </div>`;
-  });
 }
 
-// --- CHAT & OTHER ---
+// --- CHAT ---
 function openChatRoom(pid, otherId, pName, uName) {
-  if(!user) return alert("سجل دخول");
+  if(!user) return showToast("سجل دخول أولاً", 'error');
   activeChat = { pid, otherId };
   document.getElementById("chatTitle").innerText = pName;
   document.getElementById("chatPeer").innerText = uName;
   document.getElementById("chatModal").style.display = "flex";
   document.getElementById("msgContainer").innerHTML = "";
   loadMessages();
-  
   sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
     { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
     payload => {
        const m = payload.new;
-       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid))
-         renderMsg(m);
+       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid)) renderMsg(m);
     }
   ).subscribe();
 }
@@ -759,8 +737,7 @@ function openChatRoom(pid, otherId, pName, uName) {
 async function loadMessages() {
   const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
   if(data) data.forEach(m => {
-      if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid))
-        renderMsg(m);
+      if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid)) renderMsg(m);
   });
 }
 
@@ -775,68 +752,11 @@ function renderMsg(m){
 async function sendMsg(){
     const inp = document.getElementById("msgInput");
     if(!inp.value.trim()) return;
-    await sb.from("messages").insert({
-        product_id: activeChat.pid, sender_pi_id: user.uid, receiver_pi_id: activeChat.otherId, content: inp.value.trim()
-    });
+    await sb.from("messages").insert({ product_id: activeChat.pid, sender_pi_id: user.uid, receiver_pi_id: activeChat.otherId, content: inp.value.trim() });
     inp.value = "";
 }
 
 function closeChat() { document.getElementById("chatModal").style.display = "none"; activeChat=null; sb.removeAllChannels(); }
-
-// --- ADD & DELETE ---
-function openAddModal(){ document.getElementById("addModal").style.display="flex"; }
-function closeAddModal(){ document.getElementById("addModal").style.display="none"; }
-
-async function submitProduct(){
-    const name = document.getElementById("addName").value;
-    const price = document.getElementById("addPrice").value;
-    const phone = document.getElementById("addPhone").value;
-    const desc = document.getElementById("addDesc").value;
-    const file = document.getElementById("addImg").files[0];
-    const btn = document.getElementById("publishBtn");
-    
-    if(!name || !price) return alert("اكمل البيانات");
-    btn.innerText="جاري..."; btn.disabled=true;
-    
-    let url = null;
-    if(file){
-        try {
-          const options = {
-            maxSizeMB: 0.8, // Compress to max 0.8MB
-            maxWidthOrHeight: 1200,
-            useWebWorker: true,
-            fileType: "image/jpeg"
-          };
-          
-          btn.innerText="جاري ضغط الصورة...";
-          const compressedFile = await imageCompression(file, options);
-          
-          btn.innerText="جاري الرفع...";
-          const path = `${user.uid}/${Date.now()}_img.jpg`; // Force jpg extension
-          const {error} = await sb.storage.from("images").upload(path, compressedFile);
-          
-          if(!error) url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
-          else throw error;
-
-        } catch (error) {
-          console.error("Compression/Upload Error:", error);
-          alert("فشل رفع الصورة");
-          btn.innerText="نشر"; btn.disabled=false;
-          return;
-        }
-    }
-    
-    await sb.from("products").insert({
-        name, price, phone, description: desc, image_url: url, seller_pi_id: user.uid, seller_username: user.username
-    });
-    
-    alert("تم النشر"); closeAddModal(); loadAllProducts(); loadMyAds();
-    btn.innerText="نشر"; btn.disabled=false;
-}
-
-async function deleteProduct(id){
-    if(confirm("حذف؟")) { await sb.from("products").delete().eq("id",id); loadAllProducts(); loadMyAds(); }
-}
 </script>
 </body>
 </html>
