@@ -88,27 +88,12 @@ body {
 }
 .header-name { font-size: 13px; font-weight: 700; color: var(--text-main); }
 
-/* --- Search Bar & Filter --- */
-.search-container {
-  display: flex; gap: 8px; margin-bottom: 12px;
-}
-.search-input-wrap {
-  flex: 2; position: relative;
-}
-.search-input {
-  width: 100%; padding: 10px 36px 10px 12px;
-  border: 1px solid var(--border); border-radius: 12px;
-  font-family: inherit; font-size: 14px; outline: none;
-}
-.search-icon {
-  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--text-muted); pointer-events: none;
-}
-.filter-select {
-  flex: 1; padding: 0 8px; border: 1px solid var(--border); border-radius: 12px;
-  background: white; font-family: inherit; font-size: 13px; outline: none;
-  max-width: 40%;
-}
+/* --- Search Bar --- */
+.search-container { display: flex; gap: 8px; margin-bottom: 12px; }
+.search-input-wrap { flex: 2; position: relative; }
+.search-input { width: 100%; padding: 10px 36px 10px 12px; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 14px; outline: none; }
+.search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+.filter-select { flex: 1; padding: 0 8px; border: 1px solid var(--border); border-radius: 12px; background: white; font-family: inherit; font-size: 13px; outline: none; max-width: 40%; }
 
 /* --- Bottom Navigation --- */
 .bottom-nav {
@@ -136,78 +121,37 @@ body {
   content: ''; position: absolute; bottom: 5px;
   width: 5px; height: 5px; background: var(--primary); border-radius: 50%;
 }
-
-.nav-badge {
-  position: absolute; top: 2px; right: 12px;
-  background-color: var(--danger); color: white;
-  width: 18px; height: 18px; border-radius: 50%;
-  font-size: 10px; font-weight: bold;
-  display: flex; align-items: center; justify-content: center;
-  border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transform: scale(1); transition: transform 0.2s;
-}
+.nav-badge { position: absolute; top: 2px; right: 12px; background-color: var(--danger); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transform: scale(1); transition: transform 0.2s; }
 .nav-badge.hidden { transform: scale(0); opacity: 0; }
 
-/* --- Other Styles --- */
+/* --- Main Views --- */
 .view-section { animation: fadeScale 0.4s ease-out; }
 @keyframes fadeScale { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
 .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-.card {
-  background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
-  overflow: hidden; display: flex; flex-direction: column;
-  position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-  transition: transform 0.2s; cursor: pointer;
-}
+.card { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: transform 0.2s; cursor: pointer; }
 .card:active { transform: scale(0.98); }
 .card-img-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: #f9fafb; overflow: hidden; }
 .card-img { width: 100%; height: 100%; object-fit: cover; }
 .card-body { padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
 .card-title { font-size: 14px; margin: 0; line-height: 1.3; font-weight: 800; height: 38px; overflow: hidden; }
-.price-pill {
-  background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;
-  padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 800;
-  display: inline-flex; align-items: center; gap: 4px;
-}
+.price-pill { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
 .card-desc { font-size: 11px; color: var(--text-muted); height: 32px; overflow: hidden; }
-.promo-badge {
-  position: absolute; top: 8px; right: 8px; z-index: 10;
-  background: var(--accent); color: white; padding: 4px 8px;
-  border-radius: 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
+.promo-badge { position: absolute; top: 8px; right: 8px; z-index: 10; background: var(--accent); color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .card.promoted { border: 2px solid var(--accent); }
-.location-tag {
-  position: absolute; bottom: 8px; left: 8px; z-index: 10;
-  background: rgba(0,0,0,0.6); color: white; padding: 2px 8px;
-  border-radius: 4px; font-size: 10px; backdrop-filter: blur(2px);
-}
+.location-tag { position: absolute; bottom: 8px; left: 8px; z-index: 10; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; backdrop-filter: blur(2px); }
 
-/* Slider */
-.slider-container {
-  width: 100%; aspect-ratio: 4/3; background: #f3f4f6;
-  border-radius: 20px; overflow: hidden; margin-bottom: 16px;
-  border: 1px solid var(--border); position: relative;
-}
-.slider-wrapper {
-  display: flex; width: 100%; height: 100%;
-  overflow-x: auto; scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
+/* Slider & Details */
+.slider-container { width: 100%; aspect-ratio: 4/3; background: #f3f4f6; border-radius: 20px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border); position: relative; }
+.slider-wrapper { display: flex; width: 100%; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .slider-wrapper::-webkit-scrollbar { display: none; }
 .slide { flex: 0 0 100%; scroll-snap-align: center; width: 100%; height: 100%; }
 .slide-img { width: 100%; height: 100%; object-fit: contain; }
-.slider-dots {
-  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 6px;
-}
+.slider-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
 .dot { width: 8px; height: 8px; background: rgba(0,0,0,0.3); border-radius: 50%; transition: 0.3s; }
 .dot.active { background: var(--primary); transform: scale(1.2); }
 
-.seller-card {
-  background: white; border: 1px solid var(--border);
-  padding: 16px; border-radius: 16px; margin-top: 20px;
-  display: flex; align-items: center; gap: 12px;
-}
+.seller-card { background: white; border: 1px solid var(--border); padding: 16px; border-radius: 16px; margin-top: 20px; display: flex; align-items: center; gap: 12px; }
 .seller-info { flex: 1; }
 .seller-name { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
 .seller-stats { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
@@ -216,11 +160,7 @@ body {
 .categories-wrapper { position: sticky; top: 60px; z-index: 40; background: var(--bg-body); padding: 10px 0; margin-bottom: 10px; }
 .categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 4px; }
 .categories-scroll::-webkit-scrollbar { display: none; }
-.cat-chip {
-  background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px;
-  font-size: 13px; font-weight: 700; color: var(--text-muted); white-space: nowrap; cursor: pointer;
-  display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;
-}
+.cat-chip { background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--text-muted); white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
 .cat-chip.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3); }
 
 /* Inbox */
@@ -237,13 +177,7 @@ body {
 
 /* Modals */
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
-.sheet {
-  background: white; width: 100%; max-width: 600px;
-  border-radius: 24px 24px 0 0; padding: 24px;
-  max-height: 90vh; overflow-y: auto;
-  animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  display: flex; flex-direction: column; gap: 16px;
-}
+.sheet { background: white; width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 24px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; gap: 16px; }
 @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
 
 .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -260,6 +194,18 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 .preview-box { width: 70px; height: 70px; border-radius: 12px; overflow: hidden; position: relative; flex-shrink: 0; border: 1px solid var(--border); }
 .preview-box img { width: 100%; height: 100%; object-fit: cover; }
 .preview-remove { position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
+
+/* Plan Options in Promote Modal */
+.plan-option {
+  border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 10px;
+}
+.plan-option:hover { border-color: var(--primary); background: #F5F3FF; }
+.plan-option.selected { border-color: var(--primary); background: #F5F3FF; box-shadow: 0 0 0 2px var(--primary); }
+.plan-info { display: flex; flex-direction: column; }
+.plan-price { font-weight: 800; color: var(--primary); }
+.plan-days { font-size: 12px; color: gray; }
 
 /* Toast */
 .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
@@ -305,7 +251,7 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
       </div>
       <select id="cityFilter" class="filter-select" onchange="filterProducts()">
         <option value="all" selected>كل مصر</option>
-        </select>
+      </select>
     </div>
 
     <div class="categories-wrapper">
@@ -413,12 +359,35 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
     </label>
     <div class="form-group"><label class="form-label" data-i18n="label_prod_name">اسم المنتج</label><input id="addName" class="input-box" placeholder="" /></div>
     <div class="form-group"><label class="form-label" data-i18n="label_category">القسم</label><select id="addCategory" class="input-box"></select></div>
-    
     <div class="form-group"><label class="form-label" data-i18n="label_location">المحافظة</label><select id="addLocation" class="input-box"></select></div>
-
     <div class="form-group"><label class="form-label" data-i18n="label_price">السعر (Pi)</label><input id="addPrice" type="number" class="input-box" placeholder="0.00" /></div>
     <div class="form-group"><label class="form-label" data-i18n="label_desc">الوصف</label><textarea id="addDesc" class="input-box" placeholder=""></textarea></div>
     <button id="publishBtn" class="btn btn-primary" style="width:100%" onclick="submitProduct()" data-i18n="publish_btn">نشر الإعلان</button>
+  </div>
+</div>
+
+<div id="promoteModal" class="modal" onclick="if(event.target==this) closePromoteModal()">
+  <div class="sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0" data-i18n="promote_title">اختر خطة التمييز</h3>
+      <button onclick="closePromoteModal()" style="background:none;border:none;font-size:18px;color:#666"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <div class="plan-option" onclick="triggerPayment(3, 3)">
+      <div class="plan-info">
+        <span class="plan-price">3 Pi</span>
+        <span class="plan-days" data-i18n="plan_3_3">لمدة 3 أيام</span>
+      </div>
+      <i class="fa-solid fa-chevron-left" style="color:gray"></i>
+    </div>
+
+    <div class="plan-option" onclick="triggerPayment(5, 7)">
+      <div class="plan-info">
+        <span class="plan-price">5 Pi</span>
+        <span class="plan-days" data-i18n="plan_5_7">لمدة 7 أيام</span>
+      </div>
+      <i class="fa-solid fa-chevron-left" style="color:gray"></i>
+    </div>
   </div>
 </div>
 
@@ -448,41 +417,22 @@ let sb, user = null;
 let activeChat = null;
 let currentLang = localStorage.getItem('lang') || 'en'; 
 let selectedFiles = [];
+let currentPromoteProductId = null; // Store ID for promotion
 
-// --- LOCATIONS (Governorates) ---
+// --- DATA ---
 const GOVERNORATES = [
-  { ar: "القاهرة", en: "Cairo" },
-  { ar: "الجيزة", en: "Giza" },
-  { ar: "الإسكندرية", en: "Alexandria" },
-  { ar: "الدقهلية", en: "Dakahlia" },
-  { ar: "البحر الأحمر", en: "Red Sea" },
-  { ar: "البحيرة", en: "Beheira" },
-  { ar: "الفيوم", en: "Fayoum" },
-  { ar: "الغربية", en: "Gharbiya" },
-  { ar: "الإسماعيلية", en: "Ismailia" },
-  { ar: "المنوفية", en: "Menofia" },
-  { ar: "المنيا", en: "Minya" },
-  { ar: "القليوبية", en: "Qalyubia" },
-  { ar: "الوادي الجديد", en: "New Valley" },
-  { ar: "السويس", en: "Suez" },
-  { ar: "أسوان", en: "Aswan" },
-  { ar: "أسيوط", en: "Assiut" },
-  { ar: "بني سويف", en: "Beni Suef" },
-  { ar: "بورسعيد", en: "Port Said" },
-  { ar: "دمياط", en: "Damietta" },
-  { ar: "الشرقية", en: "Sharkia" },
-  { ar: "جنوب سيناء", en: "South Sinai" },
-  { ar: "كفر الشيخ", en: "Kafr El Sheikh" },
-  { ar: "مطروح", en: "Matrouh" },
-  { ar: "الأقصر", en: "Luxor" },
-  { ar: "قنا", en: "Qena" },
-  { ar: "شمال سيناء", en: "North Sinai" },
-  { ar: "سوهاج", en: "Sohag" }
+  { ar: "القاهرة", en: "Cairo" }, { ar: "الجيزة", en: "Giza" }, { ar: "الإسكندرية", en: "Alexandria" }, { ar: "الدقهلية", en: "Dakahlia" },
+  { ar: "البحر الأحمر", en: "Red Sea" }, { ar: "البحيرة", en: "Beheira" }, { ar: "الفيوم", en: "Fayoum" }, { ar: "الغربية", en: "Gharbiya" },
+  { ar: "الإسماعيلية", en: "Ismailia" }, { ar: "المنوفية", en: "Menofia" }, { ar: "المنيا", en: "Minya" }, { ar: "القليوبية", en: "Qalyubia" },
+  { ar: "الوادي الجديد", en: "New Valley" }, { ar: "السويس", en: "Suez" }, { ar: "أسوان", en: "Aswan" }, { ar: "أسيوط", en: "Assiut" },
+  { ar: "بني سويف", en: "Beni Suef" }, { ar: "بورسعيد", en: "Port Said" }, { ar: "دمياط", en: "Damietta" }, { ar: "الشرقية", en: "Sharkia" },
+  { ar: "جنوب سيناء", en: "South Sinai" }, { ar: "كفر الشيخ", en: "Kafr El Sheikh" }, { ar: "مطروح", en: "Matrouh" }, { ar: "الأقصر", en: "Luxor" },
+  { ar: "قنا", en: "Qena" }, { ar: "شمال سيناء", en: "North Sinai" }, { ar: "سوهاج", en: "Sohag" }
 ];
 
 const translations = {
-  ar: { brand_name: "سوق باي", login: "دخول", latest_products: "أحدث المعروضات", loading: "جاري التحميل...", inbox_title: "الرسائل الواردة", guest_title: "أنت زائر", guest_msg: "سجل الدخول لإدارة إعلاناتك.", add_ad_btn: "إضافة إعلان جديد", my_ads: "إعلاناتي", nav_home: "الرئيسية", nav_chats: "المحادثات", nav_profile: "حسابي", sell_new_item: "بيع منتج جديد", upload_text: "اضغط لاختيار الصور (بحد أقصى 3)", label_prod_name: "اسم المنتج", label_category: "القسم", label_price: "السعر (Pi)", label_desc: "الوصف", publish_btn: "نشر الإعلان", msg_placeholder: "اكتب رسالة...", promoted_badge: "مميز", message_seller: "مراسلة البائع", your_ad: "إعلانك", promote_ad_btn: "تمييز الإعلان (3 Pi)", promoted_until: "مميز حتى", delete_btn: "حذف", confirm_delete: "هل أنت متأكد من الحذف؟", no_products: "لا توجد منتجات", toast_login_first: "يجب تسجيل الدخول أولاً", toast_fill_data: "يرجى إكمال البيانات المطلوبة", toast_upload_fail: "فشل رفع الصورة", toast_success_add: "تم نشر الإعلان بنجاح", toast_send_fail: "فشل الإرسال", toast_max_images: "الحد الأقصى 3 صور", banned_title: "حساب محظور", banned_msg: "تم إيقاف حسابك لمخالفة شروط الاستخدام.", ph_prod_name: "مثال: آيفون 13 برو", ph_desc: "اكتب تفاصيل المنتج وحالته...", cat_all: "الكل", cat_cars: "سيارات", cat_electronics: "إلكترونيات", cat_phones: "هواتف", cat_fashion: "ملابس", cat_home: "منزل", cat_other: "أخرى", select_cat: "اختر القسم المناسب", btn_back: "رجوع", label_joined: "انضم:", label_total_ads: "إعلانات:", ph_search: "ابحث عن منتج...", label_location: "المحافظة", all_egypt: "كل مصر", select_gov: "اختر المحافظة" },
-  en: { brand_name: "Pi Market", login: "Login", latest_products: "Latest Products", loading: "Loading...", inbox_title: "Inbox", guest_title: "Guest User", guest_msg: "Login to manage your ads.", add_ad_btn: "Post New Ad", my_ads: "My Ads", nav_home: "Home", nav_chats: "Chats", nav_profile: "Profile", sell_new_item: "Sell New Item", upload_text: "Tap to upload images (Max 3)", label_prod_name: "Product Name", label_category: "Category", label_price: "Price (Pi)", label_desc: "Description", publish_btn: "Publish Ad", msg_placeholder: "Type a message...", promoted_badge: "Promoted", message_seller: "Message Seller", your_ad: "Your Ad", promote_ad_btn: "Promote Ad (3 Pi)", promoted_until: "Promoted until", delete_btn: "Delete", confirm_delete: "Are you sure to delete?", no_products: "No products found", toast_login_first: "Login required first", toast_fill_data: "Please fill all required fields", toast_upload_fail: "Image upload failed", toast_success_add: "Ad published successfully", toast_send_fail: "Failed to send", toast_max_images: "Max 3 images allowed", banned_title: "Account Banned", banned_msg: "Your account is suspended due to violations.", ph_prod_name: "Ex: iPhone 13 Pro", ph_desc: "Describe item details...", cat_all: "All", cat_cars: "Cars", cat_electronics: "Electronics", cat_phones: "Phones", cat_fashion: "Fashion", cat_home: "Home", cat_other: "Other", select_cat: "Select Category", btn_back: "Back", label_joined: "Joined:", label_total_ads: "Total Ads:", ph_search: "Search products...", label_location: "Location", all_egypt: "All Egypt", select_gov: "Select Governorate" }
+  ar: { brand_name: "سوق باي", login: "دخول", latest_products: "أحدث المعروضات", loading: "جاري التحميل...", inbox_title: "الرسائل الواردة", guest_title: "أنت زائر", guest_msg: "سجل الدخول لإدارة إعلاناتك.", add_ad_btn: "إضافة إعلان جديد", my_ads: "إعلاناتي", nav_home: "الرئيسية", nav_chats: "المحادثات", nav_profile: "حسابي", sell_new_item: "بيع منتج جديد", upload_text: "اضغط لاختيار الصور (بحد أقصى 3)", label_prod_name: "اسم المنتج", label_category: "القسم", label_price: "السعر (Pi)", label_desc: "الوصف", publish_btn: "نشر الإعلان", msg_placeholder: "اكتب رسالة...", promoted_badge: "مميز", message_seller: "مراسلة البائع", your_ad: "إعلانك", promote_ad_btn: "تمييز الإعلان", promoted_until: "مميز حتى", delete_btn: "حذف", confirm_delete: "هل أنت متأكد من الحذف؟", no_products: "لا توجد منتجات", toast_login_first: "يجب تسجيل الدخول أولاً", toast_fill_data: "يرجى إكمال البيانات المطلوبة", toast_upload_fail: "فشل رفع الصورة", toast_success_add: "تم نشر الإعلان بنجاح", toast_send_fail: "فشل الإرسال", toast_max_images: "الحد الأقصى 3 صور", banned_title: "حساب محظور", banned_msg: "تم إيقاف حسابك لمخالفة شروط الاستخدام.", ph_prod_name: "مثال: آيفون 13 برو", ph_desc: "اكتب تفاصيل المنتج وحالته...", cat_all: "الكل", cat_cars: "سيارات", cat_electronics: "إلكترونيات", cat_phones: "هواتف", cat_fashion: "ملابس", cat_home: "منزل", cat_other: "أخرى", select_cat: "اختر القسم المناسب", btn_back: "رجوع", label_joined: "انضم:", label_total_ads: "إعلانات:", ph_search: "ابحث عن منتج...", label_location: "المحافظة", all_egypt: "كل مصر", select_gov: "اختر المحافظة", promote_title: "اختر خطة التمييز", plan_3_3: "لمدة 3 أيام", plan_5_7: "لمدة 7 أيام" },
+  en: { brand_name: "Pi Market", login: "Login", latest_products: "Latest Products", loading: "Loading...", inbox_title: "Inbox", guest_title: "Guest User", guest_msg: "Login to manage your ads.", add_ad_btn: "Post New Ad", my_ads: "My Ads", nav_home: "Home", nav_chats: "Chats", nav_profile: "Profile", sell_new_item: "Sell New Item", upload_text: "Tap to upload images (Max 3)", label_prod_name: "Product Name", label_category: "Category", label_price: "Price (Pi)", label_desc: "Description", publish_btn: "Publish Ad", msg_placeholder: "Type a message...", promoted_badge: "Promoted", message_seller: "Message Seller", your_ad: "Your Ad", promote_ad_btn: "Promote Ad", promoted_until: "Promoted until", delete_btn: "Delete", confirm_delete: "Are you sure to delete?", no_products: "No products found", toast_login_first: "Login required first", toast_fill_data: "Please fill all required fields", toast_upload_fail: "Image upload failed", toast_success_add: "Ad published successfully", toast_send_fail: "Failed to send", toast_max_images: "Max 3 images allowed", banned_title: "Account Banned", banned_msg: "Your account is suspended due to violations.", ph_prod_name: "Ex: iPhone 13 Pro", ph_desc: "Describe item details...", cat_all: "All", cat_cars: "Cars", cat_electronics: "Electronics", cat_phones: "Phones", cat_fashion: "Fashion", cat_home: "Home", cat_other: "Other", select_cat: "Select Category", btn_back: "Back", label_joined: "Joined:", label_total_ads: "Total Ads:", ph_search: "Search products...", label_location: "Location", all_egypt: "All Egypt", select_gov: "Select Governorate", promote_title: "Choose Promotion Plan", plan_3_3: "For 3 Days", plan_5_7: "For 7 Days" }
 };
 
 const CATEGORIES_CONFIG = [
@@ -509,13 +459,11 @@ function updateLanguage() {
   document.getElementById('langText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
   document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (translations[currentLang][key]) el.innerText = translations[currentLang][key]; });
   
-  // Placeholders
   document.getElementById('addName').placeholder = t('ph_prod_name');
   document.getElementById('addDesc').placeholder = t('ph_desc');
   document.getElementById('msgInput').placeholder = t('msg_placeholder');
   document.getElementById('searchInput').placeholder = t('ph_search');
 
-  // Fill Filters
   initCategories();
   initLocations();
 
@@ -535,7 +483,6 @@ function showToast(messageKey, type = 'success') {
   setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
 }
 
-// --- INIT LISTS ---
 function initCategories() {
   const container = document.getElementById('cat-filters');
   container.innerHTML = CATEGORIES_CONFIG.map(c => `<div class="cat-chip ${c.id === activeCategory ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)"><i class="fa-solid ${c.icon}"></i> ${t(c.key)}</div>`).join('');
@@ -543,23 +490,16 @@ function initCategories() {
 }
 
 function initLocations() {
-  // 1. Add Modal Dropdown
   const addLocSelect = document.getElementById('addLocation');
-  addLocSelect.innerHTML = `<option value="" disabled selected>${t('select_gov')}</option>` + 
-    GOVERNORATES.map(gov => `<option value="${gov.en}">${currentLang==='ar'?gov.ar:gov.en}</option>`).join('');
-
-  // 2. Filter Dropdown (Home)
+  addLocSelect.innerHTML = `<option value="" disabled selected>${t('select_gov')}</option>` + GOVERNORATES.map(gov => `<option value="${gov.en}">${currentLang==='ar'?gov.ar:gov.en}</option>`).join('');
   const filterLocSelect = document.getElementById('cityFilter');
-  // Keep the current selection if rebuilding
   const currentVal = filterLocSelect.value;
-  filterLocSelect.innerHTML = `<option value="all">${t('all_egypt')}</option>` + 
-    GOVERNORATES.map(gov => `<option value="${gov.en}">${currentLang==='ar'?gov.ar:gov.en}</option>`).join('');
+  filterLocSelect.innerHTML = `<option value="all">${t('all_egypt')}</option>` + GOVERNORATES.map(gov => `<option value="${gov.en}">${currentLang==='ar'?gov.ar:gov.en}</option>`).join('');
   filterLocSelect.value = currentVal || 'all';
 }
 
 function filterByCategory(catId, element) {
-  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active')); element.classList.add('active'); activeCategory = catId; 
-  filterProducts(); // Use generic filter function
+  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active')); element.classList.add('active'); activeCategory = catId; filterProducts(); 
 }
 
 function nav(viewName) {
@@ -601,54 +541,37 @@ async function handleLogin(uid, username) {
 
 async function checkUnreadMessages() {
   if(!user) return;
-  const { count, error } = await sb.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_pi_id', user.uid).eq('is_read', false);
+  const { count } = await sb.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_pi_id', user.uid).eq('is_read', false);
   const badge = document.getElementById('chat-badge');
   if(count && count > 0) { badge.innerText = count > 9 ? '+9' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
 }
 
-// --- PRODUCTS & FILTER LOGIC ---
 async function loadAllProducts() {
   const { data } = await sb.from("products").select("*").order("promoted_until", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
   document.getElementById("loading").style.display = "none";
   if(data) { globalProducts = data; renderProducts(); } else { document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>Error Loading</div>"; }
 }
 
-function filterProducts() {
-  renderProducts();
-}
+function filterProducts() { renderProducts(); }
 
 function renderProducts() {
-  const list = document.getElementById("products-list"); 
-  list.innerHTML = "";
-  
+  const list = document.getElementById("products-list"); list.innerHTML = "";
   const searchText = document.getElementById('searchInput').value.toLowerCase();
   const locationFilter = document.getElementById('cityFilter').value;
-
   const filtered = globalProducts.filter(p => {
-    // 1. Category Filter
     if (activeCategory !== 'all' && p.category !== activeCategory) return false;
-    
-    // 2. Search Filter (Name)
     if (searchText && !p.name.toLowerCase().includes(searchText)) return false;
-
-    // 3. Location Filter
     if (locationFilter !== 'all' && p.location !== locationFilter) return false;
-
     return true;
   });
-
   if(!filtered.length) { list.innerHTML = `<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>${t('no_products')}</div>`; return; }
-  
   const now = new Date();
   filtered.forEach(p => {
     let img = "https://placehold.co/400?text=No+Image";
     if(p.images && p.images.length > 0) img = p.images[0]; else if(p.image_url) img = p.image_url;
     let isPromoted = false; if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) isPromoted = true; }
-    
-    // Get Translated Location
     const locObj = GOVERNORATES.find(g => g.en === p.location);
     const locText = locObj ? (currentLang==='ar'?locObj.ar:locObj.en) : p.location;
-
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}" onclick="openProductDetails(${p.id})">
         ${isPromoted ? `<div class="promo-badge"><i class="fa-solid fa-star"></i> ${t('promoted_badge')}</div>` : ''}
@@ -666,7 +589,6 @@ function renderProducts() {
   });
 }
 
-// --- DETAILS ---
 async function openProductDetails(pid) {
   const p = globalProducts.find(x => x.id == pid); if(!p) return;
   const images = (p.images && p.images.length > 0) ? p.images : (p.image_url ? [p.image_url] : ["https://placehold.co/600?text=No+Image"]);
@@ -678,11 +600,8 @@ async function openProductDetails(pid) {
   document.getElementById('detail-title').innerText = p.name; 
   document.getElementById('detail-price').innerText = p.price; 
   document.getElementById('detail-desc').innerText = p.description || "";
-  
-  // Location in details
   const locObj = GOVERNORATES.find(g => g.en === p.location);
   document.getElementById('detail-loc-text').innerText = locObj ? (currentLang==='ar'?locObj.ar:locObj.en) : (p.location || "N/A");
-
   document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; 
   document.getElementById('detail-seller-avatar').innerText = (p.seller_username || "U").charAt(0).toUpperCase();
   document.getElementById('detail-join-date').innerText = "..."; 
@@ -694,7 +613,7 @@ async function openProductDetails(pid) {
      if(p.promoted_until && new Date(p.promoted_until) > now) {
         const dateStr = new Date(p.promoted_until).toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
         promoteBtn = `<button class="btn btn-disabled" style="width:100%" disabled><i class="fa-solid fa-clock"></i> ${t('promoted_until')} ${dateStr}</button>`;
-     } else { promoteBtn = `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>`; }
+     } else { promoteBtn = `<button onclick="openPromoteOptions(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>`; }
      actionsDiv.innerHTML = `${promoteBtn}<button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="width:100%;color:red"><i class="fa-solid fa-trash"></i> ${t('delete_btn')}</button>`;
   } else {
      actionsDiv.innerHTML = `<button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%"><i class="fa-solid fa-comment-dots"></i> ${t('message_seller')}</button>`;
@@ -731,25 +650,52 @@ function removeFile(index) { selectedFiles.splice(index, 1); updateImagePreviews
 function resetForm() { document.getElementById("addName").value = ""; document.getElementById("addPrice").value = ""; document.getElementById("addDesc").value = ""; document.getElementById("addCategory").value = ""; document.getElementById("addLocation").value = ""; selectedFiles = []; updateImagePreviews(); }
 
 async function submitProduct(){
-    const name = document.getElementById("addName").value; 
-    const price = document.getElementById("addPrice").value; 
-    const desc = document.getElementById("addDesc").value; 
-    const category = document.getElementById("addCategory").value; 
-    const location = document.getElementById("addLocation").value; // Get Location
-    const btn = document.getElementById("publishBtn");
-    
+    const name = document.getElementById("addName").value; const price = document.getElementById("addPrice").value; const desc = document.getElementById("addDesc").value; const category = document.getElementById("addCategory").value; const location = document.getElementById("addLocation").value; const btn = document.getElementById("publishBtn");
     if(!name || !price || !category || !location) return showToast('toast_fill_data', 'error');
-    
     btn.innerText = t('loading'); btn.disabled=true; let uploadedUrls = [];
     if(selectedFiles.length > 0){ try { const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" }; for(const file of selectedFiles) { const compressedFile = await imageCompression(file, options); const path = `${user.uid}/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`; const {error} = await sb.storage.from("images").upload(path, compressedFile); if(error) throw error; const url = sb.storage.from("images").getPublicUrl(path).data.publicUrl; uploadedUrls.push(url); } } catch (error) { console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return; } }
-    
-    // Include location in insert
     await sb.from("products").insert({ name, price, description: desc, image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null, images: uploadedUrls, seller_pi_id: user.uid, seller_username: user.username, category: category, location: location });
-    
     showToast('toast_success_add'); closeAddModal(); loadAllProducts(); loadMyAds(); btn.innerText = t('publish_btn'); btn.disabled=false;
 }
 
-async function promoteProduct(productId) { if(!window.Pi) return showToast("Pi Browser Required", 'error'); const API_BASE = "/api"; try { const paymentData = { amount: 3, memo: "Promote Ad: " + productId, metadata: { productId: productId, type: "promotion" } }; const paymentCallbacks = { onReadyForServerApproval: async (paymentId) => { try { await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) }); } catch (e) { showToast("Connection Error", 'error'); } }, onServerApproval: () => {}, onCancel: () => {}, onError: () => { showToast("Payment Failed", 'error'); }, onReadyForServerCompletion: async (paymentId, txid) => { try { const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) }); if(res.ok) { showToast("Promotion Active!"); loadMyAds(); openProductDetails(productId); } else { showToast("Activation Error", 'error'); } } catch (err) { showToast("Connection Error", 'error'); } } }; Pi.createPayment(paymentData, paymentCallbacks); } catch(err) { showToast("Payment Error", 'error'); } }
+// --- PROMOTION LOGIC (Multi-Plan) ---
+function openPromoteOptions(id) {
+  currentPromoteProductId = id;
+  document.getElementById('promoteModal').style.display = 'flex';
+}
+function closePromoteModal() {
+  document.getElementById('promoteModal').style.display = 'none';
+  currentPromoteProductId = null;
+}
+function triggerPayment(amount, days) {
+  if(!currentPromoteProductId) return;
+  closePromoteModal();
+  promoteProduct(currentPromoteProductId, amount, days);
+}
+
+async function promoteProduct(productId, amount, days) {
+  if(!window.Pi) return showToast("Pi Browser Required", 'error');
+  const API_BASE = "/api"; 
+  try {
+    const paymentData = { 
+      amount: amount, 
+      memo: `Promote Ad: ${productId} (${days} Days)`, 
+      metadata: { productId: productId, type: "promotion", days: days } // Sending days to server
+    };
+    const paymentCallbacks = {
+      onReadyForServerApproval: async (paymentId) => { try { await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) }); } catch (e) { showToast("Connection Error", 'error'); } },
+      onServerApproval: () => {}, onCancel: () => {}, onError: () => { showToast("Payment Failed", 'error'); },
+      onReadyForServerCompletion: async (paymentId, txid) => {
+          try {
+             const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) });
+             if(res.ok) { showToast("Promotion Active!"); loadMyAds(); openProductDetails(productId); } else { showToast("Activation Error", 'error'); }
+          } catch (err) { showToast("Connection Error", 'error'); }
+      }
+    };
+    Pi.createPayment(paymentData, paymentCallbacks);
+  } catch(err) { showToast("Payment Error", 'error'); }
+}
+
 async function deleteProduct(id){ if(confirm(t('confirm_delete'))) { await sb.from("products").delete().eq("id",id); loadAllProducts(); loadMyAds(); nav('home'); showToast(t('delete_btn')); } }
 
 function openChatRoom(pid, otherId, pName, uName) {
