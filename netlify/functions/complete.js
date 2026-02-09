@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY; // ✅ المفتاح القوي
+const SUPABASE_KEY = process.env.SUPABASE_KEY; 
 const PI_API_KEY = process.env.PI_API_KEY;
 const PI_API_BASE = 'https://api.minepi.com/v2';
 
@@ -14,65 +14,95 @@ exports.handler = async (event, context) => {
 
   try {
     const { paymentId, txid } = JSON.parse(event.body);
-    console.log(`Completing Payment: ${paymentId}`);
+    console.log(`🔄 Completing Payment: ${paymentId}`);
 
-    // 1. إبلاغ Pi بالاكتمال (ضروري جداً)
+    // 1. إبلاغ سيرفرات Pi باكتمال الدفع (أهم خطوة لضمان تحويل العملات)
     const piResponse = await fetch(`${PI_API_BASE}/payments/${paymentId}/complete`, {
       method: 'POST',
       headers: { 'Authorization': `Key ${PI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ txid }),
     });
 
-    if (!piResponse.ok) console.log("Pi Complete Warning:", await piResponse.text());
+    if (!piResponse.ok) {
+        console.log("⚠️ Pi Complete Warning:", await piResponse.text());
+        // نكمل حتى لو كان هناك تحذير (مثل "تم الإكمال مسبقاً")
+    }
 
-    // 2. جلب بيانات الدفع لمعرفة المبلغ المدفوع
-    const { data: payRecord, error: findError } = await supabase
+    // 2. محاولة جلب البيانات من قاعدة البيانات
+    let payRecord = null;
+    let productId = null;
+    let amount = 0;
+
+    const { data: dbData, error: dbError } = await supabase
       .from('payments')
       .select('product_id, amount')
       .eq('payment_id', paymentId)
       .single();
 
-    if (findError || !payRecord) {
-       console.error("Record not found:", findError);
-       return { statusCode: 404, body: JSON.stringify({ error: "Payment record not found" }) };
+    if (dbData) {
+        console.log("✅ Found record in DB");
+        payRecord = dbData;
+        productId = dbData.product_id;
+        amount = Number(dbData.amount);
+        
+        // تحديث الحالة في الداتابيز
+        await supabase.from('payments').update({ status: 'completed', txid: txid }).eq('payment_id', paymentId);
+    
+    } else {
+        // 🔥 الإنقاذ الذكي: السجل غير موجود في الداتابيز؟ هاته من Pi مباشرة!
+        console.log("⚠️ Record missing in DB! Fetching from Pi API...");
+        
+        const piInfoRes = await fetch(`${PI_API_BASE}/payments/${paymentId}`, {
+            headers: { 'Authorization': `Key ${PI_API_KEY}` }
+        });
+
+        if (!piInfoRes.ok) throw new Error("Could not fetch payment data from Pi fallback");
+        
+        const piData = await piInfoRes.json();
+        productId = piData.metadata.productId; // لاحظ: يجب أن تكون productId (case sensitive)
+        amount = parseFloat(piData.amount);
+        
+        // تسجيل العملية في الداتابيز لتوثيقها (حتى لا تضيع)
+        await supabase.from('payments').insert({
+            payment_id: paymentId,
+            user_id: piData.user_uid,
+            product_id: productId,
+            amount: amount,
+            status: 'completed',
+            txid: txid
+        });
     }
 
-    // 3. تحديث حالة الدفع
-    await supabase.from('payments').update({ status: 'completed', txid: txid }).eq('payment_id', paymentId);
-
-    // 4. حساب مدة التمييز (3 أيام أو 7 أيام)
-    let daysToAdd = 3;
-    const amount = Number(payRecord.amount);
-    
-    // إذا كان المبلغ 5 أو أكثر، نمنح 7 أيام
+    // 3. حساب مدة التمييز (المنطق الديناميكي)
+    let daysToAdd = 3; // الافتراضي
     if (amount >= 4.9) { 
         daysToAdd = 7;
     }
+    console.log(`🎁 Awarding ${daysToAdd} days for amount: ${amount}`);
 
-    // 5. حساب تاريخ الانتهاء
-    // نجلب تاريخ الانتهاء الحالي للمنتج (إذا كان مميزاً بالفعل) لنضيف عليه
-    const { data: product } = await supabase.from('products').select('promoted_until').eq('id', payRecord.product_id).single();
+    // 4. تحديث تاريخ انتهاء المنتج
+    const { data: product } = await supabase.from('products').select('promoted_until').eq('id', productId).single();
     
     let expiry = new Date();
-    // لو المنتج لسه مميز، نبدأ العد من تاريخ انتهائه الحالي
+    // لو المنتج مميز بالفعل، نضيف المدة فوق التاريخ الحالي
     if (product && product.promoted_until && new Date(product.promoted_until) > new Date()) {
         expiry = new Date(product.promoted_until);
     }
     
-    // إضافة الأيام
     expiry.setDate(expiry.getDate() + daysToAdd);
 
-    // 6. تحديث المنتج
+    // 5. تطبيق التمييز في قاعدة البيانات
     const { error: updateError } = await supabase
       .from('products')
       .update({ promoted_until: expiry.toISOString() })
-      .eq('id', payRecord.product_id);
+      .eq('id', productId);
 
     if (updateError) {
-        console.error("Product Update Failed:", updateError);
-        return { statusCode: 500, body: JSON.stringify({ error: "Product update failed" }) };
+        console.error("❌ Promotion Failed:", updateError);
+        return { statusCode: 500, body: JSON.stringify({ error: "Failed to promote product" }) };
     }
 
+    console.log("✅ Product Promoted Successfully!");
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
@@ -80,7 +110,7 @@ exports.handler = async (event, context) => {
     };
 
   } catch (err) {
-    console.error("Complete Error:", err);
+    console.error("💥 Complete Handler Error:", err);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
