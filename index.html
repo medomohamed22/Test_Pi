@@ -224,6 +224,50 @@ input:focus, textarea:focus { border-color: var(--primary); background: white; }
 .bubble.me { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
 .bubble.other { background: white; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
 
+/* --- شريط الأقسام (Categories Bar) --- */
+.categories-wrapper {
+  position: sticky; top: 60px; z-index: 40; /* تثبيت الشريط أسفل الهيدر */
+  background: var(--bg-body);
+  padding: 10px 0;
+  margin-bottom: 10px;
+}
+
+.categories-scroll {
+  display: flex; gap: 10px; overflow-x: auto; 
+  padding: 0 4px; scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* نعومة التمرير في الموبايل */
+}
+
+/* إخفاء شريط التمرير للشكل الجمالي */
+.categories-scroll::-webkit-scrollbar { display: none; }
+
+.cat-chip {
+  background: white; border: 1px solid var(--border);
+  padding: 8px 16px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  white-space: nowrap; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.cat-chip i { font-size: 14px; }
+
+.cat-chip.active {
+  background: var(--primary); color: white; border-color: var(--primary);
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* --- تنسيق قائمة الاختيار في المودال --- */
+select.input-box {
+  width: 100%; padding: 14px; margin-bottom: 12px;
+  border: 1px solid var(--border); border-radius: 12px;
+  font-family: inherit; font-size: 14px; outline: none; background: #fff;
+  appearance: none; /* إخفاء السهم الافتراضي */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: left 10px center; background-size: 16px;
+}
+
+
 </style>
 </head>
 <body>
@@ -247,7 +291,10 @@ input:focus, textarea:focus { border-color: var(--primary); background: white; }
 </header>
 
 <div class="container">
-  <div id="view-home" class="view-section">
+  <div id="view-home" class="view-section"><div class="categories-wrapper">
+  <div class="categories-scroll" id="cat-filters">
+  </div>
+</div>
     <h3 style="margin-top:5px;display:flex;align-items:center;gap:8px">
       <i class="fa-solid fa-fire" style="color:var(--accent)"></i> أحدث المعروضات
     </h3>
@@ -301,6 +348,16 @@ input:focus, textarea:focus { border-color: var(--primary); background: white; }
     <h3 style="margin-top:0">بيع منتج جديد</h3>
     <input id="addName" placeholder="اسم المنتج" />
     <div style="display:flex;gap:10px">
+      <select id="addCategory" class="input-box">
+  <option value="" disabled selected>اختر القسم</option>
+  <option value="cars">🚗 سيارات ومركبات</option>
+  <option value="electronics">💻 إلكترونيات</option>
+  <option value="phones">📱 هواتف</option>
+  <option value="fashion">👕 ملابس وموضة</option>
+  <option value="home">🏠 أثاث ومنزل</option>
+  <option value="other">📦 أخرى</option>
+</select>
+<div style="display:flex;gap:10px">
       <input id="addPrice" type="number" placeholder="السعر (Pi)" />
       <input id="addPhone" type="tel" placeholder="رقم الموبايل (واتساب)" />
     </div>
@@ -449,13 +506,14 @@ async function loadAllProducts() {
     const isOwner = user && p.seller_pi_id === user.uid;
     const img = p.image_url || "https://placehold.co/400?text=No+Image";
     
-    // Check Promotion
+    // فحص التمييز (Promotion Check)
     let isPromoted = false;
     if(p.promoted_until) {
       const until = new Date(p.promoted_until);
       if(until > now) isPromoted = true;
     }
 
+    // تجهيز الأزرار (Actions)
     let actions = "";
     if(!isOwner) {
        let waBtn = "";
@@ -466,19 +524,15 @@ async function loadAllProducts() {
        }
 
        actions = `
-         <div style="display:flex;gap:6px;margin-top:auto">
+         <div style="display:flex;gap:6px;width:100%">
            ${waBtn}
            <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="flex:1;font-size:12px;padding:8px;border-radius:10px">مراسلة</button>
          </div>`;
     } else {
-       actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px">إعلانك</div>`;
+       actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px;width:100%">إعلانك</div>`;
     }
 
-    // ... داخل دالة loadAllProducts ...
-
-    // (هنا الكود القديم لحساب isPromoted و actions...)
-
-    // ✅ هذا هو الشكل الجديد للكارد
+    // ✅ بناء كود HTML الجديد للكارد (التصميم الجديد)
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}">
         ${isPromoted ? '<div class="promo-badge"><i class="fa-solid fa-star"></i> مميز</div>' : ''}
@@ -503,11 +557,9 @@ async function loadAllProducts() {
       </div>
     `;
     list.innerHTML += html;
-
-// ...
-
   });
 }
+
 
 // --- PROFILE & ADS (With Disabled Promote Button) ---
 async function loadMyAds() {
