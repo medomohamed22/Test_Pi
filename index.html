@@ -340,9 +340,7 @@ select.input-box {
         <input id="addPrice" type="number" class="input-box" placeholder="0.00" />
       </div>
       <div class="form-group" style="flex:1">
-        <label class="form-label">رقم واتساب</label>
-        <input id="addPhone" type="tel" class="input-box" placeholder="مثال: 010xxxx" />
-      </div>
+        
     </div>
 
     <div class="form-group">
@@ -543,22 +541,19 @@ function renderProducts() {
       if(until > now) isPromoted = true;
     }
 
-    let actions = "";
+      let actions = "";
     if(!isOwner) {
-       let waBtn = "";
-       if(p.phone) {
-          let ph = p.phone.replace(/\D/g,'');
-          if(ph.startsWith('0')) ph = '2' + ph; 
-          waBtn = `<a href="https://wa.me/${ph}" target="_blank" class="btn btn-whatsapp" style="padding:8px;border-radius:10px"><i class="fa-brands fa-whatsapp"></i></a>`;
-       }
+       // ❌ تم حذف منطق الواتساب بالكامل
        actions = `
-         <div style="display:flex;gap:6px;width:100%">
-           ${waBtn}
-           <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="flex:1;font-size:12px;padding:8px;border-radius:10px">مراسلة</button>
+         <div style="width:100%">
+           <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%;font-size:12px;padding:8px;border-radius:10px">
+             <i class="fa-solid fa-comment-dots"></i> مراسلة البائع
+           </button>
          </div>`;
     } else {
        actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px;width:100%">إعلانك</div>`;
     }
+
 
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}">
@@ -629,7 +624,7 @@ function previewImage(input) {
 function resetForm() {
   document.getElementById("addName").value = "";
   document.getElementById("addPrice").value = "";
-  document.getElementById("addPhone").value = "";
+  
   document.getElementById("addDesc").value = "";
   document.getElementById("addCategory").value = "";
   document.getElementById("addImg").value = "";
@@ -640,7 +635,7 @@ function resetForm() {
 async function submitProduct(){
     const name = document.getElementById("addName").value;
     const price = document.getElementById("addPrice").value;
-    const phone = document.getElementById("addPhone").value;
+    
     const desc = document.getElementById("addDesc").value;
     const category = document.getElementById("addCategory").value;
     const file = document.getElementById("addImg").files[0];
