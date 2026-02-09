@@ -1,47 +1,41 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY; 
+const SUPABASE_KEY = process.env.SUPABASE_KEY; // المفتاح القوي
 const PI_API_KEY = process.env.PI_API_KEY;
 const PI_API_BASE = 'https://api.minepi.com/v2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 exports.handler = async (event, context) => {
+  // 1. إعدادات CORS
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' }, body: '' };
   }
 
   try {
-    console.log("🚀 Starting Approve...");
     const { paymentId } = JSON.parse(event.body);
+    console.log(`🚀 Approve Request: ${paymentId}`);
 
-    // 1. جلب البيانات من Pi
-    const paymentInfoRes = await fetch(`${PI_API_BASE}/payments/${paymentId}`, {
-      method: 'GET',
+    // 2. جلب تفاصيل الدفع من Pi
+    const paymentRes = await fetch(`${PI_API_BASE}/payments/${paymentId}`, {
       headers: { 'Authorization': `Key ${PI_API_KEY}` }
     });
-
-    if (!paymentInfoRes.ok) throw new Error('Pi API Error');
     
-    const paymentData = await paymentInfoRes.json();
+    if (!paymentRes.ok) throw new Error("Failed to verify with Pi");
+    const paymentData = await paymentRes.json();
+    
     const amount = parseFloat(paymentData.amount);
-    // تأكد من قراءة productId سواء كان نصاً أو رقماً
-    const productId = paymentData.metadata?.productId; 
+    const productId = paymentData.metadata?.productId;
 
-    // التحقق من المبلغ (3 أو 5)
-    const cleanAmount = Math.round(amount);
-    if (cleanAmount !== 3 && cleanAmount !== 5) {
-      return { statusCode: 400, body: JSON.stringify({ error: `Invalid amount: ${amount}` }) };
+    // 3. التحقق البسيط (نقبل 3 أو 5)
+    if (Math.round(amount) !== 3 && Math.round(amount) !== 5) {
+        return { statusCode: 400, body: JSON.stringify({ error: "Amount must be 3 or 5" }) };
     }
 
-    if (!productId) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing product ID in metadata' }) };
-    }
-
-    // 2. تسجيل الدفع (Upsert لتجنب الأخطاء عند التكرار)
-    // ⚠️ هذا الجزء هو الأهم: لن ننتقل للخطوة التالية إذا فشل هذا
-    const { error: dbError } = await supabase.from('payments').upsert({
+    // 4. تسجيل الدفع في قاعدة البيانات (Upsert لمنع الأخطاء)
+    // حتى لو فشل التسجيل، سنكمل الموافقة لكي لا يخسر المستخدم أمواله
+    await supabase.from('payments').upsert({
       payment_id: paymentId,
       user_id: paymentData.user_uid,
       product_id: productId,
@@ -49,22 +43,15 @@ exports.handler = async (event, context) => {
       status: 'approved'
     }, { onConflict: 'payment_id' });
 
-    if (dbError) {
-        console.error("❌ DB Insert Error:", dbError);
-        // نرجع خطأ للسيرفر ليقوم Pi بإعادة المحاولة لاحقاً بدلاً من إكمال عملية ناقصة
-        return { statusCode: 500, body: JSON.stringify({ error: "Database Write Failed" }) };
-    }
-
-    // 3. الموافقة النهائية
+    // 5. إرسال الموافقة لـ Pi (أهم خطوة)
     const approveRes = await fetch(`${PI_API_BASE}/payments/${paymentId}/approve`, {
       method: 'POST',
       headers: { 'Authorization': `Key ${PI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({})
     });
 
-    if (!approveRes.ok) throw new Error('Pi Approve Failed');
+    if (!approveRes.ok) console.log("Pi Approve Warning:", await approveRes.text());
 
-    console.log("✅ Approved & Saved!");
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
@@ -72,7 +59,7 @@ exports.handler = async (event, context) => {
     };
 
   } catch (err) {
-    console.error("Handler Error:", err);
+    console.error("Approve Error:", err);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
