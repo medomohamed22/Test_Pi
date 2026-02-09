@@ -206,6 +206,13 @@ input:focus, textarea:focus { border-color: var(--primary); background: white; }
 </style>
 </head>
 <body>
+  <div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+  <i class="fa-solid fa-ban" style="font-size:80px;color:#EF4444;margin-bottom:20px;animation:pulse 2s infinite"></i>
+  <h1 style="color:#EF4444;font-size:32px;margin:0">حساب محظور</h1>
+  <p style="color:#6B7280;margin-top:10px;font-size:18px">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
+  <style>@keyframes pulse { 0% {transform:scale(1);} 50% {transform:scale(1.1);} 100% {transform:scale(1);} }</style>
+</div>
+
 
 <header class="header">
   <div class="brand"><i class="fa-solid fa-store"></i> سوق باي</div>
@@ -357,20 +364,32 @@ function initPi(){
 }
 
 async function handleLogin(uid, username) {
-  // 1. التحقق من الحظر أولاً
-  const { data: userData } = await sb.from("users").select("is_banned").eq("pi_id", uid).single();
-  
-  if (userData && userData.is_banned) {
-    alert("⛔ تم حظر حسابك من قبل الإدارة لمخالفة القوانين.");
-    return; // إيقاف الدخول
+  // 1. التحقق هل المستخدم محظور؟
+  const { data: userData, error } = await sb
+    .from("users")
+    .select("is_banned")
+    .eq("pi_id", uid)
+    .single();
+
+  // إذا وجدنا المستخدم وكان محظوراً
+  if (userData && userData.is_banned === true) {
+    // إظهار شاشة الحظر الحمراء
+    document.getElementById("banned-screen").classList.remove("hidden");
+    document.getElementById("banned-screen").style.display = "flex"; // تأكيد العرض
+    return; // ⛔ توقف هنا ولا تكمل تسجيل الدخول
   }
 
-  // ... باقي كود تسجيل الدخول كما هو ...
+  // 2. إذا لم يكن محظوراً، أكمل الدخول بشكل طبيعي
   user = { uid, username };
-  await sb.from("users").upsert({ pi_id: uid, username: username });
-  // ...
-
   
+  // تحديث البيانات أو إنشاؤها (مع الحفاظ على حالة الحظر كما هي)
+  await sb.from("users").upsert({ 
+    pi_id: uid, 
+    username: username 
+    // لا نرسل is_banned هنا لكي لا نلغي الحظر بالخطأ
+  }, { onConflict: 'pi_id' });
+  
+  // تحديث واجهة الموقع
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
   document.getElementById("userDispName").innerText = username;
@@ -380,6 +399,10 @@ async function handleLogin(uid, username) {
   document.getElementById("profile-user").classList.remove("hidden");
   document.getElementById("p-username").innerText = username;
   document.getElementById("p-uid").innerText = "ID: " + uid.slice(0,6) + "...";
+  
+  // تحميل بيانات المستخدم
+  loadMyAds();
+  loadInbox();
 }
 
 // --- PRODUCTS & HOME (With Promotion Logic) ---
