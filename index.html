@@ -697,8 +697,10 @@ function closePromoteModal() {
 }
 function triggerPayment(amount, days) {
   if(!currentPromoteProductId) return;
+  // 🔥 FIX: Save ID locally before closing modal
+  const idToPromote = currentPromoteProductId; 
   closePromoteModal();
-  promoteProduct(currentPromoteProductId, amount, days);
+  promoteProduct(idToPromote, amount, days);
 }
 
 async function promoteProduct(productId, amount, days) {
@@ -787,4 +789,4 @@ async function loadInbox() {
 }
 </script>
 </body>
-</html>```
+</html>
