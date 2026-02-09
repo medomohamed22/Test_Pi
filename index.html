@@ -205,7 +205,7 @@ select.input-box {
 .file-upload-text { font-size: 12px; font-weight: 500; }
 #preview-img { display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 14px; }
 
-/* --- Toast Notification (بديل الـ Alert) --- */
+/* --- Toast Notification --- */
 .toast-container {
   position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
   z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
@@ -334,13 +334,9 @@ select.input-box {
       </select>
     </div>
 
-    <div style="display:flex;gap:10px">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">السعر (Pi)</label>
-        <input id="addPrice" type="number" class="input-box" placeholder="0.00" />
-      </div>
-      <div class="form-group" style="flex:1">
-        
+    <div class="form-group">
+      <label class="form-label">السعر (Pi)</label>
+      <input id="addPrice" type="number" class="input-box" placeholder="0.00" />
     </div>
 
     <div class="form-group">
@@ -541,9 +537,8 @@ function renderProducts() {
       if(until > now) isPromoted = true;
     }
 
-      let actions = "";
+    let actions = "";
     if(!isOwner) {
-       // ❌ تم حذف منطق الواتساب بالكامل
        actions = `
          <div style="width:100%">
            <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%;font-size:12px;padding:8px;border-radius:10px">
@@ -553,7 +548,6 @@ function renderProducts() {
     } else {
        actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px;width:100%">إعلانك</div>`;
     }
-
 
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}">
@@ -624,7 +618,6 @@ function previewImage(input) {
 function resetForm() {
   document.getElementById("addName").value = "";
   document.getElementById("addPrice").value = "";
-  
   document.getElementById("addDesc").value = "";
   document.getElementById("addCategory").value = "";
   document.getElementById("addImg").value = "";
@@ -635,7 +628,6 @@ function resetForm() {
 async function submitProduct(){
     const name = document.getElementById("addName").value;
     const price = document.getElementById("addPrice").value;
-    
     const desc = document.getElementById("addDesc").value;
     const category = document.getElementById("addCategory").value;
     const file = document.getElementById("addImg").files[0];
@@ -662,7 +654,7 @@ async function submitProduct(){
     }
     
     await sb.from("products").insert({
-        name, price, phone, description: desc, image_url: url, 
+        name, price, description: desc, image_url: url, 
         seller_pi_id: user.uid, seller_username: user.username,
         category: category
     });
@@ -710,6 +702,69 @@ async function deleteProduct(id){
       showToast("تم الحذف");
     }
 }
+
+// --- CHAT SYSTEM (Restored Old Version) ---
+function openChatRoom(pid, otherId, pName, uName) {
+  if(!user) return showToast("يجب تسجيل الدخول أولاً", 'error');
+  
+  activeChat = { pid, otherId };
+  
+  document.getElementById("chatTitle").innerText = pName;
+  document.getElementById("chatPeer").innerText = uName;
+  document.getElementById("chatModal").style.display = "flex";
+  document.getElementById("msgContainer").innerHTML = "";
+  
+  loadMessages();
+  
+  sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
+    { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
+    payload => {
+       const m = payload.new;
+       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid))
+         renderMsg(m);
+    }
+  ).subscribe();
+}
+
+async function loadMessages() {
+  const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
+  
+  if(data) data.forEach(m => {
+      if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid))
+        renderMsg(m);
+  });
+}
+
+function renderMsg(m){
+    const div = document.createElement("div");
+    div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`;
+    div.innerText = m.content;
+    const c = document.getElementById("msgContainer");
+    c.appendChild(div); 
+    c.scrollTop = c.scrollHeight;
+}
+
+async function sendMsg(){
+    const inp = document.getElementById("msgInput");
+    if(!inp.value.trim()) return;
+    
+    const { error } = await sb.from("messages").insert({
+        product_id: activeChat.pid, 
+        sender_pi_id: user.uid, 
+        receiver_pi_id: activeChat.otherId, 
+        content: inp.value.trim()
+    });
+    
+    if(error) showToast("فشل الإرسال", 'error');
+    else inp.value = "";
+}
+
+function closeChat() { 
+  document.getElementById("chatModal").style.display = "none"; 
+  activeChat = null; 
+  sb.removeAllChannels(); 
+}
+
 // --- INBOX (Real Usernames) ---
 async function loadInbox() {
   const list = document.getElementById("inbox-list");
@@ -761,76 +816,6 @@ async function loadInbox() {
       </div>`;
   });
 }
-
-// --- CHAT ---
-// --- CHAT SYSTEM (Restored Old Version) ---
-
-function openChatRoom(pid, otherId, pName, uName) {
-  if(!user) return showToast("يجب تسجيل الدخول أولاً", 'error'); // تعديل بسيط ليتوافق مع التصميم الجديد
-  
-  activeChat = { pid, otherId };
-  
-  document.getElementById("chatTitle").innerText = pName;
-  document.getElementById("chatPeer").innerText = uName;
-  document.getElementById("chatModal").style.display = "flex";
-  document.getElementById("msgContainer").innerHTML = "";
-  
-  loadMessages();
-  
-  // نفس القناة القديمة التي كانت تعمل معك
-  sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
-    { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
-    payload => {
-       const m = payload.new;
-       // شرط الفلترة القديم
-       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid))
-         renderMsg(m);
-    }
-  ).subscribe();
-}
-
-async function loadMessages() {
-  const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
-  
-  if(data) data.forEach(m => {
-      // نفس شرط الفلترة القديم
-      if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid))
-        renderMsg(m);
-  });
-}
-
-function renderMsg(m){
-    const div = document.createElement("div");
-    // استخدام === للمقارنة كما في الكود القديم
-    div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`;
-    div.innerText = m.content;
-    const c = document.getElementById("msgContainer");
-    c.appendChild(div); 
-    c.scrollTop = c.scrollHeight;
-}
-
-async function sendMsg(){
-    const inp = document.getElementById("msgInput");
-    if(!inp.value.trim()) return;
-    
-    // الإرسال كما كان
-    const { error } = await sb.from("messages").insert({
-        product_id: activeChat.pid, 
-        sender_pi_id: user.uid, 
-        receiver_pi_id: activeChat.otherId, 
-        content: inp.value.trim()
-    });
-    
-    if(error) showToast("فشل الإرسال", 'error');
-    else inp.value = "";
-}
-
-function closeChat() { 
-  document.getElementById("chatModal").style.display = "none"; 
-  activeChat = null; 
-  sb.removeAllChannels(); 
-}
-
 </script>
 </body>
 </html>
