@@ -66,10 +66,10 @@ body {
 }
 .brand { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
 
-/* Header Actions (User + Lang) */
+/* Header Actions */
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
-/* Language Switcher Button */
+/* Language Switcher */
 .lang-btn {
   width: 36px; height: 36px; border-radius: 50%;
   background: white; border: 1px solid var(--border);
@@ -77,10 +77,8 @@ body {
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  overflow: hidden; position: relative;
 }
 .lang-btn:active { transform: scale(0.9) rotate(10deg); }
-.lang-btn span { position: absolute; transition: all 0.3s; }
 
 /* User Profile in Header */
 .header-user {
@@ -132,6 +130,7 @@ body {
   overflow: hidden; display: flex; flex-direction: column;
   position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
 .card:active { transform: scale(0.98); }
 .card-img-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: #f9fafb; overflow: hidden; }
@@ -147,13 +146,30 @@ body {
   display: inline-flex; align-items: center; gap: 4px;
 }
 .card-desc { font-size: 11px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; height: 32px; width: 100%; }
-.card-actions { width: 100%; display: flex; gap: 6px; margin-top: 4px; }
+.card-actions { width: 100%; display: flex; gap: 6px; margin-top: 4px; z-index: 2; position: relative; }
 .promo-badge {
   position: absolute; top: 8px; right: 8px; z-index: 10;
   background: var(--accent); color: white; padding: 4px 8px;
   border-radius: 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 .card.promoted { border: 2px solid var(--accent); }
+
+/* --- Product Detail View Styles --- */
+.detail-image-box {
+  width: 100%; aspect-ratio: 4/3; background: #f3f4f6;
+  border-radius: 20px; overflow: hidden; margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+.detail-img { width: 100%; height: 100%; object-fit: contain; }
+.seller-card {
+  background: white; border: 1px solid var(--border);
+  padding: 16px; border-radius: 16px; margin-top: 20px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+.seller-info { flex: 1; }
+.seller-name { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+.seller-stats { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
 
 /* --- Categories --- */
 .categories-wrapper { position: sticky; top: 60px; z-index: 40; background: var(--bg-body); padding: 10px 0; margin-bottom: 10px; }
@@ -278,6 +294,42 @@ select.input-box {
     <div id="loading" style="text-align:center;padding:20px;color:gray" data-i18n="loading">جاري التحميل...</div>
   </div>
 
+  <div id="view-details" class="view-section hidden">
+    <div style="display:flex;align-items:center;margin-bottom:12px">
+      <button onclick="nav('home')" class="btn btn-ghost" style="padding:8px 12px;border-radius:12px">
+        <i class="fa-solid fa-arrow-right"></i> <span data-i18n="btn_back">رجوع</span>
+      </button>
+    </div>
+    
+    <div class="detail-image-box">
+      <img id="detail-img" class="detail-img" src="">
+    </div>
+
+    <h2 id="detail-title" style="margin:0 0 8px 0;line-height:1.3;font-size:20px"></h2>
+    
+    <div class="price-pill" style="font-size:16px;padding:6px 16px;margin-bottom:16px">
+      <span id="detail-price"></span> <span>Pi</span>
+    </div>
+
+    <div style="background:white;padding:16px;border-radius:16px;border:1px solid var(--border);margin-bottom:16px">
+      <h4 style="margin:0 0 8px 0" data-i18n="label_desc">الوصف</h4>
+      <p id="detail-desc" style="color:#4B5563;font-size:14px;line-height:1.6;margin:0;white-space:pre-wrap;"></p>
+    </div>
+
+    <div class="seller-card">
+      <div style="width:50px;height:50px;background:#F3F4F6;border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--primary);font-weight:bold" id="detail-seller-avatar"></div>
+      <div class="seller-info">
+        <div id="detail-seller-name" class="seller-name"></div>
+        <div class="seller-stats">
+          <div><i class="fa-solid fa-calendar-days"></i> <span data-i18n="label_joined">انضم:</span> <span id="detail-join-date">...</span></div>
+          <div><i class="fa-solid fa-box-open"></i> <span data-i18n="label_total_ads">عدد الإعلانات:</span> <span id="detail-ad-count">...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-actions" style="margin-top:20px;display:flex;gap:10px;flex-direction:column"></div>
+  </div>
+
   <div id="view-chats" class="view-section hidden">
     <h3 style="margin-top:5px" data-i18n="inbox_title">الرسائل الواردة</h3>
     <div id="inbox-list"></div>
@@ -383,7 +435,7 @@ const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS";
 
 let sb, user = null;
 let activeChat = null;
-let currentLang = localStorage.getItem('lang') || 'en'; // Default to English
+let currentLang = localStorage.getItem('lang') || 'en'; 
 
 // --- TRANSLATIONS ---
 const translations = {
@@ -432,7 +484,10 @@ const translations = {
     cat_fashion: "ملابس",
     cat_home: "منزل",
     cat_other: "أخرى",
-    select_cat: "اختر القسم المناسب"
+    select_cat: "اختر القسم المناسب",
+    btn_back: "رجوع",
+    label_joined: "انضم:",
+    label_total_ads: "إعلانات:"
   },
   en: {
     brand_name: "Pi Market",
@@ -479,7 +534,10 @@ const translations = {
     cat_fashion: "Fashion",
     cat_home: "Home",
     cat_other: "Other",
-    select_cat: "Select Category"
+    select_cat: "Select Category",
+    btn_back: "Back",
+    label_joined: "Joined:",
+    label_total_ads: "Total Ads:"
   }
 };
 
@@ -500,7 +558,7 @@ let activeCategory = 'all';
 // --- INIT ---
 document.addEventListener("DOMContentLoaded", async () => {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  updateLanguage(); // Apply language immediately
+  updateLanguage();
   initPi();
   loadAllProducts();
 });
@@ -509,14 +567,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 function toggleLanguage() {
   currentLang = currentLang === 'ar' ? 'en' : 'ar';
   localStorage.setItem('lang', currentLang);
-  
-  // Animation for text change
   const langText = document.getElementById('langText');
   langText.style.opacity = 0;
-  setTimeout(() => {
-    updateLanguage();
-    langText.style.opacity = 1;
-  }, 200);
+  setTimeout(() => { updateLanguage(); langText.style.opacity = 1; }, 200);
 }
 
 function t(key) {
@@ -524,31 +577,17 @@ function t(key) {
 }
 
 function updateLanguage() {
-  // Update Button Text (Show the *other* language option)
   document.getElementById('langText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
-
-  // Update static elements
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (translations[currentLang][key]) {
-      el.innerText = translations[currentLang][key];
-    }
+    if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
   });
-
-  // Update Placeholders
   document.getElementById('addName').placeholder = t('ph_prod_name');
   document.getElementById('addDesc').placeholder = t('ph_desc');
   document.getElementById('msgInput').placeholder = t('msg_placeholder');
-
-  // Re-render Categories
   initCategories();
-  
-  // Refresh content if loaded
   if(globalProducts.length > 0) renderProducts();
-  if(user) {
-    // If in profile, refresh ads list titles
-    if(!document.getElementById('view-profile').classList.contains('hidden')) loadMyAds();
-  }
+  if(user && !document.getElementById('view-profile').classList.contains('hidden')) loadMyAds();
 }
 
 // --- Toast System ---
@@ -558,37 +597,21 @@ function showToast(messageKey, type = 'success') {
   toast.className = `toast ${type}`;
   const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
   const color = type === 'success' ? '#10B981' : '#EF4444';
-  
-  // Translate message if it's a key, else show as is
   const msg = translations[currentLang][messageKey] || messageKey;
-
-  toast.innerHTML = `
-    <i class="fa-solid ${icon} toast-icon" style="color:${color}"></i>
-    <span class="toast-msg">${msg}</span>
-  `;
+  toast.innerHTML = `<i class="fa-solid ${icon} toast-icon" style="color:${color}"></i><span class="toast-msg">${msg}</span>`;
   container.appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-20px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
 }
 
 function initCategories() {
-  // 1. Filter Bar
   const container = document.getElementById('cat-filters');
   container.innerHTML = CATEGORIES_CONFIG.map(c => `
     <div class="cat-chip ${c.id === activeCategory ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)">
       <i class="fa-solid ${c.icon}"></i> ${t(c.key)}
-    </div>
-  `).join('');
-
-  // 2. Add Modal Select
+    </div>`).join('');
   const select = document.getElementById('addCategory');
   select.innerHTML = `<option value="" disabled selected>${t('select_cat')}</option>` + 
-    CATEGORIES_CONFIG.filter(c => c.id !== 'all').map(c => 
-      `<option value="${c.id}">${t(c.key)}</option>`
-    ).join('');
+    CATEGORIES_CONFIG.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${t(c.key)}</option>`).join('');
 }
 
 function filterByCategory(catId, element) {
@@ -617,119 +640,130 @@ function nav(viewName) {
 function initPi(){
   const btn = document.getElementById("loginBtn");
   const onIncompletePaymentFound = (payment) => { console.log("Incomplete:", payment); };
-
   if(!window.Pi){
     btn.onclick = () => handleLogin("test_" + Math.floor(Math.random()*1000), "Guest_" + Math.floor(Math.random()*100));
     return;
   }
-
   Pi.init({ version: "2.0", sandbox: false });
-  
   btn.onclick = async () => {
     try {
       const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound);
       handleLogin(auth.user.uid, auth.user.username);
-    } catch(e) { 
-      console.error(e);
-    }
+    } catch(e) { console.error(e); }
   };
 }
 
 async function handleLogin(uid, username) {
-  const { data: userData, error } = await sb.from("users").select("is_banned").eq("pi_id", uid).single();
-
+  const { data: userData } = await sb.from("users").select("is_banned").eq("pi_id", uid).single();
   if (userData && userData.is_banned === true) {
     document.getElementById("banned-screen").classList.remove("hidden");
     document.getElementById("banned-screen").style.display = "flex";
     return; 
   }
-
   user = { uid, username };
   await sb.from("users").upsert({ pi_id: uid, username: username }, { onConflict: 'pi_id' });
-  
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
   document.getElementById("userDispName").innerText = username;
   document.getElementById("userAvatar").innerText = username.charAt(0).toUpperCase();
-
   document.getElementById("profile-guest").classList.add("hidden");
   document.getElementById("profile-user").classList.remove("hidden");
   document.getElementById("p-username").innerText = username;
   document.getElementById("p-uid").innerText = "ID: " + uid.slice(0,6) + "...";
-  
-  loadMyAds();
-  loadInbox();
+  loadMyAds(); loadInbox();
 }
 
 // --- PRODUCTS ---
 async function loadAllProducts() {
-  const { data } = await sb
-    .from("products")
-    .select("*")
-    .order("promoted_until", { ascending: false, nullsFirst: false }) 
-    .order("created_at", { ascending: false });
-
+  const { data } = await sb.from("products").select("*").order("promoted_until", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
   document.getElementById("loading").style.display = "none";
-  
-  if(data) {
-    globalProducts = data;
-    renderProducts();
-  } else {
-    document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>Error Loading</div>";
-  }
+  if(data) { globalProducts = data; renderProducts(); } 
+  else { document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>Error Loading</div>"; }
 }
 
 function renderProducts() {
   const list = document.getElementById("products-list");
   list.innerHTML = "";
-
-  const filtered = activeCategory === 'all' 
-    ? globalProducts 
-    : globalProducts.filter(p => p.category === activeCategory);
-
+  const filtered = activeCategory === 'all' ? globalProducts : globalProducts.filter(p => p.category === activeCategory);
   if(!filtered.length) {
     list.innerHTML = `<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>${t('no_products')}</div>`;
     return;
   }
-
   const now = new Date();
-
   filtered.forEach(p => {
-    const isOwner = user && p.seller_pi_id === user.uid;
     const img = p.image_url || "https://placehold.co/400?text=No+Image";
-    
     let isPromoted = false;
     if(p.promoted_until) {
       const until = new Date(p.promoted_until);
       if(until > now) isPromoted = true;
     }
-
-    let actions = "";
-    if(!isOwner) {
-       actions = `
-         <div style="width:100%">
-           <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%;font-size:12px;padding:8px;border-radius:10px">
-             <i class="fa-solid fa-comment-dots"></i> ${t('message_seller')}
-           </button>
-         </div>`;
-    } else {
-       actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px;width:100%">${t('your_ad')}</div>`;
-    }
-
     const html = `
-      <div class="card ${isPromoted ? 'promoted' : ''}">
+      <div class="card ${isPromoted ? 'promoted' : ''}" onclick="openProductDetails(${p.id})">
         ${isPromoted ? `<div class="promo-badge"><i class="fa-solid fa-star"></i> ${t('promoted_badge')}</div>` : ''}
         <div class="card-img-wrap"><img src="${img}" class="card-img" loading="lazy"></div>
         <div class="card-body">
           <h4 class="card-title">${p.name}</h4>
           <div class="price-pill"><span>${p.price}</span> <span>Pi</span></div>
           <div class="card-desc">${p.description || ''}</div>
-          <div class="card-actions">${actions}</div>
         </div>
-      </div>
-    `;
+      </div>`;
     list.innerHTML += html;
   });
+}
+
+// --- PRODUCT DETAILS (New Feature) ---
+async function openProductDetails(pid) {
+  const p = globalProducts.find(x => x.id == pid);
+  if(!p) return;
+
+  // 1. Populate static data
+  document.getElementById('detail-img').src = p.image_url || "https://placehold.co/600?text=No+Image";
+  document.getElementById('detail-title').innerText = p.name;
+  document.getElementById('detail-price').innerText = p.price;
+  document.getElementById('detail-desc').innerText = p.description || "";
+  
+  document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown";
+  document.getElementById('detail-seller-avatar').innerText = (p.seller_username || "U").charAt(0).toUpperCase();
+  document.getElementById('detail-join-date').innerText = "...";
+  document.getElementById('detail-ad-count').innerText = "...";
+
+  // 2. Setup Actions Buttons
+  const actionsDiv = document.getElementById('detail-actions');
+  const isOwner = user && p.seller_pi_id === user.uid;
+  
+  if(isOwner) {
+     actionsDiv.innerHTML = `
+       <button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>
+       <button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="width:100%;color:red"><i class="fa-solid fa-trash"></i> ${t('delete_btn')}</button>
+     `;
+  } else {
+     actionsDiv.innerHTML = `
+       <button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%">
+         <i class="fa-solid fa-comment-dots"></i> ${t('message_seller')}
+       </button>
+     `;
+  }
+
+  // 3. Switch View
+  document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+  const view = document.getElementById('view-details');
+  view.classList.remove('hidden');
+  view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
+
+  // 4. Fetch Seller Extra Info (Join date & count)
+  try {
+    // Get Join Date from users table
+    const { data: userData } = await sb.from('users').select('created_at').eq('pi_id', p.seller_pi_id).single();
+    if(userData) {
+       const date = new Date(userData.created_at);
+       document.getElementById('detail-join-date').innerText = date.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
+    }
+
+    // Get Ads Count
+    const { count } = await sb.from('products').select('*', { count: 'exact', head: true }).eq('seller_pi_id', p.seller_pi_id);
+    document.getElementById('detail-ad-count').innerText = count || 0;
+
+  } catch(e) { console.error("Details Fetch Error", e); }
 }
 
 // --- PROFILE ---
@@ -739,7 +773,6 @@ async function loadMyAds() {
   const { data } = await sb.from("products").select("*").eq("seller_pi_id", user.uid).order("created_at", {ascending:false});
   list.innerHTML = "";
   const now = new Date();
-
   if(data) {
     data.forEach(p => {
        let isPromoted = false;
@@ -751,18 +784,13 @@ async function loadMyAds() {
             promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); 
           }
        }
-
-       const promoteBtn = isPromoted 
-        ? `<button class="btn btn-disabled" style="width:100%;font-size:12px;margin-bottom:6px" disabled><i class="fa-solid fa-clock"></i> ${t('promoted_until')} ${promoDateStr}</button>`
-        : `<button onclick="promoteProduct(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E;font-size:12px;margin-bottom:6px"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>`;
-
+       // Note: Buttons here still work, but clicking card body opens details
        list.innerHTML += `
-       <div class="card">
+       <div class="card" onclick="openProductDetails(${p.id})">
          <div class="card-img-wrap"><img src="${p.image_url || ''}" class="card-img"></div>
          <div class="card-body">
            <div class="card-title">${p.name}</div>
-           ${promoteBtn}
-           <button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="color:red;font-size:12px;width:100%"><i class="fa-solid fa-trash"></i> ${t('delete_btn')}</button>
+           <div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div>
          </div>
        </div>`;
     });
@@ -772,7 +800,6 @@ async function loadMyAds() {
 // --- ADD PRODUCT LOGIC ---
 function openAddModal(){ document.getElementById("addModal").style.display="flex"; }
 function closeAddModal(){ document.getElementById("addModal").style.display="none"; resetForm(); }
-
 function previewImage(input) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
@@ -784,7 +811,6 @@ function previewImage(input) {
     reader.readAsDataURL(input.files[0]);
   }
 }
-
 function resetForm() {
   document.getElementById("addName").value = "";
   document.getElementById("addPrice").value = "";
@@ -794,7 +820,6 @@ function resetForm() {
   document.getElementById('preview-img').style.display = 'none';
   document.getElementById('upload-placeholder').style.opacity = '1';
 }
-
 async function submitProduct(){
     const name = document.getElementById("addName").value;
     const price = document.getElementById("addPrice").value;
@@ -802,18 +827,13 @@ async function submitProduct(){
     const category = document.getElementById("addCategory").value;
     const file = document.getElementById("addImg").files[0];
     const btn = document.getElementById("publishBtn");
-    
     if(!name || !price || !category) return showToast('toast_fill_data', 'error');
-    
     btn.innerText = t('loading'); btn.disabled=true;
-    
     let url = null;
     if(file){
         try {
           const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" };
-          btn.innerText="Compressing...";
           const compressedFile = await imageCompression(file, options);
-          btn.innerText="Uploading...";
           const path = `${user.uid}/${Date.now()}_img.jpg`;
           const {error} = await sb.storage.from("images").upload(path, compressedFile);
           if(!error) url = sb.storage.from("images").getPublicUrl(path).data.publicUrl;
@@ -822,25 +842,20 @@ async function submitProduct(){
           console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return;
         }
     }
-    
     await sb.from("products").insert({
         name, price, description: desc, image_url: url, 
         seller_pi_id: user.uid, seller_username: user.username,
         category: category
     });
-    
     showToast('toast_success_add');
-    closeAddModal(); 
-    loadAllProducts(); 
-    loadMyAds();
+    closeAddModal(); loadAllProducts(); loadMyAds();
     btn.innerText = t('publish_btn'); btn.disabled=false;
 }
 
-// --- PAYMENTS ---
+// --- PAYMENTS & DELETE (Used in Details View) ---
 async function promoteProduct(productId) {
   if(!window.Pi) return showToast("Pi Browser Required", 'error');
   const API_BASE = "/api"; 
-
   try {
     const paymentData = { amount: 3, memo: "Promote Ad: " + productId, metadata: { productId: productId, type: "promotion" } };
     const paymentCallbacks = {
@@ -856,7 +871,7 @@ async function promoteProduct(productId) {
       onReadyForServerCompletion: async (paymentId, txid) => {
           try {
              const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) });
-             if(res.ok) { showToast("Promotion Active!"); loadMyAds(); } 
+             if(res.ok) { showToast("Promotion Active!"); loadMyAds(); openProductDetails(productId); } 
              else { showToast("Activation Error", 'error'); }
           } catch (err) { showToast("Connection Error", 'error'); }
       }
@@ -868,24 +883,20 @@ async function promoteProduct(productId) {
 async function deleteProduct(id){
     if(confirm(t('confirm_delete'))) { 
       await sb.from("products").delete().eq("id",id); 
-      loadAllProducts(); loadMyAds(); 
-      showToast(t('delete_btn')); // Just showing "Delete" as success message logic
+      loadAllProducts(); loadMyAds(); nav('home');
+      showToast(t('delete_btn')); 
     }
 }
 
 // --- CHAT SYSTEM ---
 function openChatRoom(pid, otherId, pName, uName) {
   if(!user) return showToast('toast_login_first', 'error');
-  
   activeChat = { pid, otherId };
-  
   document.getElementById("chatTitle").innerText = pName;
   document.getElementById("chatPeer").innerText = uName;
   document.getElementById("chatModal").style.display = "flex";
   document.getElementById("msgContainer").innerHTML = "";
-  
   loadMessages();
-  
   sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
     { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
     payload => {
@@ -895,40 +906,28 @@ function openChatRoom(pid, otherId, pName, uName) {
     }
   ).subscribe();
 }
-
 async function loadMessages() {
   const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
-  
   if(data) data.forEach(m => {
       if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid))
         renderMsg(m);
   });
 }
-
 function renderMsg(m){
     const div = document.createElement("div");
     div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`;
     div.innerText = m.content;
     const c = document.getElementById("msgContainer");
-    c.appendChild(div); 
-    c.scrollTop = c.scrollHeight;
+    c.appendChild(div); c.scrollTop = c.scrollHeight;
 }
-
 async function sendMsg(){
     const inp = document.getElementById("msgInput");
     if(!inp.value.trim()) return;
-    
     const { error } = await sb.from("messages").insert({
-        product_id: activeChat.pid, 
-        sender_pi_id: user.uid, 
-        receiver_pi_id: activeChat.otherId, 
-        content: inp.value.trim()
+        product_id: activeChat.pid, sender_pi_id: user.uid, receiver_pi_id: activeChat.otherId, content: inp.value.trim()
     });
-    
-    if(error) showToast('toast_send_fail', 'error');
-    else inp.value = "";
+    if(error) showToast('toast_send_fail', 'error'); else inp.value = "";
 }
-
 function closeChat() { 
   document.getElementById("chatModal").style.display = "none"; 
   activeChat = null; 
@@ -939,42 +938,26 @@ function closeChat() {
 async function loadInbox() {
   const list = document.getElementById("inbox-list");
   list.innerHTML = `<div style='text-align:center;padding:20px'>${t('loading')}</div>`;
-
   const { data } = await sb.from("messages")
     .select("*, products(name)")
     .or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`)
     .order("created_at", {ascending: false});
-
   list.innerHTML = "";
   if(!data || !data.length) return list.innerHTML = `<div style='text-align:center;padding:40px;color:gray'>${t('no_products').replace('products','messages')}</div>`;
-
   const threads = new Map();
   const otherIds = new Set();
-
   data.forEach(m => {
     const otherId = (m.sender_pi_id === user.uid) ? m.receiver_pi_id : m.sender_pi_id;
     const key = `${m.product_id}_${otherId}`;
     if(!threads.has(key)){
         otherIds.add(otherId);
-        threads.set(key, {
-            pid: m.product_id,
-            otherId: otherId,
-            pName: m.products?.name || "Item",
-            last: m.content,
-            name: "User"
-        });
+        threads.set(key, { pid: m.product_id, otherId: otherId, pName: m.products?.name || "Item", last: m.content, name: "User" });
     }
   });
-
   if(otherIds.size > 0){
       const { data: users } = await sb.from("users").select("pi_id,username").in("pi_id", Array.from(otherIds));
-      if(users) {
-          users.forEach(u => {
-             threads.forEach(t => { if(t.otherId === u.pi_id) t.name = u.username; });
-          });
-      }
+      if(users) { users.forEach(u => { threads.forEach(t => { if(t.otherId === u.pi_id) t.name = u.username; }); }); }
   }
-
   threads.forEach(t => {
       list.innerHTML += `
       <div class="inbox-item" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.pName}', '${t.name}')">
