@@ -114,51 +114,72 @@ body {
 }
 
 /* --- Product Cards --- */
+/* --- Product Cards Updated Style --- */
 .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
 .card {
   background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
   overflow: hidden; display: flex; flex-direction: column;
-  position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-  transition: transform 0.2s;
+  position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .card:active { transform: scale(0.98); }
 
-/* المميز */
-.card.promoted {
-  border: 2px solid var(--accent);
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
+/* صورة المنتج */
+.card-img-wrap {
+  position: relative; width: 100%; 
+  aspect-ratio: 1 / 1; /* مربع */
+  background: #f9fafb;
+  overflow: hidden;
 }
+.card-img { width: 100%; height: 100%; object-fit: cover; }
+
+/* جسم الكارت */
+.card-body { 
+  padding: 12px; 
+  display: flex; flex-direction: column; 
+  align-items: center; /* توسيط المحتوى */
+  gap: 8px; 
+  text-align: center;
+}
+
+/* اسم المنتج */
+.card-title { 
+  font-size: 14px; margin: 0; line-height: 1.3; 
+  font-weight: 800; color: var(--text-main);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  height: 38px; /* ارتفاع ثابت لسطرين */
+}
+
+/* السعر (الشكل البيضاوي الأصفر) */
+.price-pill {
+  background: #FEF3C7; color: #92400E; /* خلفية صفراء فاتحة ونص بني */
+  border: 1px solid #FCD34D;
+  padding: 4px 12px; border-radius: 99px;
+  font-size: 12px; font-weight: 800;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+
+/* الوصف المختصر */
+.card-desc {
+  font-size: 11px; color: var(--text-muted);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  line-height: 1.4; height: 32px; width: 100%;
+}
+
+/* الأزرار في الأسفل */
+.card-actions {
+  width: 100%; display: flex; gap: 6px; margin-top: 4px;
+}
+
+/* بادج المميز */
 .promo-badge {
   position: absolute; top: 8px; right: 8px; z-index: 10;
   background: var(--accent); color: white; padding: 4px 8px;
   border-radius: 6px; font-size: 10px; font-weight: bold;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  display: flex; align-items: center; gap: 4px;
 }
-
-.card-img-wrap {
-  position: relative; width: 100%; 
-  aspect-ratio: 1 / 1; 
-  background: #f3f4f6;
-  overflow: hidden;
-}
-.card-img { width: 100%; height: 100%; object-fit: cover; }
-
-/* السعر في دائرة صفراء */
-.price-circle {
-  position: absolute; bottom: -12px; left: 8px; z-index: 20;
-  width: 48px; height: 48px;
-  background: var(--accent); color: #fff;
-  border-radius: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  border: 2px solid white;
-}
-.price-val { font-weight: 800; font-size: 13px; line-height: 1; color: #372800; }
-.price-curr { font-size: 9px; font-weight: 700; color: #372800; }
-
-.card-body { padding: 20px 10px 12px; display: flex; flex-direction: column; gap: 6px; }
-.card-title { font-size: 13px; margin: 0; line-height: 1.4; font-weight: 700; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.card.promoted { border: 2px solid var(--accent); }
 
 /* --- Inbox & Chat --- */
 .inbox-item {
@@ -453,25 +474,38 @@ async function loadAllProducts() {
        actions = `<div style="text-align:center;font-size:11px;color:gray;padding:6px">إعلانك</div>`;
     }
 
+    // ... داخل دالة loadAllProducts ...
+
+    // (هنا الكود القديم لحساب isPromoted و actions...)
+
+    // ✅ هذا هو الشكل الجديد للكارد
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}">
         ${isPromoted ? '<div class="promo-badge"><i class="fa-solid fa-star"></i> مميز</div>' : ''}
         
         <div class="card-img-wrap">
           <img src="${img}" class="card-img" loading="lazy">
-          <div class="price-circle">
-            <span class="price-val">${p.price}</span>
-            <span class="price-curr">Pi</span>
-          </div>
         </div>
         
         <div class="card-body">
           <h4 class="card-title">${p.name}</h4>
-          ${actions}
+          
+          <div class="price-pill">
+            <span>${p.price}</span> <span>Pi</span>
+          </div>
+
+          <div class="card-desc">${p.description || 'لا يوجد وصف'}</div>
+
+          <div class="card-actions">
+             ${actions}
+          </div>
         </div>
       </div>
     `;
     list.innerHTML += html;
+
+// ...
+
   });
 }
 
