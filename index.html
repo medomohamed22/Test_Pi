@@ -715,6 +715,57 @@ async function deleteProduct(id){
       showToast("تم الحذف");
     }
 }
+// --- INBOX (Real Usernames) ---
+async function loadInbox() {
+  const list = document.getElementById("inbox-list");
+  list.innerHTML = "<div style='text-align:center;padding:20px'>جاري التحديث...</div>";
+
+  const { data } = await sb.from("messages")
+    .select("*, products(name)")
+    .or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`)
+    .order("created_at", {ascending: false});
+
+  list.innerHTML = "";
+  if(!data || !data.length) return list.innerHTML = "<div style='text-align:center;padding:40px;color:gray'>لا توجد رسائل</div>";
+
+  const threads = new Map();
+  const otherIds = new Set();
+
+  data.forEach(m => {
+    const otherId = (m.sender_pi_id === user.uid) ? m.receiver_pi_id : m.sender_pi_id;
+    const key = `${m.product_id}_${otherId}`;
+    if(!threads.has(key)){
+        otherIds.add(otherId);
+        threads.set(key, {
+            pid: m.product_id,
+            otherId: otherId,
+            pName: m.products?.name || "منتج",
+            last: m.content,
+            name: "مستخدم"
+        });
+    }
+  });
+
+  if(otherIds.size > 0){
+      const { data: users } = await sb.from("users").select("pi_id,username").in("pi_id", Array.from(otherIds));
+      if(users) {
+          users.forEach(u => {
+             threads.forEach(t => { if(t.otherId === u.pi_id) t.name = u.username; });
+          });
+      }
+  }
+
+  threads.forEach(t => {
+      list.innerHTML += `
+      <div class="inbox-item" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.pName}', '${t.name}')">
+        <div class="inbox-avatar">${t.name.charAt(0)}</div>
+        <div class="inbox-info">
+          <div class="inbox-name">${t.name} <span style="font-weight:400;color:gray;font-size:11px">(${t.pName})</span></div>
+          <div class="inbox-msg">${t.last}</div>
+        </div>
+      </div>`;
+  });
+}
 
 // --- CHAT ---
 // --- CHAT SYSTEM (Restored Old Version) ---
