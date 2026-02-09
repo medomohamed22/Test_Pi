@@ -195,7 +195,7 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 .preview-box img { width: 100%; height: 100%; object-fit: cover; }
 .preview-remove { position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
 
-/* Plan Options in Promote Modal */
+/* Plan Options */
 .plan-option {
   border: 1px solid var(--border); border-radius: 12px; padding: 12px;
   display: flex; justify-content: space-between; align-items: center;
@@ -412,12 +412,14 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 // --- CONFIG ---
 const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS"; 
+// 🔥 FIX: Ensure this points to Netlify functions directly
+const API_BASE = "/.netlify/functions";
 
 let sb, user = null;
 let activeChat = null;
 let currentLang = localStorage.getItem('lang') || 'en'; 
 let selectedFiles = [];
-let currentPromoteProductId = null; // Store ID for promotion
+let currentPromoteProductId = null; 
 
 // --- DATA ---
 const GOVERNORATES = [
@@ -567,8 +569,11 @@ function renderProducts() {
   if(!filtered.length) { list.innerHTML = `<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>${t('no_products')}</div>`; return; }
   const now = new Date();
   filtered.forEach(p => {
+    // 🔥 FIX: Handle Array or String for images
     let img = "https://placehold.co/400?text=No+Image";
-    if(p.images && p.images.length > 0) img = p.images[0]; else if(p.image_url) img = p.image_url;
+    if(p.images && Array.isArray(p.images) && p.images.length > 0) img = p.images[0];
+    else if(p.image_url) img = p.image_url;
+
     let isPromoted = false; if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) isPromoted = true; }
     const locObj = GOVERNORATES.find(g => g.en === p.location);
     const locText = locObj ? (currentLang==='ar'?locObj.ar:locObj.en) : p.location;
@@ -591,7 +596,12 @@ function renderProducts() {
 
 async function openProductDetails(pid) {
   const p = globalProducts.find(x => x.id == pid); if(!p) return;
-  const images = (p.images && p.images.length > 0) ? p.images : (p.image_url ? [p.image_url] : ["https://placehold.co/600?text=No+Image"]);
+  
+  // 🔥 FIX: Handle Array or String for images in slider
+  const images = (p.images && Array.isArray(p.images) && p.images.length > 0) 
+    ? p.images 
+    : (p.image_url ? [p.image_url] : ["https://placehold.co/600?text=No+Image"]);
+
   const slider = document.getElementById('detail-slider'); const dots = document.getElementById('detail-dots');
   slider.innerHTML = images.map(src => `<div class="slide"><img src="${src}" class="slide-img"></div>`).join('');
   dots.innerHTML = images.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
@@ -636,7 +646,10 @@ async function loadMyAds() {
     data.forEach(p => {
        let isPromoted = false; let promoDateStr = "";
        if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) { isPromoted = true; promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); } }
-       let img = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || "");
+       
+       // 🔥 FIX: Handle array images
+       let img = (p.images && Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : (p.image_url || "");
+       
        list.innerHTML += `<div class="card" onclick="openProductDetails(${p.id})"><div class="card-img-wrap"><img src="${img}" class="card-img"></div><div class="card-body"><div class="card-title">${p.name}</div><div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div></div></div>`;
     });
   }
@@ -653,8 +666,23 @@ async function submitProduct(){
     const name = document.getElementById("addName").value; const price = document.getElementById("addPrice").value; const desc = document.getElementById("addDesc").value; const category = document.getElementById("addCategory").value; const location = document.getElementById("addLocation").value; const btn = document.getElementById("publishBtn");
     if(!name || !price || !category || !location) return showToast('toast_fill_data', 'error');
     btn.innerText = t('loading'); btn.disabled=true; let uploadedUrls = [];
+    
+    // Upload Images
     if(selectedFiles.length > 0){ try { const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" }; for(const file of selectedFiles) { const compressedFile = await imageCompression(file, options); const path = `${user.uid}/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`; const {error} = await sb.storage.from("images").upload(path, compressedFile); if(error) throw error; const url = sb.storage.from("images").getPublicUrl(path).data.publicUrl; uploadedUrls.push(url); } } catch (error) { console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return; } }
-    await sb.from("products").insert({ name, price, description: desc, image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null, images: uploadedUrls, seller_pi_id: user.uid, seller_username: user.username, category: category, location: location });
+    
+    // 🔥 FIX: Insert into DB correctly (images array + location)
+    await sb.from("products").insert({ 
+      name, 
+      price, 
+      description: desc, 
+      images: uploadedUrls, // Array for multiple images
+      image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null, // Fallback string
+      seller_pi_id: user.uid, 
+      seller_username: user.username, 
+      category: category, 
+      location: location 
+    });
+    
     showToast('toast_success_add'); closeAddModal(); loadAllProducts(); loadMyAds(); btn.innerText = t('publish_btn'); btn.disabled=false;
 }
 
@@ -675,20 +703,23 @@ function triggerPayment(amount, days) {
 
 async function promoteProduct(productId, amount, days) {
   if(!window.Pi) return showToast("Pi Browser Required", 'error');
-  const API_BASE = "/api"; 
+  // API_BASE is already set to /.netlify/functions
   try {
     const paymentData = { 
-      amount: amount, 
+      amount: parseFloat(amount), // Ensure float
       memo: `Promote Ad: ${productId} (${days} Days)`, 
-      metadata: { productId: productId, type: "promotion", days: days } // Sending days to server
+      // 🔥 FIX: Metadata format to match backend expectations
+      metadata: { productId: parseInt(productId) || productId, type: "promotion", days: parseInt(days) } 
     };
+    
     const paymentCallbacks = {
       onReadyForServerApproval: async (paymentId) => { try { await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) }); } catch (e) { showToast("Connection Error", 'error'); } },
-      onServerApproval: () => {}, onCancel: () => {}, onError: () => { showToast("Payment Failed", 'error'); },
+      onServerApproval: () => { console.log("Approved"); }, onCancel: () => { console.log("Cancelled"); }, onError: (error) => { showToast("Payment Failed", 'error'); },
       onReadyForServerCompletion: async (paymentId, txid) => {
           try {
              const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) });
-             if(res.ok) { showToast("Promotion Active!"); loadMyAds(); openProductDetails(productId); } else { showToast("Activation Error", 'error'); }
+             const json = await res.json();
+             if(res.ok && (json.completed || json.success)) { showToast("Promotion Active!"); loadMyAds(); openProductDetails(productId); } else { showToast("Activation Error", 'error'); }
           } catch (err) { showToast("Connection Error", 'error'); }
       }
     };
@@ -756,4 +787,4 @@ async function loadInbox() {
 }
 </script>
 </body>
-</html>
+</html>```
