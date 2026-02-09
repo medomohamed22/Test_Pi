@@ -14,84 +14,59 @@ exports.handler = async (event, context) => {
 
   try {
     const { paymentId, txid } = JSON.parse(event.body);
-    console.log(`🔄 Completing: ${paymentId}`);
+    console.log(`🔄 Complete Request: ${paymentId}`);
 
-    // 1. إكمال الدفع في Pi
+    // 1. إبلاغ Pi بالاكتمال
     await fetch(`${PI_API_BASE}/payments/${paymentId}/complete`, {
       method: 'POST',
       headers: { 'Authorization': `Key ${PI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ txid }),
     });
 
-    // 2. محاولة جلب البيانات من DB
-    let payRecord = null;
-    const { data: dbData } = await supabase
-      .from('payments')
-      .select('product_id, amount')
-      .eq('payment_id', paymentId)
-      .single();
-
+    // 2. جلب البيانات (من DB أو Pi)
+    let productId, amount;
+    
+    // محاولة من الداتابيز
+    const { data: dbData } = await supabase.from('payments').select('*').eq('payment_id', paymentId).single();
+    
     if (dbData) {
-        payRecord = dbData;
+        productId = dbData.product_id;
+        amount = Number(dbData.amount);
+        // تحديث الحالة
         await supabase.from('payments').update({ status: 'completed', txid: txid }).eq('payment_id', paymentId);
     } else {
-        // 🔥 محاولة الإنقاذ (Fallback)
-        console.log("⚠️ DB record missing, fetching from Pi...");
+        // لو مش موجودة، هاتها من Pi
         const piRes = await fetch(`${PI_API_BASE}/payments/${paymentId}`, { headers: { 'Authorization': `Key ${PI_API_KEY}` } });
-        
-        if (piRes.ok) {
-            const piData = await piRes.json();
-            // تأكد من المسار الصحيح للميتا داتا
-            payRecord = {
-                product_id: piData.metadata?.productId, 
-                amount: parseFloat(piData.amount)
-            };
-            
-            // تسجيلها في الداتا بيز الآن
-            if (payRecord.product_id) {
-                await supabase.from('payments').insert({
-                    payment_id: paymentId,
-                    user_id: piData.user_uid,
-                    product_id: payRecord.product_id,
-                    amount: payRecord.amount,
-                    status: 'completed',
-                    txid: txid
-                });
-            }
-        }
+        const piData = await piRes.json();
+        productId = piData.metadata.productId;
+        amount = parseFloat(piData.amount);
     }
 
-    // 3. التحقق الأخير قبل التحديث (لمنع خطأ 400)
-    if (!payRecord || !payRecord.product_id) {
-        console.error("❌ Critical: Product ID not found anywhere.");
-        return { statusCode: 400, body: JSON.stringify({ error: "Product ID missing" }) };
-    }
+    if (!productId) throw new Error("Product ID not found");
 
-    // 4. حساب الأيام
-    let daysToAdd = 3;
-    if (Number(payRecord.amount) >= 4.9) daysToAdd = 7;
+    // 3. تحديد المدة (المنطق الجديد)
+    // لو المبلغ 5 (أو أكبر من 4.9) -> 7 أيام، غير كده -> 3 أيام
+    const days = amount >= 4.9 ? 7 : 3;
 
-    console.log(`🎁 Promoting Product ${payRecord.product_id} for ${daysToAdd} days`);
-
-    // 5. حساب التاريخ
-    const { data: prod } = await supabase.from('products').select('promoted_until').eq('id', payRecord.product_id).single();
+    // 4. تحديث المنتج
+    const { data: prod } = await supabase.from('products').select('promoted_until').eq('id', productId).single();
+    
     let expiry = new Date();
     if (prod && prod.promoted_until && new Date(prod.promoted_until) > new Date()) {
         expiry = new Date(prod.promoted_until);
     }
-    expiry.setDate(expiry.getDate() + daysToAdd);
+    expiry.setDate(expiry.getDate() + days);
 
-    // 6. التحديث النهائي
-    await supabase.from('products').update({ promoted_until: expiry.toISOString() }).eq('id', payRecord.product_id);
+    await supabase.from('products').update({ promoted_until: expiry.toISOString() }).eq('id', productId);
 
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ completed: true })
+      body: JSON.stringify({ success: true })
     };
 
   } catch (err) {
-    console.error("Handler Crash:", err);
+    console.error("Complete Error:", err);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
