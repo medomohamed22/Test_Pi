@@ -717,46 +717,106 @@ async function deleteProduct(id){
 }
 
 // --- CHAT ---
+// --- CHAT SYSTEM (UPDATED) ---
+
+// 1. فتح غرفة المحادثة
 function openChatRoom(pid, otherId, pName, uName) {
   if(!user) return showToast("سجل دخول أولاً", 'error');
+  
   activeChat = { pid, otherId };
+  
+  // تحديث واجهة المودال
   document.getElementById("chatTitle").innerText = pName;
   document.getElementById("chatPeer").innerText = uName;
   document.getElementById("chatModal").style.display = "flex";
-  document.getElementById("msgContainer").innerHTML = "";
-  loadMessages();
-  sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', 
-    { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
-    payload => {
-       const m = payload.new;
-       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid)) renderMsg(m);
-    }
-  ).subscribe();
+  document.getElementById("msgContainer").innerHTML = ""; // تنظيف القديم
+  
+  loadMessages(); // تحميل الرسائل السابقة
+
+  // إزالة أي اشتراك سابق لتجنب التكرار
+  sb.removeAllChannels();
+
+  // الاشتراك في الرسائل الجديدة (للطرف الآخر)
+  sb.channel(`room:${pid}:${otherId}`)
+    .on('postgres_changes', 
+      { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, 
+      payload => {
+         const m = payload.new;
+         // عرض الرسالة فقط إذا كانت من الطرف الآخر (لأن رسائلي أعرضها فوراً)
+         if(m.sender_pi_id === otherId && m.receiver_pi_id === user.uid) {
+            renderMsg(m);
+         }
+      }
+    ).subscribe();
 }
 
+// 2. تحميل الرسائل القديمة
 async function loadMessages() {
-  const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
-  if(data) data.forEach(m => {
-      if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid)) renderMsg(m);
-  });
+  const { data } = await sb.from("messages")
+    .select("*")
+    .eq("product_id", activeChat.pid)
+    .order("created_at", {ascending: true}); // ترتيب من الأقدم للأحدث
+
+  if(data) {
+    data.forEach(m => {
+      // عرض الرسائل الخاصة بهذه المحادثة فقط
+      if((m.sender_pi_id == user.uid && m.receiver_pi_id == activeChat.otherId) || 
+         (m.sender_pi_id == activeChat.otherId && m.receiver_pi_id == user.uid)) {
+        renderMsg(m);
+      }
+    });
+  }
 }
 
+// 3. رسم فقاعة الرسالة
 function renderMsg(m){
     const div = document.createElement("div");
-    div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`;
+    // تحديد لون الفقاعة (أنا أم هو)
+    div.className = `bubble ${m.sender_pi_id == user.uid ? 'me' : 'other'}`;
     div.innerText = m.content;
+    
     const c = document.getElementById("msgContainer");
-    c.appendChild(div); c.scrollTop = c.scrollHeight;
+    c.appendChild(div);
+    
+    // النزول لآخر المحادثة تلقائياً
+    setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
 }
 
+// 4. إرسال الرسالة (مع العرض الفوري)
 async function sendMsg(){
     const inp = document.getElementById("msgInput");
-    if(!inp.value.trim()) return;
-    await sb.from("messages").insert({ product_id: activeChat.pid, sender_pi_id: user.uid, receiver_pi_id: activeChat.otherId, content: inp.value.trim() });
-    inp.value = "";
+    const text = inp.value.trim();
+    if(!text) return;
+
+    // 1. عرض الرسالة فوراً (Optimistic UI)
+    renderMsg({
+      sender_pi_id: user.uid,
+      content: text
+    });
+
+    inp.value = ""; // مسح الحقل
+
+    // 2. الإرسال لقاعدة البيانات في الخلفية
+    const { error } = await sb.from("messages").insert({
+        product_id: activeChat.pid, 
+        sender_pi_id: user.uid, 
+        receiver_pi_id: activeChat.otherId, 
+        content: text
+    });
+
+    if(error) {
+      console.error(error);
+      showToast("فشل إرسال الرسالة", 'error');
+    }
 }
 
-function closeChat() { document.getElementById("chatModal").style.display = "none"; activeChat=null; sb.removeAllChannels(); }
+// 5. إغلاق المحادثة
+function closeChat() { 
+  document.getElementById("chatModal").style.display = "none"; 
+  activeChat = null; 
+  sb.removeAllChannels(); // إيقاف الاستماع لتوفير الموارد
+}
+
 </script>
 </body>
 </html>
