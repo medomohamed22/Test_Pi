@@ -1598,30 +1598,6 @@ select.input-box {
 }
 
 /* Banned Screen */
-#banned-screen {
-  background: linear-gradient(135deg, #FEF2F2 0%, #FFFFFF 100%) !important;
-}
-
-.banned-icon {
-  font-size: 100px;
-  color: var(--danger);
-  margin-bottom: 24px;
-  animation: pulse-glow 2s infinite;
-}
-
-.banned-title {
-  font-size: 32px;
-  color: var(--danger);
-  font-weight: 800;
-  margin-bottom: 16px;
-}
-
-.banned-msg {
-  color: var(--text-muted);
-  font-size: 18px;
-  max-width: 400px;
-  line-height: 1.6;
-}
 
 /* Responsive */
 @media (max-width: 640px) {
@@ -1672,12 +1648,11 @@ select.input-box {
 </head>
 <body>
 
-<div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
-  <div class="banned-icon">
-    <i class="fa-solid fa-ban"></i>
-  </div>
-  <h1 class="banned-title" data-i18n="banned_title">حساب محظور</h1>
-  <p class="banned-msg" data-i18n="banned_msg">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
+<div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+  <i class="fa-solid fa-ban" style="font-size:80px;color:#EF4444;margin-bottom:20px;animation:pulse 2s infinite"></i>
+  <h1 data-i18n="banned_title">حساب محظور</h1>
+  <p data-i18n="banned_msg" style="color:#6B7280;margin-top:10px;font-size:18px">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
+  <style>@keyframes pulse { 0% {transform:scale(1);} 50% {transform:scale(1.1);} 100% {transform:scale(1);} }</style>
 </div>
 
 <div id="introModal" class="modal" style="display:flex; z-index: 3000;">
