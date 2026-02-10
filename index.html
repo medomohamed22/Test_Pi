@@ -2495,12 +2495,24 @@ async function openProductDetails(pid) {
   const p = globalProducts.find(x => x.id == pid); 
   if(!p) return;
   
-  // 1. زيادة عدد المشاهدات في قاعدة البيانات
-  const newViews = (p.views || 0) + 1;
-  // تحديث الواجهة فوراً
-  p.views = newViews; 
-  // إرسال التحديث للسيرفر (بدون انتظار النتيجة لعدم تعطيل المستخدم)
-  sb.from('products').update({ views: newViews }).eq('id', pid).then();
+  // --- منطق المشاهدات الجديد ---
+  // التحقق من أن المستخدم مسجل دخول وأنه ليس صاحب الإعلان
+  if (user && user.uid !== p.seller_pi_id) {
+    // محاولة تسجيل المشاهدة في الجدول الجديد
+    const { error } = await sb.from('product_views').insert({ 
+      product_id: pid, 
+      viewer_id: user.uid 
+    });
+    
+    // إذا لم يحدث خطأ (معنى ذلك أن هذه أول مشاهدة لهذا الشخص)
+    if (!error) {
+      // نقوم بزيادة العداد في جدول المنتجات لغرض العرض السريع
+      const newViews = (p.views || 0) + 1;
+      p.views = newViews; // تحديث محلي
+      sb.from('products').update({ views: newViews }).eq('id', pid).then();
+    }
+  }
+  // -----------------------------
 
   const images = (p.images && Array.isArray(p.images) && p.images.length > 0) 
     ? p.images 
@@ -2526,8 +2538,8 @@ async function openProductDetails(pid) {
   document.getElementById('detail-desc').innerText = p.description || "";
   document.getElementById('detail-loc-text').innerText = `${p.country || ''} - ${p.location || ''}`;
   
-  // 2. عرض عدد المشاهدات
-  document.getElementById('detail-views').innerText = formatCurrency(newViews);
+  // عرض عدد المشاهدات الحالي
+  document.getElementById('detail-views').innerText = formatCurrency(p.views || 0);
 
   document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; 
   document.getElementById('detail-seller-avatar').innerText = (p.seller_username || "U").charAt(0).toUpperCase();
