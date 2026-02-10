@@ -1598,7 +1598,30 @@ select.input-box {
 }
 
 /* Banned Screen */
+#banned-screen {
+  background: linear-gradient(135deg, #FEF2F2 0%, #FFFFFF 100%) !important;
+}
 
+.banned-icon {
+  font-size: 100px;
+  color: var(--danger);
+  margin-bottom: 24px;
+  animation: pulse-glow 2s infinite;
+}
+
+.banned-title {
+  font-size: 32px;
+  color: var(--danger);
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.banned-msg {
+  color: var(--text-muted);
+  font-size: 18px;
+  max-width: 400px;
+  line-height: 1.6;
+}
 
 /* Responsive */
 @media (max-width: 640px) {
@@ -1649,11 +1672,12 @@ select.input-box {
 </head>
 <body>
 
-<div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-  <i class="fa-solid fa-ban" style="font-size:80px;color:#EF4444;margin-bottom:20px;animation:pulse 2s infinite"></i>
-  <h1 data-i18n="banned_title">حساب محظور</h1>
-  <p data-i18n="banned_msg" style="color:#6B7280;margin-top:10px;font-size:18px">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
-  <style>@keyframes pulse { 0% {transform:scale(1);} 50% {transform:scale(1.1);} 100% {transform:scale(1);} }</style>
+<div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
+  <div class="banned-icon">
+    <i class="fa-solid fa-ban"></i>
+  </div>
+  <h1 class="banned-title" data-i18n="banned_title">حساب محظور</h1>
+  <p class="banned-msg" data-i18n="banned_msg">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
 </div>
 
 <div id="introModal" class="modal" style="display:flex; z-index: 3000;">
@@ -2495,24 +2519,12 @@ async function openProductDetails(pid) {
   const p = globalProducts.find(x => x.id == pid); 
   if(!p) return;
   
-  // --- منطق المشاهدات الجديد ---
-  // التحقق من أن المستخدم مسجل دخول وأنه ليس صاحب الإعلان
-  if (user && user.uid !== p.seller_pi_id) {
-    // محاولة تسجيل المشاهدة في الجدول الجديد
-    const { error } = await sb.from('product_views').insert({ 
-      product_id: pid, 
-      viewer_id: user.uid 
-    });
-    
-    // إذا لم يحدث خطأ (معنى ذلك أن هذه أول مشاهدة لهذا الشخص)
-    if (!error) {
-      // نقوم بزيادة العداد في جدول المنتجات لغرض العرض السريع
-      const newViews = (p.views || 0) + 1;
-      p.views = newViews; // تحديث محلي
-      sb.from('products').update({ views: newViews }).eq('id', pid).then();
-    }
-  }
-  // -----------------------------
+  // 1. زيادة عدد المشاهدات في قاعدة البيانات
+  const newViews = (p.views || 0) + 1;
+  // تحديث الواجهة فوراً
+  p.views = newViews; 
+  // إرسال التحديث للسيرفر (بدون انتظار النتيجة لعدم تعطيل المستخدم)
+  sb.from('products').update({ views: newViews }).eq('id', pid).then();
 
   const images = (p.images && Array.isArray(p.images) && p.images.length > 0) 
     ? p.images 
@@ -2538,8 +2550,8 @@ async function openProductDetails(pid) {
   document.getElementById('detail-desc').innerText = p.description || "";
   document.getElementById('detail-loc-text').innerText = `${p.country || ''} - ${p.location || ''}`;
   
-  // عرض عدد المشاهدات الحالي
-  document.getElementById('detail-views').innerText = formatCurrency(p.views || 0);
+  // 2. عرض عدد المشاهدات
+  document.getElementById('detail-views').innerText = formatCurrency(newViews);
 
   document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; 
   document.getElementById('detail-seller-avatar').innerText = (p.seller_username || "U").charAt(0).toUpperCase();
