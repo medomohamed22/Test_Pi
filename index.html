@@ -77,16 +77,19 @@ body {
 }
 .lang-btn:active { transform: scale(0.9) rotate(10deg); }
 
+/* --- Modified Header User (Username + Green Dot) --- */
 .header-user {
-  display: flex; align-items: center; gap: 10px;
-  background: #f9fafb; padding: 4px 12px 4px 4px;
-  border-radius: 99px; border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  /* Removed border and background for cleaner look */
+  padding: 4px 8px;
 }
-.header-avatar {
-  width: 32px; height: 32px; background: var(--primary); color: white;
-  border-radius: 50%; display: grid; place-items: center; font-size: 14px;
+.status-dot {
+  width: 8px; height: 8px; 
+  background-color: var(--success); 
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
-.header-name { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.header-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
 
 /* --- Search Bar --- */
 .search-container { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -225,9 +228,6 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 
 <header class="header">
   <div class="brand" style="font-family: 'Tajawal', sans-serif; display: flex; align-items: center;">
-    <span style="background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 24px; margin-left: 8px;">
-      <i class="fa-solid fa-road-circle-check"></i>
-    </span>
     <span style="font-weight: 900; font-size: 22px; letter-spacing: -0.5px;">
       <span style="color: var(--primary);">Deal</span><span style="color: var(--accent);">Way</span>
     </span>
@@ -236,11 +236,13 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
     <button class="lang-btn" onclick="toggleLanguage()">
       <span id="langText">AR</span>
     </button>
+    
     <button id="loginBtn" class="btn btn-gold">
       <i class="fa-solid fa-fingerprint"></i> <span data-i18n="login">دخول</span>
     </button>
+    
     <div id="headerUser" class="header-user hidden">
-      <div id="userAvatar" class="header-avatar">?</div>
+      <div class="status-dot"></div>
       <div id="userDispName" class="header-name">User</div>
     </div>
   </div>
@@ -254,13 +256,11 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
         <i class="fa-solid fa-search search-icon"></i>
       </div>
       <select id="countryFilter" class="filter-select" onchange="loadStates('countryFilter', 'stateFilter'); filterProducts()">
-  <option value="all">All Countries</option>
-</select>
-
-<select id="stateFilter" class="filter-select" onchange="filterProducts()">
-  <option value="all">All States</option>
-</select>
-
+        <option value="all">All Countries</option>
+      </select>
+      <select id="stateFilter" class="filter-select" onchange="filterProducts()">
+        <option value="all">All States</option>
+      </select>
     </div>
 
     <div class="categories-wrapper">
@@ -333,16 +333,18 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
           <i class="fa-solid fa-plus"></i> <span data-i18n="add_ad_btn">إضافة إعلان جديد</span>
         </button>
       </div>
+      
       <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
         <a href="privacy.html" style="display: flex; align-items: center; padding: 10px 0; color: var(--text-muted); text-decoration: none; font-size: 14px;">
           <i class="fa-solid fa-shield-halved"></i>
-          <span style="margin: 0 10px;" data-i18n="link_privacy">Privacy Policy</span>
+          <span style="margin: 0 10px;" data-i18n="link_privacy">سياسة الخصوصية</span>
         </a>
         <a href="terms.html" style="display: flex; align-items: center; padding: 10px 0; color: var(--text-muted); text-decoration: none; font-size: 14px;">
           <i class="fa-solid fa-file-contract"></i>
-          <span style="margin: 0 10px;" data-i18n="link_terms">Terms of Service</span>
+          <span style="margin: 0 10px;" data-i18n="link_terms">شروط الخدمة</span>
         </a>
       </div>
+
       <h4 style="margin:20px 0 10px" data-i18n="my_ads">إعلاناتي</h4>
       <div id="my-ads-list" class="products-grid"></div>
     </div>
@@ -380,20 +382,18 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
     <div class="form-group"><label class="form-label" data-i18n="label_prod_name">اسم المنتج</label><input id="addName" class="input-box" placeholder="" /></div>
     <div class="form-group"><label class="form-label" data-i18n="label_category">القسم</label><select id="addCategory" class="input-box"></select></div>
     
-   <div class="form-group">
-  <label class="form-label" data-i18n="label_country">Country</label>
-  <select id="addCountry" class="input-box" onchange="loadStates('addCountry', 'addState')">
-    <option value="" disabled selected>Select Country</option>
-  </select>
-</div>
-
-<div class="form-group">
-  <label class="form-label" data-i18n="label_state">State / Province</label>
-  <select id="addState" class="input-box">
-    <option value="" disabled selected>Select Country First</option>
-  </select>
-</div>
-
+    <div class="form-group">
+      <label class="form-label" data-i18n="label_country">الدولة</label>
+      <select id="addCountry" class="input-box" onchange="loadStates('addCountry', 'addState')">
+        <option value="" disabled selected data-i18n="select_country_ph">Select Country</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="label_state">المنطقة / المحافظة</label>
+      <select id="addState" class="input-box">
+        <option value="" disabled selected data-i18n="select_state_ph">Select Country First</option>
+      </select>
+    </div>
 
     <div class="form-group"><label class="form-label" data-i18n="label_price">السعر (Pi)</label><input id="addPrice" type="number" class="input-box" placeholder="0.00" /></div>
     <div class="form-group"><label class="form-label" data-i18n="label_desc">الوصف</label><textarea id="addDesc" class="input-box" placeholder=""></textarea></div>
@@ -481,8 +481,12 @@ const translations = {
     cat_all: "الكل", cat_cars: "سيارات", cat_electronics: "إلكترونيات", 
     cat_phones: "هواتف", cat_fashion: "ملابس", cat_home: "منزل", cat_other: "أخرى", 
     select_cat: "اختر القسم المناسب", btn_back: "رجوع", label_joined: "انضم:", 
-    label_total_ads: "إعلانات:", ph_search: "ابحث عن منتج...",  promote_title: "اختر خطة التمييز", 
-    plan_3_3: "لمدة 3 أيام", plan_5_7: "لمدة 7 أيام" 
+    label_total_ads: "إعلانات:", ph_search: "ابحث عن منتج...", 
+    label_location: "المحافظة", label_country: "الدولة", label_state: "المنطقة / المحافظة", 
+    select_gov: "اختر المحافظة", promote_title: "اختر خطة التمييز", 
+    plan_3_3: "لمدة 3 أيام", plan_5_7: "لمدة 7 أيام",
+    // Placeholders for Dropdowns (ENGLISH only for values, but placeholder text can be translated)
+    select_country_ph: "Select Country", select_state_ph: "Select Country First"
   },
   en: { 
     brand_name: "Deal Way", login: "Login",
@@ -509,13 +513,21 @@ const translations = {
     select_cat: "Select Category", btn_back: "Back", label_joined: "Joined:", 
     label_total_ads: "Total Ads:", ph_search: "Search products...", 
     label_location: "Location", label_country: "Country", label_state: "State / Province",
-    all_egypt: "All Egypt", select_gov: "Select Governorate", promote_title: "Choose Promotion Plan", 
-    plan_3_3: "For 3 Days", plan_5_7: "For 7 Days" 
+    select_gov: "Select Governorate", promote_title: "Choose Promotion Plan", 
+    plan_3_3: "For 3 Days", plan_5_7: "For 7 Days",
+    // Placeholders for Dropdowns
+    select_country_ph: "Select Country", select_state_ph: "Select Country First"
   }
 };
 
 const CATEGORIES_CONFIG = [
-  { id: 'all', key: 'cat_all', icon: 'fa-layer-group' }, { id: 'cars', key: 'cat_cars', icon: 'fa-car' }, { id: 'electronics', key: 'cat_electronics', icon: 'fa-laptop' }, { id: 'phones', key: 'cat_phones', icon: 'fa-mobile-screen' }, { id: 'fashion', key: 'cat_fashion', icon: 'fa-shirt' }, { id: 'home', key: 'cat_home', icon: 'fa-couch' }, { id: 'other', key: 'cat_other', icon: 'fa-box' }
+  { id: 'all', key: 'cat_all', icon: 'fa-layer-group' }, 
+  { id: 'cars', key: 'cat_cars', icon: 'fa-car' }, 
+  { id: 'electronics', key: 'cat_electronics', icon: 'fa-laptop' }, 
+  { id: 'phones', key: 'cat_phones', icon: 'fa-mobile-screen' }, 
+  { id: 'fashion', key: 'cat_fashion', icon: 'fa-shirt' }, 
+  { id: 'home', key: 'cat_home', icon: 'fa-couch' }, 
+  { id: 'other', key: 'cat_other', icon: 'fa-box' }
 ];
 
 let globalProducts = [];
@@ -585,10 +597,9 @@ async function fetchCountries(elementId) {
       countries.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.name;
-        opt.innerText = c.name;
+        opt.innerText = c.name; // Always English from API
         select.appendChild(opt);
       });
-      // Optional default
       if(elementId === 'addCountry') select.value = "Egypt"; 
     }
   } catch (err) {
@@ -600,6 +611,7 @@ async function loadStates(countryElementId, stateElementId) {
   const countryName = document.getElementById(countryElementId).value;
   const stateSelect = document.getElementById(stateElementId);
   
+  // Loading Text
   stateSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
   if(stateElementId === 'stateFilter') stateSelect.innerHTML = '<option value="all">All States</option>';
 
@@ -618,14 +630,15 @@ async function loadStates(countryElementId, stateElementId) {
     if(stateElementId === 'stateFilter') {
         stateSelect.innerHTML += '<option value="all">All States</option>';
     } else {
-        stateSelect.innerHTML += '<option value="" disabled selected>Select State</option>';
+        // Just English Placeholder
+        stateSelect.innerHTML += `<option value="" disabled selected>Select State</option>`;
     }
 
     if (!data.error && data.data.states.length > 0) {
       data.data.states.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.name;
-        opt.innerText = s.name;
+        opt.innerText = s.name; // Always English from API
         stateSelect.appendChild(opt);
       });
     } else {
@@ -671,7 +684,7 @@ async function handleLogin(uid, username) {
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
   document.getElementById("userDispName").innerText = username;
-  document.getElementById("userAvatar").innerText = username.charAt(0).toUpperCase();
+  // Avatar Removal - Only Name and Dot remain
   document.getElementById("profile-guest").classList.add("hidden");
   document.getElementById("profile-user").classList.remove("hidden");
   document.getElementById("p-username").innerText = username;
@@ -749,8 +762,6 @@ function renderProducts() {
 
 async function openProductDetails(pid) {
   const p = globalProducts.find(x => x.id == pid); if(!p) return;
-  
-  // 🔥 FIX: Handle Array or String for images in slider
   const images = (p.images && Array.isArray(p.images) && p.images.length > 0) 
     ? p.images 
     : (p.image_url ? [p.image_url] : ["https://placehold.co/600?text=No+Image"]);
@@ -802,6 +813,7 @@ async function loadMyAds() {
        let isPromoted = false; let promoDateStr = "";
        if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) { isPromoted = true; promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); } }
        
+       // 🔥 FIX: Handle array images
        let img = (p.images && Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : (p.image_url || "");
        
        list.innerHTML += `<div class="card" onclick="openProductDetails(${p.id})"><div class="card-img-wrap"><img src="${img}" class="card-img"></div><div class="card-body"><div class="card-title">${p.name}</div><div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div></div></div>`;
@@ -814,7 +826,7 @@ function closeAddModal(){ document.getElementById("addModal").style.display="non
 function handleFileSelect(input) { if (input.files) { const files = Array.from(input.files); if (selectedFiles.length + files.length > 3) { showToast('toast_max_images', 'error'); return; } selectedFiles = [...selectedFiles, ...files]; updateImagePreviews(); } input.value = ""; }
 function updateImagePreviews() { const container = document.getElementById('image-previews'); container.innerHTML = ""; selectedFiles.forEach((file, index) => { const reader = new FileReader(); reader.onload = (e) => { const div = document.createElement('div'); div.className = 'preview-box'; div.innerHTML = `<img src="${e.target.result}"><div class="preview-remove" onclick="removeFile(${index})"><i class="fa-solid fa-xmark"></i></div>`; container.appendChild(div); }; reader.readAsDataURL(file); }); document.getElementById('upload-placeholder').style.display = selectedFiles.length >= 3 ? 'none' : 'flex'; }
 function removeFile(index) { selectedFiles.splice(index, 1); updateImagePreviews(); }
-function resetForm() { document.getElementById("addName").value = ""; document.getElementById("addPrice").value = ""; document.getElementById("addDesc").value = ""; document.getElementById("addCategory").value = ""; selectedFiles = []; updateImagePreviews(); }
+function resetForm() { document.getElementById("addName").value = ""; document.getElementById("addPrice").value = ""; document.getElementById("addDesc").value = ""; document.getElementById("addCategory").value = ""; document.getElementById("addLocation").value = ""; selectedFiles = []; updateImagePreviews(); }
 
 async function submitProduct(){
     const name = document.getElementById("addName").value;
