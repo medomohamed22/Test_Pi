@@ -254,11 +254,13 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
         <i class="fa-solid fa-search search-icon"></i>
       </div>
       <select id="countryFilter" class="filter-select" onchange="loadStates('countryFilter', 'stateFilter'); filterProducts()">
-        <option value="all">كل الدول</option>
-      </select>
-      <select id="stateFilter" class="filter-select" onchange="filterProducts()">
-        <option value="all">كل المناطق</option>
-      </select>
+  <option value="all">All Countries</option>
+</select>
+
+<select id="stateFilter" class="filter-select" onchange="filterProducts()">
+  <option value="all">All States</option>
+</select>
+
     </div>
 
     <div class="categories-wrapper">
