@@ -2017,8 +2017,8 @@ select.input-box {
           <span class="plan-price">3</span>
           <span class="plan-days" data-i18n="plan_3_3">لمدة 3 أيام</span>
           <div class="plan-features">
-            <span class="plan-feature"><i class="fa-solid fa-check"></i> شريط ذهبي</span>
-            <span class="plan-feature"><i class="fa-solid fa-check"></i> أولوية الظهور</span>
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> <span data-i18n="feat_gold">شريط ذهبي</span></span>
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> <span data-i18n="feat_priority">أولوية الظهور</span></span>
           </div>
         </div>
         <i class="fa-solid fa-chevron-left" style="color:var(--primary);font-size:20px;"></i>
@@ -2029,9 +2029,9 @@ select.input-box {
           <span class="plan-price">5</span>
           <span class="plan-days" data-i18n="plan_5_7">لمدة 7 أيام</span>
           <div class="plan-features">
-            <span class="plan-feature"><i class="fa-solid fa-check"></i> شريط ذهبي</span>
-            <span class="plan-feature"><i class="fa-solid fa-check"></i> أولوية عالية</span>
-            <span class="plan-feature"><i class="fa-solid fa-check"></i> توفير 44%</span>
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> <span data-i18n="feat_gold">شريط ذهبي</span></span>
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> <span data-i18n="feat_high_priority">أولوية عالية</span></span>
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> <span data-i18n="feat_save">توفير 44%</span></span>
           </div>
         </div>
         <i class="fa-solid fa-chevron-left" style="color:var(--primary);font-size:20px;"></i>
@@ -2039,6 +2039,7 @@ select.input-box {
     </div>
   </div>
 </div>
+
 
 <div id="chatModal" class="modal" style="z-index:2100" onclick="if(event.target==this) closeChat()">
   <div class="sheet" style="height:92vh;padding:20px;">
@@ -2087,7 +2088,7 @@ function formatCurrency(num) {
 // --- Translations ---
 const translations = {
   ar: { 
-    brand_name: "Deal Way", login: "دخول",label_views: "المشاهدات:",stat_views: "المشاهدات",stat_chats: "المحادثات",
+    brand_name: "Deal Way", login: "دخول",label_views: "المشاهدات:",stat_views: "المشاهدات",stat_chats: "المحادثات",feat_gold: "شريط ذهبي",feat_priority: "أولوية الظهور",feat_high_priority: "أولوية عالية",feat_save: "توفير 44%",
     link_privacy: "سياسة الخصوصية", link_terms: "شروط الخدمة",
     latest_products: "أحدث المعروضات", loading: "جاري التحميل...", 
     inbox_title: "الرسائل الواردة", guest_title: "أنت زائر", 
@@ -2123,7 +2124,7 @@ const translations = {
     intro_switch_btn: "Switch to English"
   },
   en: { 
-    brand_name: "Deal Way", login: "Login",label_views: "Views:",stat_views: "Views",stat_chats: "Chats",
+    brand_name: "Deal Way", login: "Login",label_views: "Views:",stat_views: "Views",stat_chats: "Chats",feat_gold: "Golden Badge",feat_priority: "Standard Priority",feat_high_priority: "High Priority",feat_save: "Save 44%",
     link_privacy: "Privacy Policy", link_terms: "Terms of Service",
     latest_products: "Latest Products", loading: "Loading...", 
     inbox_title: "Inbox", guest_title: "Guest User", 
