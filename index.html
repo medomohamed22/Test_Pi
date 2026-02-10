@@ -77,9 +77,17 @@ body {
 }
 .lang-btn:active { transform: scale(0.9) rotate(10deg); }
 
-/* --- Header User --- */
-.header-user { display: flex; align-items: center; gap: 8px; padding: 4px 8px; }
-.status-dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+/* --- Modified Header User (Username + Green Dot) --- */
+.header-user {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 8px;
+}
+.status-dot {
+  width: 8px; height: 8px; 
+  background-color: var(--success); 
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
 .header-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
 
 /* --- Search Bar --- */
@@ -446,6 +454,12 @@ let currentLang = localStorage.getItem('lang') || 'en';
 let selectedFiles = [];
 let currentPromoteProductId = null; 
 
+// --- Format Currency Function ---
+function formatCurrency(num) {
+  if (!num) return "0";
+  return parseFloat(num).toLocaleString('en-US');
+}
+
 // --- Translations ---
 const translations = {
   ar: { 
@@ -567,7 +581,6 @@ function initCategories() {
 
 // --- GLOBAL LOCATIONS LOGIC (CountriesNow API) ---
 async function initLocations() {
-  // Populate both Filters and Add Modal
   await fetchCountries('countryFilter'); 
   await fetchCountries('addCountry');
 }
@@ -583,10 +596,9 @@ async function fetchCountries(elementId) {
       countries.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.name;
-        opt.innerText = c.name; // Always English from API
+        opt.innerText = c.name; 
         select.appendChild(opt);
       });
-      // Removed Default Egypt Selection for 'addCountry' to force user choice
     }
   } catch (err) {
     console.error("Failed to load countries", err);
@@ -597,7 +609,6 @@ async function loadStates(countryElementId, stateElementId) {
   const countryName = document.getElementById(countryElementId).value;
   const stateSelect = document.getElementById(stateElementId);
   
-  // Loading Text
   stateSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
   if(stateElementId === 'stateFilter') stateSelect.innerHTML = '<option value="all">All States</option>';
 
@@ -616,7 +627,6 @@ async function loadStates(countryElementId, stateElementId) {
     if(stateElementId === 'stateFilter') {
         stateSelect.innerHTML += '<option value="all">All States</option>';
     } else {
-        // Just English Placeholder
         stateSelect.innerHTML += `<option value="" disabled selected>Select State</option>`;
     }
 
@@ -624,7 +634,7 @@ async function loadStates(countryElementId, stateElementId) {
       data.data.states.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.name;
-        opt.innerText = s.name; // Always English from API
+        opt.innerText = s.name;
         stateSelect.appendChild(opt);
       });
     } else {
@@ -670,7 +680,6 @@ async function handleLogin(uid, username) {
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
   document.getElementById("userDispName").innerText = username;
-  // Avatar Removal - Only Name and Dot remain
   document.getElementById("profile-guest").classList.add("hidden");
   document.getElementById("profile-user").classList.remove("hidden");
   document.getElementById("p-username").innerText = username;
@@ -699,19 +708,14 @@ function renderProducts() {
   const list = document.getElementById("products-list"); list.innerHTML = "";
   const searchText = document.getElementById('searchInput').value.toLowerCase();
   
-  // Use New Filters
   const countryFilter = document.getElementById('countryFilter').value;
   const stateFilter = document.getElementById('stateFilter').value;
 
   const filtered = globalProducts.filter(p => {
     if (activeCategory !== 'all' && p.category !== activeCategory) return false;
     if (searchText && !p.name.toLowerCase().includes(searchText)) return false;
-    
-    // Country/State Logic
     if (countryFilter !== 'all' && p.country !== countryFilter) return false;
-    // We store 'state' in 'location' column in DB
     if (stateFilter !== 'all' && p.location !== stateFilter) return false;
-
     return true;
   });
 
@@ -719,14 +723,12 @@ function renderProducts() {
   
   const now = new Date();
   filtered.forEach(p => {
-    // 🔥 FIX: Handle Array or String for images
     let img = "https://placehold.co/400?text=No+Image";
     if(p.images && Array.isArray(p.images) && p.images.length > 0) img = p.images[0];
     else if(p.image_url) img = p.image_url;
 
     let isPromoted = false; if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) isPromoted = true; }
     
-    // Display Country - City
     const locText = `${p.country || ''} - ${p.location || ''}`;
 
     const html = `
@@ -738,7 +740,7 @@ function renderProducts() {
         </div>
         <div class="card-body">
           <h4 class="card-title">${p.name}</h4>
-          <div class="price-pill"><span>${p.price}</span> <span>Pi</span></div>
+          <div class="price-pill"><span>${formatCurrency(p.price)}</span> <span>Pi</span></div>
           <div class="card-desc">${p.description || ''}</div>
         </div>
       </div>`;
@@ -758,10 +760,9 @@ async function openProductDetails(pid) {
   slider.onscroll = () => { const i = Math.round(Math.abs(slider.scrollLeft) / slider.offsetWidth); document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === i)); };
   
   document.getElementById('detail-title').innerText = p.name; 
-  document.getElementById('detail-price').innerText = p.price; 
+  document.getElementById('detail-price').innerText = formatCurrency(p.price);
   document.getElementById('detail-desc').innerText = p.description || "";
   
-  // Location Detail
   document.getElementById('detail-loc-text').innerText = `${p.country || ''} - ${p.location || ''}`;
   
   document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; 
@@ -798,10 +799,7 @@ async function loadMyAds() {
     data.forEach(p => {
        let isPromoted = false; let promoDateStr = "";
        if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) { isPromoted = true; promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); } }
-       
-       // 🔥 FIX: Handle array images
        let img = (p.images && Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : (p.image_url || "");
-       
        list.innerHTML += `<div class="card" onclick="openProductDetails(${p.id})"><div class="card-img-wrap"><img src="${img}" class="card-img"></div><div class="card-body"><div class="card-title">${p.name}</div><div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div></div></div>`;
     });
   }
