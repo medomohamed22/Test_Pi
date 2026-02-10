@@ -212,6 +212,10 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 .toast.success { border-right: 4px solid var(--success); } .toast.error { border-right: 4px solid var(--danger); }
 .toast-icon { font-size: 18px; } .toast-msg { font-size: 13px; font-weight: 700; color: var(--text-main); }
 @keyframes toastSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Intro List Items */
+.intro-list-item { margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; }
+.intro-icon { color: var(--primary); font-size: 16px; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -221,6 +225,40 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
   <h1 data-i18n="banned_title">حساب محظور</h1>
   <p data-i18n="banned_msg" style="color:#6B7280;margin-top:10px;font-size:18px">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
   <style>@keyframes pulse { 0% {transform:scale(1);} 50% {transform:scale(1.1);} 100% {transform:scale(1);} }</style>
+</div>
+
+<div id="introModal" class="modal" style="display:flex; z-index: 3000;">
+  <div class="sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center; margin-bottom: 15px;">
+      <h3 style="margin:0; color:var(--primary); font-size: 18px;" data-i18n="intro_title">Welcome to Deal Way!</h3>
+      <button onclick="document.getElementById('introModal').style.display='none'" style="background:none;border:none;font-size:22px;color:#666"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <div id="intro-content">
+      <p data-i18n="intro_body_p1" style="font-size:14px;color:#4B5563;margin-bottom:15px;"></p>
+      
+      <div class="intro-list-item">
+        <i class="fa-solid fa-store intro-icon"></i>
+        <span data-i18n="intro_feat_1"></span>
+      </div>
+      <div class="intro-list-item">
+        <i class="fa-solid fa-handshake intro-icon"></i>
+        <span data-i18n="intro_feat_2"></span>
+      </div>
+      <div class="intro-list-item">
+        <i class="fa-solid fa-money-bill-transfer intro-icon"></i>
+        <span data-i18n="intro_feat_3"></span>
+      </div>
+      <div class="intro-list-item">
+        <i class="fa-solid fa-star intro-icon" style="color:var(--accent)"></i>
+        <span data-i18n="intro_feat_4"></span>
+      </div>
+    </div>
+
+    <button class="btn btn-ghost" style="width:100%; margin-top:10px; border-color:var(--primary); color:var(--primary);" onclick="toggleLanguage()">
+      <i class="fa-solid fa-globe"></i> <span id="introLangText">Switch to Arabic</span>
+    </button>
+  </div>
 </div>
 
 <div id="toast-container" class="toast-container"></div>
@@ -446,6 +484,7 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 // --- CONFIG ---
 const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS"; 
+// 🔥 FIX: Ensure this points to Netlify functions directly
 const API_BASE = "/.netlify/functions";
 
 let sb, user = null;
@@ -486,9 +525,18 @@ const translations = {
     cat_phones: "هواتف", cat_fashion: "ملابس", cat_home: "منزل", cat_other: "أخرى", 
     select_cat: "اختر القسم المناسب", btn_back: "رجوع", label_joined: "انضم:", 
     label_total_ads: "إعلانات:", ph_search: "ابحث عن منتج...", 
-    label_location: "المحافظة", label_country: "Country", label_state: "State / Province", 
+    label_location: "المحافظة", label_country: "الدولة", label_state: "المنطقة / المحافظة", 
     select_gov: "اختر المحافظة", promote_title: "اختر خطة التمييز", 
-    plan_3_3: "لمدة 3 أيام", plan_5_7: "لمدة 7 أيام"
+    plan_3_3: "لمدة 3 أيام", plan_5_7: "لمدة 7 أيام",
+    select_country_ph: "اختر الدولة", select_state_ph: "اختر الدولة أولاً",
+    // Intro Modal (AR)
+    intro_title: "مرحباً بك في Deal Way!",
+    intro_body_p1: "السوق الأسهل لمجتمع عملة Pi Network. 🌍",
+    intro_feat_1: "اضف منتجاتك وتواصل بسهولة مع الرواد.",
+    intro_feat_2: "ابحث عن المنتجات بعملة الباي في بلدك.",
+    intro_feat_3: "الدفع خارج الموقع (P2P) ومسؤولية المستخدمين.",
+    intro_feat_4: "ميز إعلانك بشريط <b>أصفر</b> للوصول لأكبر عدد!",
+    intro_switch_btn: "Switch to English"
   },
   en: { 
     brand_name: "Deal Way", login: "Login",
@@ -516,7 +564,16 @@ const translations = {
     label_total_ads: "Total Ads:", ph_search: "Search products...", 
     label_location: "Location", label_country: "Country", label_state: "State / Province",
     select_gov: "Select Governorate", promote_title: "Choose Promotion Plan", 
-    plan_3_3: "For 3 Days", plan_5_7: "For 7 Days"
+    plan_3_3: "For 3 Days", plan_5_7: "For 7 Days",
+    select_country_ph: "Select Country", select_state_ph: "Select Country First",
+    // Intro Modal (EN)
+    intro_title: "Welcome to Deal Way!",
+    intro_body_p1: "The easiest marketplace for Pi Network community. 🌍",
+    intro_feat_1: "Post items & connect with Pioneers easily.",
+    intro_feat_2: "Find products priced in Pi near you.",
+    intro_feat_3: "Payments are off-platform (P2P) & user responsibility.",
+    intro_feat_4: "Boost ads with a <b>Yellow Badge</b> to reach more!",
+    intro_switch_btn: "التحويل للعربية"
   }
 };
 
@@ -548,7 +605,20 @@ function t(key) { return translations[currentLang][key] || key; }
 
 function updateLanguage() {
   document.getElementById('langText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
-  document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (translations[currentLang][key]) el.innerText = translations[currentLang][key]; });
+  document.getElementById('introLangText').innerText = translations[currentLang].intro_switch_btn;
+  
+  // Update Direction - FIXED TO STOP FLIPPING
+  document.documentElement.lang = currentLang;
+  // document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr'; // DISABLED TO KEEP RTL FIXED
+
+  // Translate all elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => { 
+      const key = el.getAttribute('data-i18n'); 
+      if (translations[currentLang][key]) {
+          // Use innerHTML to allow bold tags in intro
+          el.innerHTML = translations[currentLang][key]; 
+      }
+  });
   
   document.getElementById('addName').placeholder = t('ph_prod_name');
   document.getElementById('addDesc').placeholder = t('ph_desc');
@@ -581,6 +651,7 @@ function initCategories() {
 
 // --- GLOBAL LOCATIONS LOGIC (CountriesNow API) ---
 async function initLocations() {
+  // Populate both Filters and Add Modal
   await fetchCountries('countryFilter'); 
   await fetchCountries('addCountry');
 }
@@ -596,9 +667,10 @@ async function fetchCountries(elementId) {
       countries.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.name;
-        opt.innerText = c.name; 
+        opt.innerText = c.name; // Always English from API
         select.appendChild(opt);
       });
+      // Removed Default Egypt Selection for 'addCountry' to force user choice
     }
   } catch (err) {
     console.error("Failed to load countries", err);
@@ -609,6 +681,7 @@ async function loadStates(countryElementId, stateElementId) {
   const countryName = document.getElementById(countryElementId).value;
   const stateSelect = document.getElementById(stateElementId);
   
+  // Loading Text
   stateSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
   if(stateElementId === 'stateFilter') stateSelect.innerHTML = '<option value="all">All States</option>';
 
@@ -627,6 +700,7 @@ async function loadStates(countryElementId, stateElementId) {
     if(stateElementId === 'stateFilter') {
         stateSelect.innerHTML += '<option value="all">All States</option>';
     } else {
+        // Just English Placeholder
         stateSelect.innerHTML += `<option value="" disabled selected>Select State</option>`;
     }
 
@@ -634,7 +708,7 @@ async function loadStates(countryElementId, stateElementId) {
       data.data.states.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.name;
-        opt.innerText = s.name;
+        opt.innerText = s.name; // Always English from API
         stateSelect.appendChild(opt);
       });
     } else {
@@ -680,6 +754,7 @@ async function handleLogin(uid, username) {
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
   document.getElementById("userDispName").innerText = username;
+  // Avatar Removal - Only Name and Dot remain
   document.getElementById("profile-guest").classList.add("hidden");
   document.getElementById("profile-user").classList.remove("hidden");
   document.getElementById("p-username").innerText = username;
@@ -708,14 +783,19 @@ function renderProducts() {
   const list = document.getElementById("products-list"); list.innerHTML = "";
   const searchText = document.getElementById('searchInput').value.toLowerCase();
   
+  // Use New Filters
   const countryFilter = document.getElementById('countryFilter').value;
   const stateFilter = document.getElementById('stateFilter').value;
 
   const filtered = globalProducts.filter(p => {
     if (activeCategory !== 'all' && p.category !== activeCategory) return false;
     if (searchText && !p.name.toLowerCase().includes(searchText)) return false;
+    
+    // Country/State Logic
     if (countryFilter !== 'all' && p.country !== countryFilter) return false;
+    // We store 'state' in 'location' column in DB
     if (stateFilter !== 'all' && p.location !== stateFilter) return false;
+
     return true;
   });
 
@@ -723,12 +803,14 @@ function renderProducts() {
   
   const now = new Date();
   filtered.forEach(p => {
+    // 🔥 FIX: Handle Array or String for images
     let img = "https://placehold.co/400?text=No+Image";
     if(p.images && Array.isArray(p.images) && p.images.length > 0) img = p.images[0];
     else if(p.image_url) img = p.image_url;
 
     let isPromoted = false; if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) isPromoted = true; }
     
+    // Display Country - City
     const locText = `${p.country || ''} - ${p.location || ''}`;
 
     const html = `
@@ -763,6 +845,7 @@ async function openProductDetails(pid) {
   document.getElementById('detail-price').innerText = formatCurrency(p.price);
   document.getElementById('detail-desc').innerText = p.description || "";
   
+  // Location Detail
   document.getElementById('detail-loc-text').innerText = `${p.country || ''} - ${p.location || ''}`;
   
   document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; 
@@ -799,7 +882,10 @@ async function loadMyAds() {
     data.forEach(p => {
        let isPromoted = false; let promoDateStr = "";
        if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) { isPromoted = true; promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); } }
+       
+       // 🔥 FIX: Handle array images
        let img = (p.images && Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : (p.image_url || "");
+       
        list.innerHTML += `<div class="card" onclick="openProductDetails(${p.id})"><div class="card-img-wrap"><img src="${img}" class="card-img"></div><div class="card-body"><div class="card-title">${p.name}</div><div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div></div></div>`;
     });
   }
