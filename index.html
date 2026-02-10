@@ -80,7 +80,6 @@ body {
 /* --- Modified Header User (Username + Green Dot) --- */
 .header-user {
   display: flex; align-items: center; gap: 8px;
-  /* Removed border and background for cleaner look */
   padding: 4px 8px;
 }
 .status-dot {
@@ -383,15 +382,15 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
     <div class="form-group"><label class="form-label" data-i18n="label_category">القسم</label><select id="addCategory" class="input-box"></select></div>
     
     <div class="form-group">
-      <label class="form-label" data-i18n="label_country">الدولة</label>
+      <label class="form-label" data-i18n="label_country">Country</label>
       <select id="addCountry" class="input-box" onchange="loadStates('addCountry', 'addState')">
-        <option value="" disabled selected data-i18n="select_country_ph">Select Country</option>
+        <option value="" disabled selected>Select Country</option>
       </select>
     </div>
     <div class="form-group">
-      <label class="form-label" data-i18n="label_state">المنطقة / المحافظة</label>
+      <label class="form-label" data-i18n="label_state">State / Province</label>
       <select id="addState" class="input-box">
-        <option value="" disabled selected data-i18n="select_state_ph">Select Country First</option>
+        <option value="" disabled selected>Select Country First</option>
       </select>
     </div>
 
@@ -482,11 +481,9 @@ const translations = {
     cat_phones: "هواتف", cat_fashion: "ملابس", cat_home: "منزل", cat_other: "أخرى", 
     select_cat: "اختر القسم المناسب", btn_back: "رجوع", label_joined: "انضم:", 
     label_total_ads: "إعلانات:", ph_search: "ابحث عن منتج...", 
-    label_location: "المحافظة", label_country: "الدولة", label_state: "المنطقة / المحافظة", 
+    label_location: "المحافظة", label_country: "Country", label_state: "State / Province", 
     select_gov: "اختر المحافظة", promote_title: "اختر خطة التمييز", 
-    plan_3_3: "لمدة 3 أيام", plan_5_7: "لمدة 7 أيام",
-    // Placeholders for Dropdowns (ENGLISH only for values, but placeholder text can be translated)
-    select_country_ph: "Select Country", select_state_ph: "Select Country First"
+    plan_3_3: "لمدة 3 أيام", plan_5_7: "لمدة 7 أيام"
   },
   en: { 
     brand_name: "Deal Way", login: "Login",
@@ -514,9 +511,7 @@ const translations = {
     label_total_ads: "Total Ads:", ph_search: "Search products...", 
     label_location: "Location", label_country: "Country", label_state: "State / Province",
     select_gov: "Select Governorate", promote_title: "Choose Promotion Plan", 
-    plan_3_3: "For 3 Days", plan_5_7: "For 7 Days",
-    // Placeholders for Dropdowns
-    select_country_ph: "Select Country", select_state_ph: "Select Country First"
+    plan_3_3: "For 3 Days", plan_5_7: "For 7 Days"
   }
 };
 
@@ -600,7 +595,7 @@ async function fetchCountries(elementId) {
         opt.innerText = c.name; // Always English from API
         select.appendChild(opt);
       });
-      if(elementId === 'addCountry') select.value = "Egypt"; 
+      // Removed Default Egypt Selection for 'addCountry' to force user choice
     }
   } catch (err) {
     console.error("Failed to load countries", err);
