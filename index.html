@@ -380,18 +380,20 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
     <div class="form-group"><label class="form-label" data-i18n="label_prod_name">اسم المنتج</label><input id="addName" class="input-box" placeholder="" /></div>
     <div class="form-group"><label class="form-label" data-i18n="label_category">القسم</label><select id="addCategory" class="input-box"></select></div>
     
-    <div class="form-group">
-      <label class="form-label" data-i18n="label_country">الدولة</label>
-      <select id="addCountry" class="input-box" onchange="loadStates('addCountry', 'addState')">
-        <option value="" disabled selected>اختر الدولة</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label" data-i18n="label_state">المنطقة / المحافظة</label>
-      <select id="addState" class="input-box">
-        <option value="" disabled selected>اختر الدولة أولاً</option>
-      </select>
-    </div>
+   <div class="form-group">
+  <label class="form-label" data-i18n="label_country">Country</label>
+  <select id="addCountry" class="input-box" onchange="loadStates('addCountry', 'addState')">
+    <option value="" disabled selected>Select Country</option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label class="form-label" data-i18n="label_state">State / Province</label>
+  <select id="addState" class="input-box">
+    <option value="" disabled selected>Select Country First</option>
+  </select>
+</div>
+
 
     <div class="form-group"><label class="form-label" data-i18n="label_price">السعر (Pi)</label><input id="addPrice" type="number" class="input-box" placeholder="0.00" /></div>
     <div class="form-group"><label class="form-label" data-i18n="label_desc">الوصف</label><textarea id="addDesc" class="input-box" placeholder=""></textarea></div>
