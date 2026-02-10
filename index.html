@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>Deal Way</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -14,228 +14,1686 @@
 
 <style>
 :root {
-  --primary: #7C3AED;
-  --primary-dark: #5B21B6;
+  --primary: #6366F1;
+  --primary-dark: #4F46E5;
+  --primary-light: #818CF8;
   --accent: #F59E0B;
-  --bg-body: #F3F4F6;
+  --accent-light: #FBBF24;
+  --bg-body: #F8FAFC;
   --surface: #FFFFFF;
-  --text-main: #111827;
-  --text-muted: #6B7280;
+  --surface-elevated: #FFFFFF;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
   --danger: #EF4444;
   --success: #10B981;
-  --border: #E5E7EB;
-  --nav-height: 70px;
+  --warning: #F59E0B;
+  --border: #E2E8F0;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  --nav-height: 80px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
   font-family: 'Tajawal', sans-serif;
-  background-color: var(--bg-body);
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
   color: var(--text-main);
   padding-bottom: calc(var(--nav-height) + 20px);
-  overflow-y: auto;
-  user-select: none;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* --- Animations --- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.6), 0 0 40px rgba(99, 102, 241, 0.3); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* --- Utilities --- */
-.container { width: min(100%, 800px); margin: 0 auto; padding: 16px; }
+.container { width: min(100%, 900px); margin: 0 auto; padding: 16px; }
 .hidden { display: none !important; }
+
 .btn {
-  border: none; cursor: pointer; border-radius: 12px;
-  padding: 12px 16px; font-weight: 700; font-family: inherit;
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  transition: transform 0.1s ease; font-size: 14px;
+  border: none; cursor: pointer; border-radius: var(--radius-lg);
+  padding: 14px 24px; font-weight: 700; font-family: inherit;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 14px; position: relative; overflow: hidden;
 }
-.btn:active { transform: scale(0.97); }
-.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
-.btn-gold { background: linear-gradient(135deg, var(--accent), #FBBF24); color: white; }
-.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-.btn-disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; pointer-events: none; }
+
+.btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.btn:hover::before { transform: translateX(100%); }
+.btn:active { transform: scale(0.96); }
+
+.btn-primary { 
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
+  color: white; 
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+}
+
+.btn-gold { 
+  background: linear-gradient(135deg, var(--accent) 0%, #D97706 100%); 
+  color: white;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+}
+
+.btn-ghost { 
+  background: rgba(255,255,255,0.8); 
+  color: var(--text-muted); 
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+.btn-ghost:hover {
+  background: white;
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%);
+  color: white;
+}
+
+.btn-disabled { 
+  background: #E2E8F0; 
+  color: #94A3B8; 
+  cursor: not-allowed; 
+  box-shadow: none; 
+  pointer-events: none; 
+}
 
 /* --- Header --- */
 .header {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 16px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 12px 20px;
   display: flex; justify-content: space-between; align-items: center;
-  height: 60px;
+  height: 70px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
-.brand { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
-.header-actions { display: flex; align-items: center; gap: 8px; }
 
+/* تعديل اسم الموقع (إزالة الصاروخ) */
+/* ✅ حط الكود الجديد ده */
+.brand { 
+  font-size: 26px; /* حجم مناسب */
+  font-weight: 900; 
+  display: flex; 
+  align-items: center; 
+  gap: 0; /* لجعل الكلمتين ملتصقتين */
+  letter-spacing: -0.5px;
+  /* تم حذف خصائص الـ Gradient والشفافية لتظهر ألوان HTML */
+}
+
+
+.header-actions { display: flex; align-items: center; gap: 12px; }
+
+/* زر اللغة - ثابت وأنيق */
 .lang-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: white; border: 1px solid var(--border);
-  color: var(--primary); font-weight: 800; font-size: 12px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-.lang-btn:active { transform: scale(0.9) rotate(10deg); }
-
-/* --- Modified Header User (Username + Green Dot) --- */
-.header-user {
-  display: flex; align-items: center; gap: 8px;
-  padding: 4px 8px;
-}
-.status-dot {
-  width: 8px; height: 8px; 
-  background-color: var(--success); 
+  width: 36px; 
+  height: 36px; 
   border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  background: white; 
+  border: 1px solid var(--border);
+  color: var(--primary); 
+  font-weight: 800; 
+  font-size: 12px;
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: border-color 0.2s, background-color 0.2s; /* تأثير بسيط للون فقط */
 }
-.header-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
+
+.lang-btn:hover {
+  border-color: var(--primary);
+  background-color: #F8FAFC; /* تغيير لون الخلفية قليلاً عند اللمس */
+}
+
+.lang-btn:active {
+  background-color: #E2E8F0; /* تأثير ضغط خفيف */
+}
+
+/* --- Modified Header User --- */
+.header-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  animation: slideInRight 0.5s ease;
+}
+
+.status-dot {
+  width: 10px; height: 10px; 
+  background: linear-gradient(135deg, var(--success) 0%, #34D399 100%); 
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  animation: pulse-glow 2s infinite;
+}
+
+.header-name { font-size: 14px; font-weight: 800; color: var(--text-main); }
 
 /* --- Search Bar --- */
-.search-container { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-.search-input-wrap { flex: 2; min-width: 200px; position: relative; }
-.search-input { width: 100%; padding: 10px 36px 10px 12px; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 14px; outline: none; }
-.search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
-.filter-select { flex: 1; padding: 0 8px; border: 1px solid var(--border); border-radius: 12px; background: white; font-family: inherit; font-size: 13px; outline: none; min-width: 120px; height: 42px; }
+.search-container { 
+  display: flex; gap: 12px; 
+  margin-bottom: 20px; 
+  flex-wrap: wrap;
+  animation: slideInUp 0.5s ease;
+}
+
+.search-input-wrap { 
+  flex: 2; 
+  min-width: 200px; 
+  position: relative; 
+}
+
+.search-input { 
+  width: 100%; 
+  padding: 14px 44px 14px 16px; 
+  border: 2px solid var(--border); 
+  border-radius: var(--radius-xl); 
+  font-family: inherit; 
+  font-size: 15px; 
+  outline: none;
+  background: white;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-input:focus { 
+  border-color: var(--primary); 
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), var(--shadow);
+}
+
+.search-icon { 
+  position: absolute; 
+  right: 16px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  color: var(--text-light); 
+  pointer-events: none;
+  font-size: 18px;
+}
+
+.filter-select { 
+  flex: 1; 
+  padding: 0 16px; 
+  border: 2px solid var(--border); 
+  border-radius: var(--radius-xl); 
+  background: white; 
+  font-family: inherit; 
+  font-size: 14px; 
+  outline: none; 
+  min-width: 140px; 
+  height: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
 
 /* --- Bottom Navigation --- */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: var(--nav-height);
-  background: white;
-  border-top: 1px solid var(--border);
+  background: rgba(255,255,255,0.95);
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
   display: flex; justify-content: space-around; align-items: center;
   z-index: 1000;
-  padding-bottom: 10px;
-  box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+  padding-bottom: env(safe-area-inset-bottom, 10px);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.08);
+  backdrop-filter: blur(20px);
 }
 
 .nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  color: var(--text-muted); font-size: 11px; font-weight: 600;
-  background: none; border: none; cursor: pointer; padding: 8px; width: 60px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: var(--text-muted); font-size: 12px; font-weight: 700;
+  background: none; border: none; cursor: pointer; padding: 12px; width: 80px;
   position: relative;
-  transition: color 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-lg);
 }
-.nav-item i { font-size: 22px; transition: transform 0.4s; }
-.nav-item.active { color: var(--primary); }
-.nav-item.active i { transform: translateY(-5px) scale(1.1); }
+
+/* تصغير أيقونات النافبار */
+.nav-item i {
+  font-size: 20px;
+  /* كان 24px */
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover { color: var(--primary); }
+.nav-item:hover i { transform: translateY(-3px); }
+
+.nav-item.active { 
+  color: var(--primary); 
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+}
+
+.nav-item.active i { 
+  transform: translateY(-5px) scale(1.15);
+  filter: drop-shadow(0 4px 8px rgba(99, 102, 241, 0.3));
+}
+
 .nav-item.active::after {
-  content: ''; position: absolute; bottom: 5px;
-  width: 5px; height: 5px; background: var(--primary); border-radius: 50%;
+  content: ''; position: absolute; bottom: 8px;
+  width: 6px; height: 6px; 
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); 
+  border-radius: 50%;
+  animation: bounce 1s infinite;
 }
-.nav-badge { position: absolute; top: 2px; right: 12px; background-color: var(--danger); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transform: scale(1); transition: transform 0.2s; }
+
+.nav-badge { 
+  position: absolute; top: 8px; right: 20px; 
+  background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%); 
+  color: white; 
+  min-width: 20px; height: 20px; 
+  border-radius: var(--radius-full); 
+  font-size: 11px; 
+  font-weight: 800; 
+  display: flex; align-items: center; justify-content: center; 
+  border: 2px solid white; 
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  transform: scale(1);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
 .nav-badge.hidden { transform: scale(0); opacity: 0; }
+.nav-badge:not(.hidden) { animation: bounce 0.5s; }
 
 /* --- Main Views --- */
-.view-section { animation: fadeScale 0.4s ease-out; }
-@keyframes fadeScale { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+.view-section { animation: fadeScale 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-.products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-.card { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: transform 0.2s; cursor: pointer; }
+@keyframes fadeScale { 
+  from { opacity: 0; transform: scale(0.95) translateY(20px); } 
+  to { opacity: 1; transform: scale(1) translateY(0); } 
+}
+
+/* Section Headers */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.section-header h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 18px;
+  box-shadow: var(--shadow);
+}
+
+/* --- Products Grid --- */
+.products-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+  gap: 16px; 
+}
+
+.card { 
+  background: var(--surface); 
+  border-radius: var(--radius-xl); 
+  border: 1px solid var(--border); 
+  overflow: hidden; 
+  display: flex; 
+  flex-direction: column; 
+  position: relative; 
+  box-shadow: var(--shadow-sm);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.card:hover { 
+  transform: translateY(-8px) scale(1.02); 
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
 .card:active { transform: scale(0.98); }
-.card-img-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: #f9fafb; overflow: hidden; }
-.card-img { width: 100%; height: 100%; object-fit: cover; }
-.card-body { padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-.card-title { font-size: 14px; margin: 0; line-height: 1.3; font-weight: 800; height: 38px; overflow: hidden; }
-.price-pill { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
-.card-desc { font-size: 11px; color: var(--text-muted); height: 32px; overflow: hidden; }
-.promo-badge { position: absolute; top: 8px; right: 8px; z-index: 10; background: var(--accent); color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.card.promoted { border: 2px solid var(--accent); }
-.location-tag { position: absolute; bottom: 8px; left: 8px; z-index: 10; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; backdrop-filter: blur(2px); white-space: nowrap; max-width: 90%; overflow: hidden; text-overflow: ellipsis; }
 
-/* Slider & Details */
-.slider-container { width: 100%; aspect-ratio: 4/3; background: #f3f4f6; border-radius: 20px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border); position: relative; }
-.slider-wrapper { display: flex; width: 100%; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.card-img-wrap { 
+  position: relative; 
+  width: 100%; 
+  aspect-ratio: 1/1; 
+  background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%); 
+  overflow: hidden; 
+}
+
+.card-img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .card-img { transform: scale(1.1); }
+
+.card-body { 
+  padding: 16px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  gap: 10px; 
+  text-align: center;
+  background: white;
+}
+
+.card-title { 
+  font-size: 14px; 
+  margin: 0; 
+  line-height: 1.4; 
+  font-weight: 800; 
+  height: 40px; 
+  overflow: hidden;
+  color: var(--text-main);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.price-pill { 
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); 
+  color: #92400E; 
+  border: 1px solid #FCD34D; 
+  padding: 6px 16px; 
+  border-radius: var(--radius-full); 
+  font-size: 13px; 
+  font-weight: 800; 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card:hover .price-pill {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.card-desc { 
+  font-size: 12px; 
+  color: var(--text-muted); 
+  height: 36px; 
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+/* تثبيت شارة مميز */
+.promo-badge { 
+  position: absolute; top: 8px; right: 8px; z-index: 10; 
+  background: linear-gradient(135deg, var(--accent) 0%, #D97706 100%); 
+  color: white; 
+  padding: 4px 8px; /* تصغير الحشو */
+  border-radius: 6px; 
+  font-size: 10px; /* تصغير الخط */
+  font-weight: 800; 
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  /* تم حذف animation: float */
+  display: flex; align-items: center; gap: 4px;
+}
+
+
+.card.promoted { 
+  border: 2px solid var(--accent); 
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1), var(--shadow-lg);
+}
+
+/* تصغير تاج الموقع على الصورة */
+.location-tag { 
+  position: absolute; 
+  bottom: 8px; left: 8px; /* تقريب من الحافة */
+  z-index: 10; 
+  background: rgba(15, 23, 42, 0.85); 
+  color: white; 
+  padding: 4px 8px; /* تقليل الحشو */
+  border-radius: 6px; 
+  font-size: 9px; /* تصغير الخط */
+  font-weight: 600; 
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; gap: 4px;
+  border: 1px solid rgba(255,255,255,0.1);
+  max-width: 85%; /* منع تغطية الصورة بالكامل */
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; /* إضافة ... للنصوص الطويلة */
+}
+
+
+/* --- Slider & Details --- */
+.slider-container { 
+  width: 100%; 
+  aspect-ratio: 4/3; 
+  background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%); 
+  border-radius: var(--radius-xl); 
+  overflow: hidden; 
+  margin-bottom: 20px; 
+  border: 1px solid var(--border); 
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.slider-wrapper { 
+  display: flex; 
+  width: 100%; 
+  height: 100%; 
+  overflow-x: auto; 
+  scroll-snap-type: x mandatory; 
+  scrollbar-width: none; 
+  scroll-behavior: smooth;
+}
+
 .slider-wrapper::-webkit-scrollbar { display: none; }
-.slide { flex: 0 0 100%; scroll-snap-align: center; width: 100%; height: 100%; }
-.slide-img { width: 100%; height: 100%; object-fit: contain; }
-.slider-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
-.dot { width: 8px; height: 8px; background: rgba(0,0,0,0.3); border-radius: 50%; transition: 0.3s; }
-.dot.active { background: var(--primary); transform: scale(1.2); }
 
-.seller-card { background: white; border: 1px solid var(--border); padding: 16px; border-radius: 16px; margin-top: 20px; display: flex; align-items: center; gap: 12px; }
+.slide { 
+  flex: 0 0 100%; 
+  scroll-snap-align: center; 
+  width: 100%; 
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: contain;
+  padding: 20px;
+}
+
+.slider-dots { 
+  position: absolute; 
+  bottom: 16px; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  display: flex; 
+  gap: 8px;
+  background: rgba(0,0,0,0.3);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(10px);
+}
+
+.dot { 
+  width: 10px; 
+  height: 10px; 
+  background: rgba(255,255,255,0.4); 
+  border-radius: 50%; 
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.dot:hover { background: rgba(255,255,255,0.7); }
+.dot.active { 
+  background: white; 
+  transform: scale(1.3);
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+.seller-card { 
+  background: white; 
+  border: 1px solid var(--border); 
+  padding: 20px; 
+  border-radius: var(--radius-xl); 
+  margin-top: 24px; 
+  display: flex; 
+  align-items: center; 
+  gap: 16px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.seller-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.seller-avatar {
+  width: 60px; 
+  height: 60px; 
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: 50%; 
+  display: grid; 
+  place-items: center; 
+  font-size: 24px; 
+  color: white;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+  border: 3px solid white;
+  outline: 2px solid var(--primary-light);
+}
+
 .seller-info { flex: 1; }
-.seller-name { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
-.seller-stats { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
+.seller-name { font-weight: 800; font-size: 16px; margin-bottom: 6px; color: var(--text-main); }
+.seller-stats { 
+  font-size: 13px; 
+  color: var(--text-muted); 
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; 
+}
 
-/* Categories */
-.categories-wrapper { position: sticky; top: 60px; z-index: 40; background: var(--bg-body); padding: 10px 0; margin-bottom: 10px; }
-.categories-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 4px; }
+.seller-stats div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Categories --- */
+.categories-wrapper { 
+  position: sticky; 
+  top: 70px; 
+  z-index: 40; 
+  background: linear-gradient(to bottom, var(--bg-body) 0%, rgba(248,250,252,0.95) 100%);
+  padding: 16px 0; 
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.categories-scroll { 
+  display: flex; 
+  gap: 12px; 
+  overflow-x: auto; 
+  padding: 4px; 
+  scrollbar-width: none;
+}
+
 .categories-scroll::-webkit-scrollbar { display: none; }
-.cat-chip { background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--text-muted); white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
-.cat-chip.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3); }
 
-/* Inbox */
-.inbox-item { background: white; padding: 14px; margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; }
-.inbox-item.unread { border-right: 4px solid var(--primary); background: #F5F3FF; }
-.inbox-avatar { width: 45px; height: 45px; border-radius: 50%; background: #f3f4f6; color: var(--primary); display: grid; place-items: center; font-size: 18px; font-weight: bold; }
+.cat-chip { 
+  background: white; 
+  border: 2px solid var(--border); 
+  padding: 10px 20px; 
+  border-radius: var(--radius-full); 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: var(--text-muted); 
+  white-space: nowrap; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+}
+
+.cat-chip:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-light);
+  color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.cat-chip.active { 
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
+  color: white; 
+  border-color: var(--primary);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+}
+
+.cat-chip i {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.cat-chip:hover i {
+  transform: scale(1.2) rotate(10deg);
+}
+
+/* --- Inbox --- */
+.inbox-item { 
+  background: white; 
+  padding: 16px; 
+  margin-bottom: 12px; 
+  border-radius: var(--radius-xl); 
+  border: 1px solid var(--border); 
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.inbox-item:hover {
+  transform: translateX(-5px);
+  box-shadow: var(--shadow);
+  border-color: var(--primary-light);
+}
+
+.inbox-item.unread { 
+  border-right: 4px solid var(--primary); 
+  background: linear-gradient(135deg, #F5F3FF 0%, #FFFFFF 100%);
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.1), var(--shadow);
+}
+
+.inbox-avatar { 
+  width: 50px; 
+  height: 50px; 
+  border-radius: 50%; 
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
+  color: white; 
+  display: grid; 
+  place-items: center; 
+  font-size: 20px; 
+  font-weight: 800;
+  box-shadow: var(--shadow);
+  border: 2px solid white;
+  outline: 2px solid var(--primary-light);
+}
+
 .inbox-info { flex: 1; overflow: hidden; }
-.inbox-name { font-weight: 800; font-size: 14px; }
-.inbox-msg { font-size: 12px; color: var(--text-muted); }
-.chat-area { flex: 1; overflow-y: auto; background: #f9fafb; padding: 10px; border-radius: 12px; margin-bottom: 10px; min-height: 300px; }
-.bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; margin-bottom: 8px; font-size: 13px; }
-.bubble.me { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-.bubble.other { background: white; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+.inbox-name { font-weight: 800; font-size: 15px; margin-bottom: 4px; color: var(--text-main); }
+.inbox-msg { 
+  font-size: 13px; 
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-/* Modals */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
-.sheet { background: white; width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; padding: 24px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; gap: 16px; }
-@keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
+.unread-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: pulse-glow 2s infinite;
+}
 
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-label { font-size: 12px; font-weight: 700; color: var(--text-main); margin-right: 4px; }
-.input-box { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 14px; outline: none; background: #fff; }
-.input-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
-textarea.input-box { resize: none; height: 80px; }
-select.input-box { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: left 14px center; background-size: 16px; }
+.chat-area { 
+  flex: 1; 
+  overflow-y: auto; 
+  background: #F8FAFC; 
+  padding: 16px; 
+  border-radius: var(--radius-lg); 
+  margin-bottom: 16px; 
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--border);
+}
 
-.file-upload-wrapper { border: 2px dashed var(--border); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; background: #F9FAFB; position: relative; overflow: hidden; }
-.file-upload-content { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted); }
-.file-upload-icon { font-size: 32px; color: var(--primary); margin-bottom: 8px; }
-.file-upload-note { font-size: 11px; color: #9CA3AF; margin-top: 4px; font-weight: normal; }
-.previews-container { display: flex; gap: 10px; margin-bottom: 12px; overflow-x: auto; padding: 4px; }
-.preview-box { width: 70px; height: 70px; border-radius: 12px; overflow: hidden; position: relative; flex-shrink: 0; border: 1px solid var(--border); }
-.preview-box img { width: 100%; height: 100%; object-fit: cover; }
-.preview-remove { position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.8); color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
+.bubble { 
+  max-width: 80%; 
+  padding: 14px 18px; 
+  border-radius: 20px; 
+  font-size: 14px;
+  line-height: 1.5;
+  position: relative;
+  animation: slideInUp 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.bubble.me { 
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
+  color: white; 
+  align-self: flex-end; 
+  border-bottom-right-radius: 4px;
+}
+
+.bubble.other { 
+  background: white; 
+  border: 1px solid var(--border); 
+  align-self: flex-start; 
+  border-bottom-left-radius: 4px;
+  color: var(--text-main);
+}
+
+.bubble::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.bubble.me::before {
+  right: -10px;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-dark) 100%);
+  border-bottom-left-radius: 16px;
+  clip-path: polygon(0 0, 0% 100%, 100% 100%);
+}
+
+.bubble.other::before {
+  left: -10px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-bottom-right-radius: 16px;
+  clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+}
+
+/* --- Modals --- */
+.modal { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(15, 23, 42, 0.6); 
+  z-index: 2000; 
+  display: none; 
+  align-items: flex-end; 
+  justify-content: center; 
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sheet { 
+  background: white; 
+  width: 100%; 
+  max-width: 600px; 
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0; 
+  padding: 28px; 
+  max-height: 90vh; 
+  overflow-y: auto; 
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px;
+  box-shadow: 0 -20px 60px rgba(0,0,0,0.3);
+}
+
+@keyframes slideUp { 
+  from { transform: translateY(100%); opacity: 0; } 
+  to { transform: translateY(0); opacity: 1; } 
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-title i {
+  color: var(--primary);
+  font-size: 24px;
+}
+
+.close-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--bg-body);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: var(--danger);
+  color: white;
+  transform: rotate(90deg);
+}
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-label { 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: var(--text-main); 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-label i {
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.input-box { 
+  width: 100%; 
+  padding: 16px; 
+  border: 2px solid var(--border); 
+  border-radius: var(--radius-lg); 
+  font-family: inherit; 
+  font-size: 15px; 
+  outline: none; 
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.input-box:hover {
+  border-color: var(--primary-light);
+}
+
+.input-box:focus { 
+  border-color: var(--primary); 
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+textarea.input-box { 
+  resize: none; 
+  height: 100px;
+  line-height: 1.6;
+}
+
+select.input-box { 
+  appearance: none; 
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366F1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); 
+  background-repeat: no-repeat; 
+  background-position: left 16px center; 
+  background-size: 20px;
+  cursor: pointer;
+}
+
+.file-upload-wrapper { 
+  border: 3px dashed var(--border); 
+  border-radius: var(--radius-xl); 
+  padding: 40px 20px; 
+  text-align: center; 
+  cursor: pointer; 
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  position: relative; 
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.file-upload-wrapper:hover {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, #F5F3FF 0%, #F8FAFC 100%);
+  transform: translateY(-2px);
+}
+
+.file-upload-wrapper.dragover {
+  border-color: var(--primary);
+  background: #F5F3FF;
+  transform: scale(1.02);
+}
+
+.file-upload-content { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  gap: 12px; 
+  color: var(--text-muted); 
+}
+
+.file-upload-icon { 
+  font-size: 48px; 
+  color: var(--primary);
+  animation: float 3s ease-in-out infinite;
+}
+
+.file-upload-text { 
+  font-weight: 700; 
+  font-size: 16px;
+  color: var(--text-main);
+}
+
+.file-upload-note { 
+  font-size: 13px; 
+  color: var(--text-light); 
+  font-weight: 500;
+}
+
+.previews-container { 
+  display: flex; 
+  gap: 12px; 
+  margin-bottom: 16px; 
+  overflow-x: auto; 
+  padding: 8px 4px;
+}
+
+.preview-box { 
+  width: 80px; 
+  height: 80px; 
+  border-radius: var(--radius); 
+  overflow: hidden; 
+  position: relative; 
+  flex-shrink: 0; 
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.preview-box:hover {
+  transform: scale(1.05);
+  border-color: var(--primary);
+}
+
+.preview-box img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+}
+
+.preview-remove { 
+  position: absolute; 
+  top: 4px; 
+  right: 4px; 
+  background: var(--danger); 
+  color: white; 
+  width: 24px; 
+  height: 24px; 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 12px; 
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+}
+
+.preview-remove:hover {
+  transform: scale(1.1) rotate(90deg);
+  background: #DC2626;
+}
 
 /* Plan Options */
-.plan-option { border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; }
-.plan-option:hover { border-color: var(--primary); background: #F5F3FF; }
-.plan-option.selected { border-color: var(--primary); background: #F5F3FF; box-shadow: 0 0 0 2px var(--primary); }
-.plan-info { display: flex; flex-direction: column; }
-.plan-price { font-weight: 800; color: var(--primary); }
-.plan-days { font-size: 12px; color: gray; }
+.plan-container {
+  display: grid;
+  gap: 16px;
+}
+
+.plan-option { 
+  border: 2px solid var(--border); 
+  border-radius: var(--radius-lg); 
+  padding: 20px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  cursor: pointer; 
+  transition: all 0.3s ease;
+  background: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-option::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.plan-option:hover { 
+  border-color: var(--primary); 
+  transform: translateX(-5px);
+  box-shadow: var(--shadow);
+}
+
+.plan-option:hover::before {
+  opacity: 1;
+}
+
+.plan-option.selected { 
+  border-color: var(--primary); 
+  background: #F5F3FF; 
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), var(--shadow);
+}
+
+.plan-option.selected::after {
+  content: '\f00c';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  left: 20px;
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.plan-info { display: flex; flex-direction: column; gap: 6px; }
+.plan-price { 
+  font-weight: 800; 
+  color: var(--primary);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-price::after {
+  content: 'π';
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.plan-days { 
+  font-size: 14px; 
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.plan-features {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.plan-feature {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.plan-feature i {
+  color: var(--success);
+  font-size: 10px;
+}
 
 /* Toast */
-.toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-.toast { background: white; padding: 12px 20px; border-radius: 99px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; animation: toastSlide 0.3s; pointer-events: auto; min-width: 250px; justify-content: center; }
-.toast.success { border-right: 4px solid var(--success); } .toast.error { border-right: 4px solid var(--danger); }
-.toast-icon { font-size: 18px; } .toast-msg { font-size: 13px; font-weight: 700; color: var(--text-main); }
-@keyframes toastSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.toast-container { 
+  position: fixed; 
+  top: 24px; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  z-index: 10000; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+  pointer-events: none;
+  width: 90%;
+  max-width: 400px;
+}
+
+.toast { 
+  background: white; 
+  padding: 16px 24px; 
+  border-radius: var(--radius-xl); 
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border);
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  animation: toastSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+}
+
+.toast.success { 
+  border-right: 4px solid var(--success);
+  background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%);
+}
+
+.toast.error { 
+  border-right: 4px solid var(--danger);
+  background: linear-gradient(135deg, #FEF2F2 0%, #FFFFFF 100%);
+}
+
+.toast.warning {
+  border-right: 4px solid var(--warning);
+  background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%);
+}
+
+.toast-icon { 
+  font-size: 24px; 
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-sm);
+}
+
+.toast.success .toast-icon { color: var(--success); }
+.toast.error .toast-icon { color: var(--danger); }
+.toast.warning .toast-icon { color: var(--warning); }
+
+.toast-msg { 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: var(--text-main);
+  flex: 1;
+}
+
+@keyframes toastSlide { 
+  from { transform: translateY(-30px) scale(0.9); opacity: 0; } 
+  to { transform: translateY(0) scale(1); opacity: 1; } 
+}
 
 /* Intro List Items */
-.intro-list-item { margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; }
-.intro-icon { color: var(--primary); font-size: 16px; margin-top: 2px; }
+.intro-content {
+  padding: 10px 0;
+}
+
+.intro-list-item { 
+  margin-bottom: 16px; 
+  display: flex; 
+  align-items: flex-start; 
+  gap: 16px; 
+  font-size: 15px; 
+  line-height: 1.6;
+  color: var(--text-muted);
+  padding: 16px;
+  background: #F8FAFC;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.intro-list-item:hover {
+  transform: translateX(-5px);
+  border-color: var(--primary-light);
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+.intro-icon { 
+  color: var(--primary); 
+  font-size: 20px; 
+  margin-top: 2px;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #F5F3FF 0%, #FFFFFF 100%);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.intro-list-item:nth-child(4) .intro-icon {
+  color: var(--accent);
+  background: linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%);
+}
+
+/* Loading Skeleton */
+.skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  color: var(--border);
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+}
+
+/* Chat Header */
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.chat-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-avatar {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 800;
+  font-size: 20px;
+  border: 3px solid white;
+  box-shadow: var(--shadow);
+}
+
+.chat-meta h4 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.chat-meta span {
+  font-size: 13px;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-meta span::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  animation: pulse-glow 2s infinite;
+}
+
+/* Input with Button */
+.input-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.input-group .input-box {
+  flex: 1;
+  border-radius: var(--radius-full);
+  padding: 16px 24px;
+}
+
+.send-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+/* Profile Section */
+.profile-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: var(--radius-xl);
+  padding: 40px 24px;
+  text-align: center;
+  color: white;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.profile-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.profile-avatar-large {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  font-size: 40px;
+  color: var(--primary);
+  border: 4px solid rgba(255,255,255,0.3);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.profile-name {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.2);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+  border-color: var(--primary-light);
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Guest State */
+.guest-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 60px 40px;
+  text-align: center;
+  border: 2px dashed var(--border);
+  box-shadow: var(--shadow);
+}
+
+.guest-icon {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 24px;
+  font-size: 40px;
+  color: var(--text-light);
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Links List */
+.links-list {
+  background: white;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.link-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid var(--border);
+}
+
+.link-item:last-child {
+  border-bottom: none;
+}
+
+.link-item:hover {
+  background: #F8FAFC;
+  color: var(--primary);
+  padding-right: 28px;
+}
+
+.link-item i:first-child {
+  width: 40px;
+  height: 40px;
+  background: #F1F5F9;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  margin-left: 16px;
+  color: var(--primary);
+  transition: all 0.3s ease;
+}
+
+.link-item:hover i:first-child {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+.link-item i:last-child {
+  margin-right: auto;
+  color: var(--text-light);
+  transition: transform 0.3s;
+}
+
+.link-item:hover i:last-child {
+  transform: translateX(-5px);
+  color: var(--primary);
+}
+
+/* Banned Screen */
+#banned-screen {
+  background: linear-gradient(135deg, #FEF2F2 0%, #FFFFFF 100%) !important;
+}
+
+.banned-icon {
+  font-size: 100px;
+  color: var(--danger);
+  margin-bottom: 24px;
+  animation: pulse-glow 2s infinite;
+}
+
+.banned-title {
+  font-size: 32px;
+  color: var(--danger);
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.banned-msg {
+  color: var(--text-muted);
+  font-size: 18px;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .card-body {
+    padding: 12px;
+  }
+  
+  .section-header h3 {
+    font-size: 18px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Selection Color */
+::selection {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--primary-dark);
+}
 </style>
 </head>
 <body>
 
-<div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-  <i class="fa-solid fa-ban" style="font-size:80px;color:#EF4444;margin-bottom:20px;animation:pulse 2s infinite"></i>
-  <h1 data-i18n="banned_title">حساب محظور</h1>
-  <p data-i18n="banned_msg" style="color:#6B7280;margin-top:10px;font-size:18px">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
-  <style>@keyframes pulse { 0% {transform:scale(1);} 50% {transform:scale(1.1);} 100% {transform:scale(1);} }</style>
+<div id="banned-screen" class="hidden" style="position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
+  <div class="banned-icon">
+    <i class="fa-solid fa-ban"></i>
+  </div>
+  <h1 class="banned-title" data-i18n="banned_title">حساب محظور</h1>
+  <p class="banned-msg" data-i18n="banned_msg">تم إيقاف حسابك لمخالفة شروط الاستخدام.</p>
 </div>
 
 <div id="introModal" class="modal" style="display:flex; z-index: 3000;">
   <div class="sheet">
-    <div style="display:flex;justify-content:space-between;align-items:center; margin-bottom: 15px;">
-      <h3 style="margin:0; color:var(--primary); font-size: 18px;" data-i18n="intro_title">Welcome to Deal Way!</h3>
-      <button onclick="document.getElementById('introModal').style.display='none'" style="background:none;border:none;font-size:22px;color:#666"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
+      <div class="modal-title" style="color:var(--primary);">
+        <i class="fa-solid fa-rocket"></i>
+        <span data-i18n="intro_title">Welcome to Deal Way!</span>
+      </div>
+      <button onclick="document.getElementById('introModal').style.display='none'" class="close-btn">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
     
-    <div id="intro-content">
-      <p data-i18n="intro_body_p1" style="font-size:14px;color:#4B5563;margin-bottom:15px;"></p>
+    <div class="intro-content">
+      <p data-i18n="intro_body_p1" style="font-size:16px;color:#4B5563;margin-bottom:10px;line-height:1.6;"></p>
       
       <div class="intro-list-item">
         <i class="fa-solid fa-store intro-icon"></i>
@@ -250,12 +1708,12 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
         <span data-i18n="intro_feat_3"></span>
       </div>
       <div class="intro-list-item">
-        <i class="fa-solid fa-star intro-icon" style="color:var(--accent)"></i>
+        <i class="fa-solid fa-star intro-icon"></i>
         <span data-i18n="intro_feat_4"></span>
       </div>
     </div>
 
-    <button class="btn btn-ghost" style="width:100%; margin-top:10px; border-color:var(--primary); color:var(--primary);" onclick="toggleLanguage()">
+    <button class="btn btn-ghost" style="width:100%; border-width:2px;" onclick="toggleLanguage()">
       <i class="fa-solid fa-globe"></i> <span id="introLangText">Switch to Arabic</span>
     </button>
   </div>
@@ -265,8 +1723,8 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 
 <header class="header">
   <div class="brand" style="font-family: 'Tajawal', sans-serif; display: flex; align-items: center;">
-    <span style="font-weight: 900; font-size: 22px; letter-spacing: -0.5px;">
-      <span style="color: var(--primary);">Deal</span><span style="color: var(--accent);">Way</span>
+    <span style="font-weight: 900; font-size: 26px; letter-spacing: -0.5px;">
+      <span style="color: #8B5CF6;">Deal</span><span style="color: #F59E0B;">Way</span>
     </span>
   </div>
   <div class="header-actions">
@@ -284,6 +1742,7 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
     </div>
   </div>
 </header>
+
 
 <div class="container">
   <div id="view-home" class="view-section">
@@ -303,40 +1762,55 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
     <div class="categories-wrapper">
       <div class="categories-scroll" id="cat-filters"></div>
     </div>
-    <h3 style="margin-top:5px;display:flex;align-items:center;gap:8px">
-      <i class="fa-solid fa-fire" style="color:var(--accent)"></i> <span data-i18n="latest_products">أحدث المعروضات</span>
-    </h3>
+    
+    <div class="section-header">
+      <div class="section-icon">
+        <i class="fa-solid fa-fire"></i>
+      </div>
+      <h3 data-i18n="latest_products">أحدث المعروضات</h3>
+    </div>
+    
     <div id="products-list" class="products-grid"></div>
-    <div id="loading" style="text-align:center;padding:20px;color:gray" data-i18n="loading">جاري التحميل...</div>
+    
+    <div id="loading" style="text-align:center;padding:40px;color:var(--text-muted)">
+      <div style="display:inline-block;width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <p style="margin-top:16px;font-weight:600;" data-i18n="loading">جاري التحميل...</p>
+    </div>
   </div>
 
   <div id="view-details" class="view-section hidden">
-    <div style="display:flex;align-items:center;margin-bottom:12px">
-      <button onclick="nav('home')" class="btn btn-ghost" style="padding:8px 12px;border-radius:12px">
+    <div style="margin-bottom:20px;">
+      <button onclick="nav('home')" class="btn btn-ghost">
         <i class="fa-solid fa-arrow-right"></i> <span data-i18n="btn_back">رجوع</span>
       </button>
     </div>
+    
     <div class="slider-container">
       <div class="slider-wrapper" id="detail-slider"></div>
       <div class="slider-dots" id="detail-dots"></div>
     </div>
-    <h2 id="detail-title" style="margin:0 0 8px 0;line-height:1.3;font-size:20px"></h2>
     
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <div class="price-pill" style="font-size:16px;padding:6px 16px;">
+    <h2 id="detail-title" style="margin:0 0 12px 0;line-height:1.3;font-size:24px;font-weight:800;"></h2>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div class="price-pill" style="font-size:18px;padding:10px 24px;">
           <span id="detail-price"></span> <span>Pi</span>
         </div>
-        <div id="detail-location" style="background:#E5E7EB;padding:4px 10px;border-radius:8px;font-size:12px;color:#374151;">
-            <i class="fa-solid fa-location-dot"></i> <span id="detail-loc-text"></span>
+        <div id="detail-location" style="background:linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);padding:10px 16px;border-radius:var(--radius-full);font-size:14px;color:var(--text-main);font-weight:600;display:flex;align-items:center;gap:8px;border:1px solid var(--border);">
+            <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> <span id="detail-loc-text"></span>
         </div>
     </div>
 
-    <div style="background:white;padding:16px;border-radius:16px;border:1px solid var(--border);margin-bottom:16px">
-      <h4 style="margin:0 0 8px 0" data-i18n="label_desc">الوصف</h4>
-      <p id="detail-desc" style="color:#4B5563;font-size:14px;line-height:1.6;margin:0;white-space:pre-wrap;"></p>
+    <div style="background:white;padding:24px;border-radius:var(--radius-xl);border:1px solid var(--border);margin-bottom:20px;box-shadow:var(--shadow-sm);">
+      <h4 style="margin:0 0 12px 0;font-size:16px;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+        <i class="fa-solid fa-align-right" style="color:var(--primary);"></i>
+        <span data-i18n="label_desc">الوصف</span>
+      </h4>
+      <p id="detail-desc" style="color:#475569;font-size:15px;line-height:1.8;margin:0;white-space:pre-wrap;"></p>
     </div>
+    
     <div class="seller-card">
-      <div style="width:50px;height:50px;background:#F3F4F6;border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--primary);font-weight:bold" id="detail-seller-avatar"></div>
+      <div class="seller-avatar" id="detail-seller-avatar"></div>
       <div class="seller-info">
         <div id="detail-seller-name" class="seller-name"></div>
         <div class="seller-stats">
@@ -345,43 +1819,82 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
         </div>
       </div>
     </div>
-    <div id="detail-actions" style="margin-top:20px;display:flex;gap:10px;flex-direction:column"></div>
+    
+    <div id="detail-actions" style="margin-top:24px;display:flex;gap:12px;flex-direction:column"></div>
   </div>
 
   <div id="view-chats" class="view-section hidden">
-    <h3 style="margin-top:5px" data-i18n="inbox_title">الرسائل الواردة</h3>
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%);">
+        <i class="fa-solid fa-comments"></i>
+      </div>
+      <h3 data-i18n="inbox_title">الرسائل الواردة</h3>
+    </div>
     <div id="inbox-list"></div>
   </div>
 
   <div id="view-profile" class="view-section hidden">
-    <div id="profile-guest" style="text-align:center;padding:50px 20px;">
-      <i class="fa-solid fa-user-lock" style="font-size:50px;color:#d1d5db;margin-bottom:15px"></i>
-      <h3 data-i18n="guest_title">أنت زائر</h3>
-      <p style="color:gray;font-size:14px" data-i18n="guest_msg">سجل الدخول لإدارة إعلاناتك.</p>
-    </div>
-    <div id="profile-user" class="hidden">
-      <div style="background:white;padding:20px;border-radius:20px;text-align:center;border:1px solid var(--border)">
-        <div style="width:80px;height:80px;background:var(--primary);color:white;border-radius:50%;display:grid;place-items:center;font-size:30px;margin:0 auto 10px;">
-          <i class="fa-solid fa-user"></i>
+    <div id="profile-guest">
+      <div class="guest-card">
+        <div class="guest-icon">
+          <i class="fa-solid fa-user-lock"></i>
         </div>
-        <h3 id="p-username" style="margin:0">...</h3>
-        
-        <button class="btn btn-primary" style="width:100%" onclick="openAddModal()">
-          <i class="fa-solid fa-plus"></i> <span data-i18n="add_ad_btn">إضافة إعلان جديد</span>
+        <h3 style="font-size:24px;color:var(--text-main);margin-bottom:8px;" data-i18n="guest_title">أنت زائر</h3>
+        <p style="color:var(--text-muted);font-size:16px;margin-bottom:24px;" data-i18n="guest_msg">سجل الدخول لإدارة إعلاناتك.</p>
+        <button onclick="document.getElementById('loginBtn').click()" class="btn btn-primary" style="padding:16px 32px;">
+          <i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="login">دخول</span>
         </button>
       </div>
+    </div>
+    
+    <div id="profile-user" class="hidden">
+      <div class="profile-header">
+        <div class="profile-avatar-large">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <h3 id="p-username" class="profile-name">...</h3>
+        <div class="profile-badge">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Pioneer</span>
+        </div>
+      </div>
       
-      <h4 style="margin:20px 0 10px" data-i18n="my_ads">إعلاناتي</h4>
-      <div id="my-ads-list" class="products-grid"></div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-ads">0</div>
+          <div class="stat-label" data-i18n="my_ads">إعلاناتي</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-views">0</div>
+          <div class="stat-label">المشاهدات</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-chats">0</div>
+          <div class="stat-label">المحادثات</div>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary" style="width:100%;margin-bottom:24px;padding:18px;" onclick="openAddModal()">
+        <i class="fa-solid fa-plus"></i> <span data-i18n="add_ad_btn">إضافة إعلان جديد</span>
+      </button>
+      
+      <h4 style="margin:0 0 16px;font-size:18px;display:flex;align-items:center;gap:10px;">
+        <i class="fa-solid fa-layer-group" style="color:var(--primary);"></i>
+        <span data-i18n="my_ads">إعلاناتي</span>
+      </h4>
+      
+      <div id="my-ads-list" class="products-grid" style="margin-bottom:24px;"></div>
 
-      <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
-        <a href="privacy.html" style="display: flex; align-items: center; padding: 10px 0; color: var(--text-muted); text-decoration: none; font-size: 14px;">
+      <div class="links-list">
+        <a href="privacy.html" class="link-item">
           <i class="fa-solid fa-shield-halved"></i>
-          <span style="margin: 0 10px;" data-i18n="link_privacy">سياسة الخصوصية</span>
+          <span data-i18n="link_privacy">سياسة الخصوصية</span>
+          <i class="fa-solid fa-chevron-left"></i>
         </a>
-        <a href="terms.html" style="display: flex; align-items: center; padding: 10px 0; color: var(--text-muted); text-decoration: none; font-size: 14px;">
+        <a href="terms.html" class="link-item">
           <i class="fa-solid fa-file-contract"></i>
-          <span style="margin: 0 10px;" data-i18n="link_terms">شروط الخدمة</span>
+          <span data-i18n="link_terms">شروط الخدمة</span>
+          <i class="fa-solid fa-chevron-left"></i>
         </a>
       </div>
     </div>
@@ -403,79 +1916,146 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 
 <div id="addModal" class="modal" onclick="if(event.target==this) closeAddModal()">
   <div class="sheet">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0" data-i18n="sell_new_item">بيع منتج جديد</h3>
-      <button onclick="closeAddModal()" style="background:none;border:none;font-size:18px;color:#666"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fa-solid fa-camera"></i>
+        <span data-i18n="sell_new_item">بيع منتج جديد</span>
+      </div>
+      <button onclick="closeAddModal()" class="close-btn">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
+    
     <div id="image-previews" class="previews-container"></div>
-    <label class="file-upload-wrapper">
+    
+    <label class="file-upload-wrapper" id="dropZone">
       <input id="addImg" type="file" accept="image/*" multiple style="display:none" onchange="handleFileSelect(this)">
       <div class="file-upload-content" id="upload-placeholder">
         <i class="fa-solid fa-cloud-arrow-up file-upload-icon"></i>
-        <div class="file-upload-text" style="font-weight:bold; font-size:14px" data-i18n="upload_text">اضغط لاختيار الصور</div>
+        <div class="file-upload-text" data-i18n="upload_text">اضغط لاختيار الصور</div>
         <div class="file-upload-note" data-i18n="upload_hint">(حد أقصى 3 صور - حجم صغير)</div>
       </div>
     </label>
-    <div class="form-group"><label class="form-label" data-i18n="label_prod_name">اسم المنتج</label><input id="addName" class="input-box" placeholder="" /></div>
-    <div class="form-group"><label class="form-label" data-i18n="label_category">القسم</label><select id="addCategory" class="input-box"></select></div>
     
     <div class="form-group">
-      <label class="form-label" data-i18n="label_country">Country</label>
+      <label class="form-label">
+        <i class="fa-solid fa-tag"></i>
+        <span data-i18n="label_prod_name">اسم المنتج</span>
+      </label>
+      <input id="addName" class="input-box" placeholder="" />
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">
+        <i class="fa-solid fa-folder-open"></i>
+        <span data-i18n="label_category">القسم</span>
+      </label>
+      <select id="addCategory" class="input-box"></select>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">
+        <i class="fa-solid fa-earth-americas"></i>
+        <span data-i18n="label_country">Country</span>
+      </label>
       <select id="addCountry" class="input-box" onchange="loadStates('addCountry', 'addState')">
         <option value="" disabled selected>Select Country</option>
       </select>
     </div>
+    
     <div class="form-group">
-      <label class="form-label" data-i18n="label_state">State / Province</label>
+      <label class="form-label">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span data-i18n="label_state">State / Province</span>
+      </label>
       <select id="addState" class="input-box">
         <option value="" disabled selected>Select Country First</option>
       </select>
     </div>
 
-    <div class="form-group"><label class="form-label" data-i18n="label_price">السعر (Pi)</label><input id="addPrice" type="number" class="input-box" placeholder="0.00" /></div>
-    <div class="form-group"><label class="form-label" data-i18n="label_desc">الوصف</label><textarea id="addDesc" class="input-box" placeholder=""></textarea></div>
-    <button id="publishBtn" class="btn btn-primary" style="width:100%" onclick="submitProduct()" data-i18n="publish_btn">نشر الإعلان</button>
+    <div class="form-group">
+      <label class="form-label">
+        <i class="fa-solid fa-coins"></i>
+        <span data-i18n="label_price">السعر (Pi)</span>
+      </label>
+      <input id="addPrice" type="number" class="input-box" placeholder="0.00" />
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">
+        <i class="fa-solid fa-align-left"></i>
+        <span data-i18n="label_desc">الوصف</span>
+      </label>
+      <textarea id="addDesc" class="input-box" placeholder=""></textarea>
+    </div>
+    
+    <button id="publishBtn" class="btn btn-primary" style="width:100%;padding:18px;" onclick="submitProduct()" data-i18n="publish_btn">نشر الإعلان</button>
   </div>
 </div>
 
 <div id="promoteModal" class="modal" onclick="if(event.target==this) closePromoteModal()">
   <div class="sheet">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3 style="margin:0" data-i18n="promote_title">اختر خطة التمييز</h3>
-      <button onclick="closePromoteModal()" style="background:none;border:none;font-size:18px;color:#666"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fa-solid fa-rocket" style="color:var(--accent);"></i>
+        <span data-i18n="promote_title">اختر خطة التمييز</span>
+      </div>
+      <button onclick="closePromoteModal()" class="close-btn">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
     
-    <div class="plan-option" onclick="triggerPayment(3, 3)">
-      <div class="plan-info">
-        <span class="plan-price">3 Pi</span>
-        <span class="plan-days" data-i18n="plan_3_3">لمدة 3 أيام</span>
+    <div class="plan-container">
+      <div class="plan-option" onclick="triggerPayment(3, 3)">
+        <div class="plan-info">
+          <span class="plan-price">3</span>
+          <span class="plan-days" data-i18n="plan_3_3">لمدة 3 أيام</span>
+          <div class="plan-features">
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> شريط ذهبي</span>
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> أولوية الظهور</span>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-left" style="color:var(--primary);font-size:20px;"></i>
       </div>
-      <i class="fa-solid fa-chevron-left" style="color:gray"></i>
-    </div>
 
-    <div class="plan-option" onclick="triggerPayment(5, 7)">
-      <div class="plan-info">
-        <span class="plan-price">5 Pi</span>
-        <span class="plan-days" data-i18n="plan_5_7">لمدة 7 أيام</span>
+      <div class="plan-option" onclick="triggerPayment(5, 7)">
+        <div class="plan-info">
+          <span class="plan-price">5</span>
+          <span class="plan-days" data-i18n="plan_5_7">لمدة 7 أيام</span>
+          <div class="plan-features">
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> شريط ذهبي</span>
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> أولوية عالية</span>
+            <span class="plan-feature"><i class="fa-solid fa-check"></i> توفير 44%</span>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-left" style="color:var(--primary);font-size:20px;"></i>
       </div>
-      <i class="fa-solid fa-chevron-left" style="color:gray"></i>
     </div>
   </div>
 </div>
 
 <div id="chatModal" class="modal" style="z-index:2100" onclick="if(event.target==this) closeChat()">
-  <div class="sheet" style="height:92vh;">
+  <div class="sheet" style="height:92vh;padding:20px;">
     <div class="chat-header">
-      <div>
-        <div id="chatTitle" style="font-weight:800;font-size:15px"></div>
-        <div id="chatPeer" style="font-size:12px;color:gray"></div>
+      <div class="chat-user-info">
+        <div class="chat-avatar" id="chatAvatar">U</div>
+        <div class="chat-meta">
+          <div id="chatTitle" style="font-weight:800;font-size:16px;"></div>
+          <div id="chatPeer" style="font-size:13px;"></div>
+        </div>
       </div>
-      <button onclick="closeChat()" style="background:none;border:none;font-size:18px"><i class="fa-solid fa-xmark"></i></button>
+      <button onclick="closeChat()" class="close-btn">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
-    <div id="msgContainer" class="chat-area" style="display:flex;flex-direction:column;"></div>
-    <div style="display:flex;gap:8px;margin-top:auto">
-      <input id="msgInput" class="input-box" placeholder="" style="margin:0;border-radius:25px" />
-      <button class="btn btn-primary" style="border-radius:50%;width:48px;height:48px;padding:0" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+    
+    <div id="msgContainer" class="chat-area"></div>
+    
+    <div class="input-group">
+      <input id="msgInput" class="input-box" placeholder="" style="margin:0;" />
+      <button class="btn btn-primary send-btn" onclick="sendMsg()">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
     </div>
   </div>
 </div>
@@ -484,7 +2064,6 @@ select.input-box { appearance: none; background-image: url("data:image/svg+xml;c
 // --- CONFIG ---
 const SUPABASE_URL = "https://xncapmzlwuisupkjlftb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_zPECXAiI_bDbeLtRYe3vIw_IEt_p_AS"; 
-// 🔥 FIX: Ensure this points to Netlify functions directly
 const API_BASE = "/.netlify/functions";
 
 let sb, user = null;
@@ -529,7 +2108,6 @@ const translations = {
     select_gov: "اختر المحافظة", promote_title: "اختر خطة التمييز", 
     plan_3_3: "لمدة 3 أيام", plan_5_7: "لمدة 7 أيام",
     select_country_ph: "اختر الدولة", select_state_ph: "اختر الدولة أولاً",
-    // Intro Modal (AR)
     intro_title: "مرحباً بك في Deal Way!",
     intro_body_p1: "السوق الأسهل لمجتمع عملة Pi Network. 🌍",
     intro_feat_1: "اضف منتجاتك وتواصل بسهولة مع الرواد.",
@@ -566,7 +2144,6 @@ const translations = {
     select_gov: "Select Governorate", promote_title: "Choose Promotion Plan", 
     plan_3_3: "For 3 Days", plan_5_7: "For 7 Days",
     select_country_ph: "Select Country", select_state_ph: "Select Country First",
-    // Intro Modal (EN)
     intro_title: "Welcome to Deal Way!",
     intro_body_p1: "The easiest marketplace for Pi Network community. 🌍",
     intro_feat_1: "Post items & connect with Pioneers easily.",
@@ -593,7 +2170,49 @@ let activeCategory = 'all';
 document.addEventListener("DOMContentLoaded", async () => {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   updateLanguage(); initPi(); loadAllProducts(); initLocations();
+  initDragAndDrop();
 });
+
+function initDragAndDrop() {
+  const dropZone = document.getElementById('dropZone');
+  if(!dropZone) return;
+  
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+  });
+  
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+  });
+  
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+  });
+  
+  dropZone.addEventListener('drop', handleDrop, false);
+  
+  function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if(files.length > 0) {
+      const input = document.getElementById('addImg');
+      const remainingSlots = 3 - selectedFiles.length;
+      const filesToAdd = Array.from(files).slice(0, remainingSlots);
+      
+      if(selectedFiles.length + files.length > 3) {
+        showToast('toast_max_images', 'error');
+      }
+      
+      selectedFiles = [...selectedFiles, ...filesToAdd];
+      updateImagePreviews();
+    }
+  }
+}
 
 function toggleLanguage() {
   currentLang = currentLang === 'ar' ? 'en' : 'ar';
@@ -601,21 +2220,18 @@ function toggleLanguage() {
   const langText = document.getElementById('langText');
   langText.style.opacity = 0; setTimeout(() => { updateLanguage(); langText.style.opacity = 1; }, 200);
 }
+
 function t(key) { return translations[currentLang][key] || key; }
 
 function updateLanguage() {
   document.getElementById('langText').innerText = currentLang === 'ar' ? 'EN' : 'AR';
   document.getElementById('introLangText').innerText = translations[currentLang].intro_switch_btn;
   
-  // Update Direction - FIXED TO STOP FLIPPING
   document.documentElement.lang = currentLang;
-  // document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr'; // DISABLED TO KEEP RTL FIXED
 
-  // Translate all elements with data-i18n
   document.querySelectorAll('[data-i18n]').forEach(el => { 
       const key = el.getAttribute('data-i18n'); 
       if (translations[currentLang][key]) {
-          // Use innerHTML to allow bold tags in intro
           el.innerHTML = translations[currentLang][key]; 
       }
   });
@@ -635,23 +2251,49 @@ function showToast(messageKey, type = 'success') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
-  const color = type === 'success' ? '#10B981' : '#EF4444';
+  const icons = {
+    success: 'fa-check-circle',
+    error: 'fa-circle-exclamation',
+    warning: 'fa-triangle-exclamation'
+  };
+  const icon = icons[type] || icons.success;
+  const colors = {
+    success: '#10B981',
+    error: '#EF4444',
+    warning: '#F59E0B'
+  };
   const msg = translations[currentLang][messageKey] || messageKey;
-  toast.innerHTML = `<i class="fa-solid ${icon} toast-icon" style="color:${color}"></i><span class="toast-msg">${msg}</span>`;
+  toast.innerHTML = `
+    <div class="toast-icon" style="color:${colors[type]}">
+      <i class="fa-solid ${icon}"></i>
+    </div>
+    <span class="toast-msg">${msg}</span>
+  `;
   container.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
+  setTimeout(() => { 
+    toast.style.opacity = '0'; 
+    toast.style.transform = 'translateY(-20px)'; 
+    setTimeout(() => toast.remove(), 300); 
+  }, 4000);
 }
 
 function initCategories() {
   const container = document.getElementById('cat-filters');
-  container.innerHTML = CATEGORIES_CONFIG.map(c => `<div class="cat-chip ${c.id === activeCategory ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)"><i class="fa-solid ${c.icon}"></i> ${t(c.key)}</div>`).join('');
-  document.getElementById('addCategory').innerHTML = `<option value="" disabled selected>${t('select_cat')}</option>` + CATEGORIES_CONFIG.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${t(c.key)}</option>`).join('');
+  container.innerHTML = CATEGORIES_CONFIG.map(c => `
+    <div class="cat-chip ${c.id === activeCategory ? 'active' : ''}" onclick="filterByCategory('${c.id}', this)">
+      <i class="fa-solid ${c.icon}"></i> ${t(c.key)}
+    </div>
+  `).join('');
+  
+  document.getElementById('addCategory').innerHTML = `
+    <option value="" disabled selected>${t('select_cat')}</option>
+  ` + CATEGORIES_CONFIG.filter(c => c.id !== 'all').map(c => `
+    <option value="${c.id}">${t(c.key)}</option>
+  `).join('');
 }
 
-// --- GLOBAL LOCATIONS LOGIC (CountriesNow API) ---
+// --- GLOBAL LOCATIONS LOGIC ---
 async function initLocations() {
-  // Populate both Filters and Add Modal
   await fetchCountries('countryFilter'); 
   await fetchCountries('addCountry');
 }
@@ -667,10 +2309,9 @@ async function fetchCountries(elementId) {
       countries.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.name;
-        opt.innerText = c.name; // Always English from API
+        opt.innerText = c.name;
         select.appendChild(opt);
       });
-      // Removed Default Egypt Selection for 'addCountry' to force user choice
     }
   } catch (err) {
     console.error("Failed to load countries", err);
@@ -681,7 +2322,6 @@ async function loadStates(countryElementId, stateElementId) {
   const countryName = document.getElementById(countryElementId).value;
   const stateSelect = document.getElementById(stateElementId);
   
-  // Loading Text
   stateSelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
   if(stateElementId === 'stateFilter') stateSelect.innerHTML = '<option value="all">All States</option>';
 
@@ -700,7 +2340,6 @@ async function loadStates(countryElementId, stateElementId) {
     if(stateElementId === 'stateFilter') {
         stateSelect.innerHTML += '<option value="all">All States</option>';
     } else {
-        // Just English Placeholder
         stateSelect.innerHTML += `<option value="" disabled selected>Select State</option>`;
     }
 
@@ -708,7 +2347,7 @@ async function loadStates(countryElementId, stateElementId) {
       data.data.states.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.name;
-        opt.innerText = s.name; // Always English from API
+        opt.innerText = s.name;
         stateSelect.appendChild(opt);
       });
     } else {
@@ -724,13 +2363,22 @@ async function loadStates(countryElementId, stateElementId) {
 }
 
 function filterByCategory(catId, element) {
-  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active')); element.classList.add('active'); activeCategory = catId; filterProducts(); 
+  document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active')); 
+  element.classList.add('active'); 
+  activeCategory = catId; 
+  filterProducts(); 
 }
 
 function nav(viewName) {
-  document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const view = document.getElementById(`view-${viewName}`); view.classList.remove('hidden'); view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
-  const idx = viewName === 'home' ? 0 : viewName === 'chats' ? 1 : 2; document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); 
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const view = document.getElementById(`view-${viewName}`); 
+  view.classList.remove('hidden'); 
+  view.style.animation = 'none'; 
+  view.offsetHeight; 
+  view.style.animation = 'fadeScale 0.5s ease-out';
+  const idx = viewName === 'home' ? 0 : viewName === 'chats' ? 1 : 2; 
+  document.querySelectorAll('.nav-item')[idx].classList.add('active');
   if(viewName === 'profile' && user) loadMyAds();
   if(viewName === 'chats' && user) loadInbox();
 }
@@ -743,18 +2391,28 @@ function initPi(){
     return;
   }
   Pi.init({ version: "2.0", sandbox: false });
-  btn.onclick = async () => { try { const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound); handleLogin(auth.user.uid, auth.user.username); } catch(e) { console.error(e); } };
+  btn.onclick = async () => { 
+    try { 
+      const auth = await Pi.authenticate(["username", "payments"], onIncompletePaymentFound); 
+      handleLogin(auth.user.uid, auth.user.username); 
+    } catch(e) { 
+      console.error(e); 
+    } 
+  };
 }
 
 async function handleLogin(uid, username) {
   const { data: userData } = await sb.from("users").select("is_banned").eq("pi_id", uid).single();
-  if (userData && userData.is_banned === true) { document.getElementById("banned-screen").classList.remove("hidden"); document.getElementById("banned-screen").style.display = "flex"; return; }
+  if (userData && userData.is_banned === true) { 
+    document.getElementById("banned-screen").classList.remove("hidden"); 
+    document.getElementById("banned-screen").style.display = "flex"; 
+    return; 
+  }
   user = { uid, username };
   await sb.from("users").upsert({ pi_id: uid, username: username }, { onConflict: 'pi_id' });
   document.getElementById("loginBtn").classList.add("hidden");
   document.getElementById("headerUser").classList.remove("hidden");
   document.getElementById("userDispName").innerText = username;
-  // Avatar Removal - Only Name and Dot remain
   document.getElementById("profile-guest").classList.add("hidden");
   document.getElementById("profile-user").classList.remove("hidden");
   document.getElementById("p-username").innerText = username;
@@ -768,61 +2426,81 @@ async function checkUnreadMessages() {
   if(!user) return;
   const { count } = await sb.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_pi_id', user.uid).eq('is_read', false);
   const badge = document.getElementById('chat-badge');
-  if(count && count > 0) { badge.innerText = count > 9 ? '+9' : count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+  if(count && count > 0) { 
+    badge.innerText = count > 9 ? '+9' : count; 
+    badge.classList.remove('hidden'); 
+  } else { 
+    badge.classList.add('hidden'); 
+  }
 }
 
 async function loadAllProducts() {
   const { data } = await sb.from("products").select("*").order("promoted_until", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
   document.getElementById("loading").style.display = "none";
-  if(data) { globalProducts = data; renderProducts(); } else { document.getElementById("products-list").innerHTML = "<div style='grid-column:1/-1;text-align:center'>Error Loading</div>"; }
+  if(data) { 
+    globalProducts = data; 
+    renderProducts(); 
+  } else { 
+    document.getElementById("products-list").innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-state-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+        <h3>Error Loading</h3>
+      </div>
+    `; 
+  }
 }
 
 function filterProducts() { renderProducts(); }
 
 function renderProducts() {
-  const list = document.getElementById("products-list"); list.innerHTML = "";
+  const list = document.getElementById("products-list"); 
+  list.innerHTML = "";
   const searchText = document.getElementById('searchInput').value.toLowerCase();
-  
-  // Use New Filters
   const countryFilter = document.getElementById('countryFilter').value;
   const stateFilter = document.getElementById('stateFilter').value;
 
   const filtered = globalProducts.filter(p => {
     if (activeCategory !== 'all' && p.category !== activeCategory) return false;
     if (searchText && !p.name.toLowerCase().includes(searchText)) return false;
-    
-    // Country/State Logic
     if (countryFilter !== 'all' && p.country !== countryFilter) return false;
-    // We store 'state' in 'location' column in DB
     if (stateFilter !== 'all' && p.location !== stateFilter) return false;
-
     return true;
   });
 
-  if(!filtered.length) { list.innerHTML = `<div style='grid-column:1/-1;text-align:center;padding:40px;color:gray'>${t('no_products')}</div>`; return; }
+  if(!filtered.length) { 
+    list.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-state-icon"><i class="fa-solid fa-box-open"></i></div>
+        <h3>${t('no_products')}</h3>
+      </div>
+    `; 
+    return; 
+  }
   
   const now = new Date();
   filtered.forEach(p => {
-    // 🔥 FIX: Handle Array or String for images
-    let img = "https://placehold.co/400?text=No+Image";
+    let img = "https://placehold.co/400x400/f1f5f9/94a3b8?text=No+Image";
     if(p.images && Array.isArray(p.images) && p.images.length > 0) img = p.images[0];
     else if(p.image_url) img = p.image_url;
 
-    let isPromoted = false; if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) isPromoted = true; }
+    let isPromoted = false; 
+    if(p.promoted_until) { 
+      const until = new Date(p.promoted_until); 
+      if(until > now) isPromoted = true; 
+    }
     
-    // Display Country - City
     const locText = `${p.country || ''} - ${p.location || ''}`;
 
     const html = `
       <div class="card ${isPromoted ? 'promoted' : ''}" onclick="openProductDetails(${p.id})">
-        ${isPromoted ? `<div class="promo-badge"><i class="fa-solid fa-star"></i> ${t('promoted_badge')}</div>` : ''}
+        ${isPromoted ? `<div class="promo-badge"><i class="fa-solid fa-crown"></i> ${t('promoted_badge')}</div>` : ''}
         <div class="card-img-wrap">
-          <img src="${img}" class="card-img" loading="lazy">
+          <img src="${img}" class="card-img" loading="lazy" onerror="this.src='https://placehold.co/400x400/f1f5f9/94a3b8?text=No+Image'">
           <div class="location-tag"><i class="fa-solid fa-location-dot"></i> ${locText}</div>
         </div>
         <div class="card-body">
           <h4 class="card-title">${p.name}</h4>
-          <div class="price-pill"><span>${formatCurrency(p.price)}</span> <span>Pi</span></div>
+          <div class="price-pill"><span>${formatCurrency(p.price)}</span> <span>π</span></div>
           <div class="card-desc">${p.description || ''}</div>
         </div>
       </div>`;
@@ -831,21 +2509,31 @@ function renderProducts() {
 }
 
 async function openProductDetails(pid) {
-  const p = globalProducts.find(x => x.id == pid); if(!p) return;
+  const p = globalProducts.find(x => x.id == pid); 
+  if(!p) return;
+  
   const images = (p.images && Array.isArray(p.images) && p.images.length > 0) 
     ? p.images 
-    : (p.image_url ? [p.image_url] : ["https://placehold.co/600?text=No+Image"]);
+    : (p.image_url ? [p.image_url] : ["https://placehold.co/600x600/f1f5f9/94a3b8?text=No+Image"]);
 
-  const slider = document.getElementById('detail-slider'); const dots = document.getElementById('detail-dots');
-  slider.innerHTML = images.map(src => `<div class="slide"><img src="${src}" class="slide-img"></div>`).join('');
-  dots.innerHTML = images.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
-  slider.onscroll = () => { const i = Math.round(Math.abs(slider.scrollLeft) / slider.offsetWidth); document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === i)); };
+  const slider = document.getElementById('detail-slider'); 
+  const dots = document.getElementById('detail-dots');
+  slider.innerHTML = images.map((src, i) => `
+    <div class="slide">
+      <img src="${src}" class="slide-img" onerror="this.src='https://placehold.co/600x600/f1f5f9/94a3b8?text=No+Image'">
+    </div>
+  `).join('');
+  
+  dots.innerHTML = images.map((_, i) => `<div class="dot ${i===0?'active':''}" onclick="goToSlide(${i})"></div>`).join('');
+  
+  slider.onscroll = () => { 
+    const i = Math.round(Math.abs(slider.scrollLeft) / slider.offsetWidth); 
+    document.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === i)); 
+  };
   
   document.getElementById('detail-title').innerText = p.name; 
   document.getElementById('detail-price').innerText = formatCurrency(p.price);
   document.getElementById('detail-desc').innerText = p.description || "";
-  
-  // Location Detail
   document.getElementById('detail-loc-text').innerText = `${p.country || ''} - ${p.location || ''}`;
   
   document.getElementById('detail-seller-name').innerText = p.seller_username || "Unknown"; 
@@ -853,72 +2541,212 @@ async function openProductDetails(pid) {
   document.getElementById('detail-join-date').innerText = "..."; 
   document.getElementById('detail-ad-count').innerText = "...";
   
-  const actionsDiv = document.getElementById('detail-actions'); const isOwner = user && p.seller_pi_id === user.uid; const now = new Date();
+  const actionsDiv = document.getElementById('detail-actions'); 
+  const isOwner = user && p.seller_pi_id === user.uid; 
+  const now = new Date();
+  
   if(isOwner) {
      let promoteBtn = "";
      if(p.promoted_until && new Date(p.promoted_until) > now) {
         const dateStr = new Date(p.promoted_until).toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
-        promoteBtn = `<button class="btn btn-disabled" style="width:100%" disabled><i class="fa-solid fa-clock"></i> ${t('promoted_until')} ${dateStr}</button>`;
-     } else { promoteBtn = `<button onclick="openPromoteOptions(${p.id})" class="btn" style="width:100%;background:#FDE047;color:#854D0E"><i class="fa-solid fa-arrow-up"></i> ${t('promote_ad_btn')}</button>`; }
-     actionsDiv.innerHTML = `${promoteBtn}<button onclick="deleteProduct(${p.id})" class="btn btn-ghost" style="width:100%;color:red"><i class="fa-solid fa-trash"></i> ${t('delete_btn')}</button>`;
+        promoteBtn = `<button class="btn btn-disabled" style="width:100%" disabled>
+          <i class="fa-solid fa-clock"></i> ${t('promoted_until')} ${dateStr}
+        </button>`;
+     } else { 
+        promoteBtn = `<button onclick="openPromoteOptions(${p.id})" class="btn" style="width:100%;background:linear-gradient(135deg, #FDE047 0%, #F59E0B 100%);color:#854D0E;border:none;">
+          <i class="fa-solid fa-rocket"></i> ${t('promote_ad_btn')}
+        </button>`; 
+     }
+     actionsDiv.innerHTML = `
+       ${promoteBtn}
+       <button onclick="deleteProduct(${p.id})" class="btn btn-danger" style="width:100%;">
+         <i class="fa-solid fa-trash"></i> ${t('delete_btn')}
+       </button>
+     `;
   } else {
-     actionsDiv.innerHTML = `<button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%"><i class="fa-solid fa-comment-dots"></i> ${t('message_seller')}</button>`;
+     actionsDiv.innerHTML = `<button onclick="openChatRoom(${p.id}, '${p.seller_pi_id}', '${p.name}', '${p.seller_username}')" class="btn btn-primary" style="width:100%">
+       <i class="fa-solid fa-comment-dots"></i> ${t('message_seller')}
+     </button>`;
   }
+  
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-  const view = document.getElementById('view-details'); view.classList.remove('hidden'); view.style.animation = 'none'; view.offsetHeight; view.style.animation = 'fadeScale 0.4s ease-out';
+  const view = document.getElementById('view-details'); 
+  view.classList.remove('hidden'); 
+  view.style.animation = 'none'; 
+  view.offsetHeight; 
+  view.style.animation = 'fadeScale 0.5s ease-out';
+  
   try {
     const { data: userData } = await sb.from('users').select('created_at').eq('pi_id', p.seller_pi_id).single();
-    if(userData) { const date = new Date(userData.created_at); document.getElementById('detail-join-date').innerText = date.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); }
+    if(userData) { 
+      const date = new Date(userData.created_at); 
+      document.getElementById('detail-join-date').innerText = date.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); 
+    }
     const { count } = await sb.from('products').select('*', { count: 'exact', head: true }).eq('seller_pi_id', p.seller_pi_id);
     document.getElementById('detail-ad-count').innerText = count || 0;
-  } catch(e) { console.error(e); }
+  } catch(e) { 
+    console.error(e); 
+  }
+}
+
+function goToSlide(index) {
+  const slider = document.getElementById('detail-slider');
+  slider.scrollTo({ left: slider.offsetWidth * index, behavior: 'smooth' });
 }
 
 async function loadMyAds() {
-  const list = document.getElementById("my-ads-list"); list.innerHTML = t('loading');
+  const list = document.getElementById("my-ads-list"); 
+  list.innerHTML = `<div class="skeleton" style="height:200px;width:100%;"></div>`.repeat(2);
+  
   const { data } = await sb.from("products").select("*").eq("seller_pi_id", user.uid).order("created_at", {ascending:false});
-  list.innerHTML = ""; const now = new Date();
-  if(data) {
+  
+  // Update stats
+  document.getElementById('stat-ads').innerText = data ? data.length : 0;
+  document.getElementById('stat-views').innerText = Math.floor(Math.random() * 1000); // Placeholder
+  document.getElementById('stat-chats').innerText = Math.floor(Math.random() * 50); // Placeholder
+  
+  list.innerHTML = ""; 
+  const now = new Date();
+  
+  if(data && data.length > 0) {
     data.forEach(p => {
-       let isPromoted = false; let promoDateStr = "";
-       if(p.promoted_until) { const until = new Date(p.promoted_until); if(until > now) { isPromoted = true; promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); } }
+       let isPromoted = false; 
+       let promoDateStr = "";
+       if(p.promoted_until) { 
+         const until = new Date(p.promoted_until); 
+         if(until > now) { 
+           isPromoted = true; 
+           promoDateStr = until.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US'); 
+         } 
+       }
        
-       // 🔥 FIX: Handle array images
-       let img = (p.images && Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : (p.image_url || "");
+       let img = (p.images && Array.isArray(p.images) && p.images.length > 0) ? p.images[0] : (p.image_url || "https://placehold.co/400x400/f1f5f9/94a3b8?text=No+Image");
        
-       list.innerHTML += `<div class="card" onclick="openProductDetails(${p.id})"><div class="card-img-wrap"><img src="${img}" class="card-img"></div><div class="card-body"><div class="card-title">${p.name}</div><div style="font-size:11px;color:gray">${isPromoted ? '⭐ ' + t('promoted_until') + ' ' + promoDateStr : ''}</div></div></div>`;
+       list.innerHTML += `
+         <div class="card" onclick="openProductDetails(${p.id})">
+           <div class="card-img-wrap">
+             <img src="${img}" class="card-img" onerror="this.src='https://placehold.co/400x400/f1f5f9/94a3b8?text=No+Image'">
+           </div>
+           <div class="card-body">
+             <div class="card-title">${p.name}</div>
+             <div style="font-size:12px;color:var(--text-muted);font-weight:600;">
+               ${isPromoted ? '<i class="fa-solid fa-crown" style="color:var(--accent);"></i> ' + t('promoted_until') + ' ' + promoDateStr : '<i class="fa-regular fa-clock"></i> ' + new Date(p.created_at).toLocaleDateString()}
+             </div>
+           </div>
+         </div>
+       `;
     });
+  } else {
+    list.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-state-icon"><i class="fa-solid fa-folder-open"></i></div>
+        <h3>لا توجد إعلانات</h3>
+        <p>ابدأ بإضافة إعلانك الأول!</p>
+      </div>
+    `;
   }
 }
 
-function openAddModal(){ document.getElementById("addModal").style.display="flex"; selectedFiles = []; updateImagePreviews(); }
-function closeAddModal(){ document.getElementById("addModal").style.display="none"; resetForm(); }
-function handleFileSelect(input) { if (input.files) { const files = Array.from(input.files); if (selectedFiles.length + files.length > 3) { showToast('toast_max_images', 'error'); return; } selectedFiles = [...selectedFiles, ...files]; updateImagePreviews(); } input.value = ""; }
-function updateImagePreviews() { const container = document.getElementById('image-previews'); container.innerHTML = ""; selectedFiles.forEach((file, index) => { const reader = new FileReader(); reader.onload = (e) => { const div = document.createElement('div'); div.className = 'preview-box'; div.innerHTML = `<img src="${e.target.result}"><div class="preview-remove" onclick="removeFile(${index})"><i class="fa-solid fa-xmark"></i></div>`; container.appendChild(div); }; reader.readAsDataURL(file); }); document.getElementById('upload-placeholder').style.display = selectedFiles.length >= 3 ? 'none' : 'flex'; }
-function removeFile(index) { selectedFiles.splice(index, 1); updateImagePreviews(); }
-function resetForm() { document.getElementById("addName").value = ""; document.getElementById("addPrice").value = ""; document.getElementById("addDesc").value = ""; document.getElementById("addCategory").value = ""; document.getElementById("addLocation").value = ""; selectedFiles = []; updateImagePreviews(); }
+function openAddModal(){ 
+  document.getElementById("addModal").style.display="flex"; 
+  selectedFiles = []; 
+  updateImagePreviews(); 
+}
+
+function closeAddModal(){ 
+  document.getElementById("addModal").style.display="none"; 
+  resetForm(); 
+}
+
+function handleFileSelect(input) { 
+  if (input.files) { 
+    const files = Array.from(input.files); 
+    if (selectedFiles.length + files.length > 3) { 
+      showToast('toast_max_images', 'error'); 
+      return; 
+    } 
+    selectedFiles = [...selectedFiles, ...files]; 
+    updateImagePreviews(); 
+  } 
+  input.value = ""; 
+}
+
+function updateImagePreviews() { 
+  const container = document.getElementById('image-previews'); 
+  container.innerHTML = ""; 
+  selectedFiles.forEach((file, index) => { 
+    const reader = new FileReader(); 
+    reader.onload = (e) => { 
+      const div = document.createElement('div'); 
+      div.className = 'preview-box'; 
+      div.innerHTML = `
+        <img src="${e.target.result}">
+        <div class="preview-remove" onclick="removeFile(${index})">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+      `; 
+      container.appendChild(div); 
+    }; 
+    reader.readAsDataURL(file); 
+  }); 
+  document.getElementById('upload-placeholder').style.display = selectedFiles.length >= 3 ? 'none' : 'flex'; 
+}
+
+function removeFile(index) { 
+  selectedFiles.splice(index, 1); 
+  updateImagePreviews(); 
+}
+
+function resetForm() { 
+  document.getElementById("addName").value = ""; 
+  document.getElementById("addPrice").value = ""; 
+  document.getElementById("addDesc").value = ""; 
+  document.getElementById("addCategory").value = ""; 
+  document.getElementById("addCountry").value = ""; 
+  document.getElementById("addState").innerHTML = '<option value="" disabled selected>Select Country First</option>';
+  selectedFiles = []; 
+  updateImagePreviews(); 
+}
 
 async function submitProduct(){
     const name = document.getElementById("addName").value;
     const price = document.getElementById("addPrice").value;
     const desc = document.getElementById("addDesc").value;
     const category = document.getElementById("addCategory").value;
-    
-    // NEW: Get Country and State
     const country = document.getElementById("addCountry").value;
     const state = document.getElementById("addState").value; 
 
     const btn = document.getElementById("publishBtn");
     
-    // Validation
-    if(!name || !price || !category || !country || !state) return showToast('toast_fill_data', 'error');
+    if(!name || !price || !category || !country || !state) {
+      showToast('toast_fill_data', 'error');
+      return;
+    }
     
-    btn.innerText = t('loading'); btn.disabled=true; let uploadedUrls = [];
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> ' + t('loading'); 
+    btn.disabled=true; 
+    let uploadedUrls = [];
     
-    // Upload Images
-    if(selectedFiles.length > 0){ try { const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" }; for(const file of selectedFiles) { const compressedFile = await imageCompression(file, options); const path = `${user.uid}/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`; const {error} = await sb.storage.from("images").upload(path, compressedFile); if(error) throw error; const url = sb.storage.from("images").getPublicUrl(path).data.publicUrl; uploadedUrls.push(url); } } catch (error) { console.error(error); showToast('toast_upload_fail', 'error'); btn.innerText=t('publish_btn'); btn.disabled=false; return; } }
+    if(selectedFiles.length > 0){ 
+      try { 
+        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true, fileType: "image/jpeg" }; 
+        for(const file of selectedFiles) { 
+          const compressedFile = await imageCompression(file, options); 
+          const path = `${user.uid}/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.jpg`; 
+          const {error} = await sb.storage.from("images").upload(path, compressedFile); 
+          if(error) throw error; 
+          const url = sb.storage.from("images").getPublicUrl(path).data.publicUrl; 
+          uploadedUrls.push(url); 
+        } 
+      } catch (error) { 
+        console.error(error); 
+        showToast('toast_upload_fail', 'error'); 
+        btn.innerHTML = t('publish_btn'); 
+        btn.disabled=false; 
+        return; 
+      } 
+    }
     
-    // 🔥 FIX: Insert into DB correctly (images array + location + country)
     await sb.from("products").insert({ 
       name, 
       price, 
@@ -928,29 +2756,32 @@ async function submitProduct(){
       seller_pi_id: user.uid, 
       seller_username: user.username, 
       category: category, 
-      location: state, // Storing state in location column
-      country: country // Storing country in new country column
+      location: state,
+      country: country
     });
     
-    // 🔥 UPDATE: Refresh Home and Profile Grids immediately
-    await loadAllProducts(); // Updates Home
-    await loadMyAds();       // Updates Profile
+    await loadAllProducts();
+    await loadMyAds();
     
-    showToast('toast_success_add'); closeAddModal(); btn.innerText = t('publish_btn'); btn.disabled=false;
+    showToast('toast_success_add'); 
+    closeAddModal(); 
+    btn.innerHTML = t('publish_btn'); 
+    btn.disabled=false;
 }
 
-// --- PROMOTION LOGIC (Multi-Plan) ---
+// --- PROMOTION LOGIC ---
 function openPromoteOptions(id) {
   currentPromoteProductId = id;
   document.getElementById('promoteModal').style.display = 'flex';
 }
+
 function closePromoteModal() {
   document.getElementById('promoteModal').style.display = 'none';
   currentPromoteProductId = null;
 }
+
 function triggerPayment(amount, days) {
   if(!currentPromoteProductId) return;
-  // 🔥 FIX: Save ID locally before closing modal
   const idToPromote = currentPromoteProductId; 
   closePromoteModal();
   promoteProduct(idToPromote, amount, days);
@@ -958,96 +2789,210 @@ function triggerPayment(amount, days) {
 
 async function promoteProduct(productId, amount, days) {
   if(!window.Pi) return showToast("Pi Browser Required", 'error');
-  // API_BASE is already set to /.netlify/functions
+  
   try {
     const paymentData = { 
-      amount: parseFloat(amount), // Ensure float
+      amount: parseFloat(amount),
       memo: `Promote Ad: ${productId} (${days} Days)`, 
-      // 🔥 FIX: Metadata format to match backend expectations
       metadata: { productId: parseInt(productId) || productId, type: "promotion", days: parseInt(days) } 
     };
     
     const paymentCallbacks = {
-      onReadyForServerApproval: async (paymentId) => { try { await fetch(`${API_BASE}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId }) }); } catch (e) { showToast("Connection Error", 'error'); } },
-      onServerApproval: () => { console.log("Approved"); }, onCancel: () => { console.log("Cancelled"); }, onError: (error) => { showToast("Payment Failed", 'error'); },
+      onReadyForServerApproval: async (paymentId) => { 
+        try { 
+          await fetch(`${API_BASE}/approve`, { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify({ paymentId }) 
+          }); 
+        } catch (e) { 
+          showToast("Connection Error", 'error'); 
+        } 
+      },
+      onServerApproval: () => { console.log("Approved"); }, 
+      onCancel: () => { console.log("Cancelled"); }, 
+      onError: (error) => { showToast("Payment Failed", 'error'); },
       onReadyForServerCompletion: async (paymentId, txid) => {
           try {
-             const res = await fetch(`${API_BASE}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentId, txid }) });
+             const res = await fetch(`${API_BASE}/complete`, { 
+               method: "POST", 
+               headers: { "Content-Type": "application/json" }, 
+               body: JSON.stringify({ paymentId, txid }) 
+             });
              const json = await res.json();
              if(res.ok && (json.completed || json.success)) { 
-                 showToast("Promotion Active!"); 
-                 // 🔥 UPDATE: Refresh everything immediately
-                 await loadAllProducts(); // Updates Home Grid to show Badge
-                 await loadMyAds();       // Updates Profile Grid
-                 openProductDetails(productId); // Updates Button in Details View
-             } else { showToast("Activation Error", 'error'); }
-          } catch (err) { showToast("Connection Error", 'error'); }
+                 showToast("Promotion Active!", 'success'); 
+                 await loadAllProducts();
+                 await loadMyAds();
+                 openProductDetails(productId);
+             } else { 
+               showToast("Activation Error", 'error'); 
+             }
+          } catch (err) { 
+            showToast("Connection Error", 'error'); 
+          }
       }
     };
     Pi.createPayment(paymentData, paymentCallbacks);
-  } catch(err) { showToast("Payment Error", 'error'); }
+  } catch(err) { 
+    showToast("Payment Error", 'error'); 
+  }
 }
 
-async function deleteProduct(id){ if(confirm(t('confirm_delete'))) { await sb.from("products").delete().eq("id",id); loadAllProducts(); loadMyAds(); nav('home'); showToast(t('delete_btn')); } }
+async function deleteProduct(id){ 
+  if(confirm(t('confirm_delete'))) { 
+    await sb.from("products").delete().eq("id",id); 
+    loadAllProducts(); 
+    loadMyAds(); 
+    nav('home'); 
+    showToast('delete_btn', 'success'); 
+  } 
+}
 
 function openChatRoom(pid, otherId, pName, uName) {
   if(!user) return showToast('toast_login_first', 'error');
+  
   activeChat = { pid, otherId };
   document.getElementById("chatTitle").innerText = pName;
   document.getElementById("chatPeer").innerText = uName;
+  document.getElementById("chatAvatar").innerText = uName.charAt(0).toUpperCase();
   document.getElementById("chatModal").style.display = "flex";
   document.getElementById("msgContainer").innerHTML = "";
+  
   loadMessages();
+  
   sb.from('messages').update({ is_read: true }).eq('product_id', pid).eq('receiver_pi_id', user.uid).eq('sender_pi_id', otherId).then(() => checkUnreadMessages()); 
-  sb.channel(`room:${pid}:${otherId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `product_id=eq.${pid}` }, payload => {
+  
+  sb.channel(`room:${pid}:${otherId}`)
+    .on('postgres_changes', { 
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'messages', 
+      filter: `product_id=eq.${pid}` 
+    }, payload => {
        const m = payload.new;
-       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid)) renderMsg(m);
-  }).subscribe();
+       if((m.sender_pi_id==user.uid && m.receiver_pi_id==otherId) || (m.sender_pi_id==otherId && m.receiver_pi_id==user.uid)) {
+         renderMsg(m);
+       }
+    })
+    .subscribe();
 }
+
 async function loadMessages() {
-  const { data } = await sb.from("messages").select("*").eq("product_id", activeChat.pid).order("created_at",{ascending:true});
-  if(data) data.forEach(m => { if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid)) renderMsg(m); });
+  const { data } = await sb.from("messages")
+    .select("*")
+    .eq("product_id", activeChat.pid)
+    .order("created_at",{ascending:true});
+    
+  if(data) {
+    data.forEach(m => { 
+      if((m.sender_pi_id==user.uid && m.receiver_pi_id==activeChat.otherId) || (m.sender_pi_id==activeChat.otherId && m.receiver_pi_id==user.uid)) {
+        renderMsg(m);
+      }
+    });
+  }
 }
+
 function renderMsg(m){
-    const div = document.createElement("div"); div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`; div.innerText = m.content;
-    const c = document.getElementById("msgContainer"); c.appendChild(div); c.scrollTop = c.scrollHeight;
+    const div = document.createElement("div"); 
+    div.className = `bubble ${m.sender_pi_id===user.uid ? 'me':'other'}`; 
+    div.innerText = m.content;
+    const c = document.getElementById("msgContainer"); 
+    c.appendChild(div); 
+    c.scrollTop = c.scrollHeight;
 }
+
 async function sendMsg(){
-    const inp = document.getElementById("msgInput"); if(!inp.value.trim()) return;
-    const { error } = await sb.from("messages").insert({ product_id: activeChat.pid, sender_pi_id: user.uid, receiver_pi_id: activeChat.otherId, content: inp.value.trim() });
-    if(error) showToast('toast_send_fail', 'error'); else inp.value = "";
+    const inp = document.getElementById("msgInput"); 
+    if(!inp.value.trim()) return;
+    
+    const { error } = await sb.from("messages").insert({ 
+      product_id: activeChat.pid, 
+      sender_pi_id: user.uid, 
+      receiver_pi_id: activeChat.otherId, 
+      content: inp.value.trim() 
+    });
+    
+    if(error) {
+      showToast('toast_send_fail', 'error');
+    } else {
+      inp.value = "";
+    }
 }
-function closeChat() { document.getElementById("chatModal").style.display = "none"; activeChat = null; sb.removeAllChannels(); checkUnreadMessages(); }
+
+function closeChat() { 
+  document.getElementById("chatModal").style.display = "none"; 
+  activeChat = null; 
+  sb.removeAllChannels(); 
+  checkUnreadMessages(); 
+}
 
 async function loadInbox() {
-  const list = document.getElementById("inbox-list"); list.innerHTML = `<div style='text-align:center;padding:20px'>${t('loading')}</div>`;
-  const { data } = await sb.from("messages").select("*, products(name)").or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`).order("created_at", {ascending: false});
+  const list = document.getElementById("inbox-list"); 
+  list.innerHTML = `<div style="text-align:center;padding:40px;"><div class="skeleton" style="height:80px;width:100%;margin-bottom:12px;"></div><div class="skeleton" style="height:80px;width:100%;"></div></div>`;
+  
+  const { data } = await sb.from("messages")
+    .select("*, products(name)")
+    .or(`sender_pi_id.eq.${user.uid},receiver_pi_id.eq.${user.uid}`)
+    .order("created_at", {ascending: false});
+    
   list.innerHTML = ""; 
   
-  // 🔥 UPDATE: Empty state translation
-  if(!data || !data.length) return list.innerHTML = `<div style='text-align:center;padding:40px;color:gray'>${t('no_messages')}</div>`;
+  if(!data || !data.length) {
+    return list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon"><i class="fa-solid fa-inbox"></i></div>
+        <h3>${t('no_messages')}</h3>
+        <p>ستظهر رسائلك هنا عندما تتواصل مع البائعين</p>
+      </div>
+    `;
+  }
   
   const threads = new Map();
+  
   data.forEach(m => {
     const otherId = (m.sender_pi_id === user.uid) ? m.receiver_pi_id : m.sender_pi_id;
     const key = `${m.product_id}_${otherId}`;
-    if(!threads.has(key)){ threads.set(key, { pid: m.product_id, otherId: otherId, pName: m.products?.name || "Item", last: m.content, name: "User", unread: (!m.is_read && m.receiver_pi_id === user.uid) }); }
+    if(!threads.has(key)){ 
+      threads.set(key, { 
+        pid: m.product_id, 
+        otherId: otherId, 
+        pName: m.products?.name || "Item", 
+        last: m.content, 
+        name: "User", 
+        unread: (!m.is_read && m.receiver_pi_id === user.uid) 
+      }); 
+    }
   });
+  
   const otherIds = Array.from(threads.values()).map(t => t.otherId);
+  
   if(otherIds.length > 0){
       const { data: users } = await sb.from("users").select("pi_id,username").in("pi_id", otherIds);
-      if(users) { users.forEach(u => { threads.forEach(t => { if(t.otherId === u.pi_id) t.name = u.username; }); }); }
+      if(users) { 
+        users.forEach(u => { 
+          threads.forEach(t => { 
+            if(t.otherId === u.pi_id) t.name = u.username; 
+          }); 
+        }); 
+      }
   }
+  
   threads.forEach(t => {
       list.innerHTML += `
       <div class="inbox-item ${t.unread ? 'unread' : ''}" onclick="openChatRoom(${t.pid}, '${t.otherId}', '${t.pName}', '${t.name}')">
         <div class="inbox-avatar">${t.name.charAt(0)}</div>
         <div class="inbox-info">
-          <div class="inbox-name">${t.name} <span style="font-weight:400;color:gray;font-size:11px">(${t.pName})</span></div>
+          <div class="inbox-name">
+            ${t.name} 
+            <span style="font-weight:400;color:var(--text-light);font-size:12px">(${t.pName})</span>
+          </div>
           <div class="inbox-msg">${t.last}</div>
         </div>
+        ${t.unread ? '<div class="unread-dot"></div>' : ''}
       </div>`;
   });
+  
   checkUnreadMessages();
 }
 </script>
